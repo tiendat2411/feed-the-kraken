@@ -1,0 +1,193 @@
+{
+    "tiles": [
+        {
+            "tile_id": "START_NODE",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_11",
+                "YELLOW": "NODE_22",
+                "BLUE": "NODE_12"
+            }
+        },
+        {
+            "tile_id": "NODE_11",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_21",
+                "YELLOW": "NODE_31",
+                "BLUE": "NODE_22"
+            }
+        },
+        {
+            "tile_id": "NODE_12",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_22",
+                "YELLOW": "NODE_32",
+                "BLUE": "NODE_23"
+            }
+        },
+        {
+            "tile_id": "NODE_21",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_41",
+                "YELLOW": "NODE_41",
+                "BLUE": "NODE_31"
+            }
+        },
+        {
+            "tile_id": "NODE_22",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_31",
+                "YELLOW": "NODE_31",
+                "BLUE": "NODE_32"
+            }
+        },
+        {
+            "tile_id": "NODE_23",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_32",
+                "YELLOW": "NODE_43",
+                "BLUE": "NODE_43"
+            }
+        },
+        {
+            "tile_id": "NODE_31",
+            "action_type": "CABIN_SEARCH",
+            "paths": {
+                "RED": "NODE_41",
+                "YELLOW": "NODE_52",
+                "BLUE": "NODE_42"
+            }
+        },
+        {
+            "tile_id": "NODE_32",
+            "action_type": "CABIN_SEARCH",
+            "paths": {
+                "RED": "NODE_42",
+                "YELLOW": "NODE_53",
+                "BLUE": "NODE_43"
+            }
+        },
+        {
+            "tile_id": "NODE_41",
+            "action_type": "CABIN_SEARCH",
+            "paths": {
+                "RED": "NODE_51",
+                "YELLOW": "NODE_61",
+                "BLUE": "NODE_52"
+            }
+        },
+        {
+            "tile_id": "NODE_42",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_52",
+                "YELLOW": "NODE_62",
+                "BLUE": "NODE_53"
+            }
+        },
+        {
+            "tile_id": "NODE_43",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_53",
+                "YELLOW": "NODE_63",
+                "BLUE": "NODE_54"
+            }
+        },
+        {
+            "tile_id": "NODE_51",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "PIRATE_VICTORY_ZONE",
+                "YELLOW": "NODE_61",
+                "BLUE": "NODE_61"
+            }
+        },
+        {
+            "tile_id": "NODE_52",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_61",
+                "YELLOW": "NODE_71",
+                "BLUE": "NODE_62"
+            }
+        },
+        {
+            "tile_id": "NODE_53",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_62",
+                "YELLOW": "NODE_72",
+                "BLUE": "NODE_63"
+            }
+        },
+        {
+            "tile_id": "NODE_54",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_63",
+                "YELLOW": "NODE_63",
+                "BLUE": "SAILOR_VICTORY_ZONE"
+            }
+        },
+        {
+            "tile_id": "NODE_61",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "PIRATE_VICTORY_ZONE",
+                "YELLOW": "NODE_71",
+                "BLUE": "NODE_71"
+            }
+        },
+        {
+            "tile_id": "NODE_62",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_71",
+                "YELLOW": "NODE_81",
+                "BLUE": "NODE_72"
+            }
+        },
+        {
+            "tile_id": "NODE_63",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "NODE_72",
+                "YELLOW": "NODE_72",
+                "BLUE": "SAILOR_VICTORY_ZONE"
+            }
+        },
+        {
+            "tile_id": "NODE_71",
+            "action_type": "FEED_THE_KRAKEN",
+            "paths": {
+                "RED": "PIRATE_VICTORY_ZONE",
+                "YELLOW": "PIRATE_VICTORY_ZONE",
+                "BLUE": "NODE_81"
+            }
+        },
+        {
+            "tile_id": "NODE_72",
+            "action_type": "FEED_THE_KRAKEN",
+            "paths": {
+                "RED": "NODE_81",
+                "YELLOW": "SAILOR_VICTORY_ZONE",
+                "BLUE": "SAILOR_VICTORY_ZONE"
+            }
+        },
+        {
+            "tile_id": "NODE_81",
+            "action_type": "NONE",
+            "paths": {
+                "RED": "PIRATE_VICTORY_ZONE",
+                "YELLOW": "CULT_VICTORY_ZONE",
+                "BLUE": "SAILOR_VICTORY_ZONE"
+            }
+        }
+    ]
+}
