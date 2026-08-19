@@ -1,8 +1,9 @@
 import { randomBytes } from 'crypto';
 import redisClient from '../config/redis.js';
+import Room from '../models/Room.js';
+import Player from '../models/Player.js';
 
-// In-memory store for fast access
-// Map<roomId, roomState>
+// Map<roomId, Room>
 const rooms = new Map();
 
 const generateRoomId = () => randomBytes(2).toString('hex').toUpperCase();
@@ -14,94 +15,100 @@ export class RoomManager {
       roomId = generateRoomId();
     } while (rooms.has(roomId));
 
-    const newRoom = {
-      id: roomId,
-      hostId: hostToken,
-      players: [
-        {
-          id: hostToken,
-          name: hostName,
-          socketId,
-          isHost: true,
-        }
-      ],
-      state: 'LOBBY',
-    };
+    const room = new Room({ id: roomId, hostId: hostToken });
+    const host = new Player({
+      roomId: roomId,
+      sessionToken: hostToken,
+      nickname: hostName,
+      avatar: '🧑‍✈️' // default
+    });
+    host.connectionStatus = 'ONLINE';
 
-    rooms.set(roomId, newRoom);
+    room.addPlayer(host);
+    rooms.set(roomId, room);
     await this.saveSnapshot(roomId);
-    return newRoom;
+    return room.toJSON();
   }
 
   static async joinRoom(roomId, playerToken, playerName, socketId) {
     const room = rooms.get(roomId);
-    if (!room) {
-      throw new Error('Room not found');
-    }
+    if (!room) throw new Error('Room not found');
 
-    if (room.state !== 'LOBBY') {
-      throw new Error('Cannot join a game in progress');
-    }
-
-    const existingPlayer = room.players.find(p => p.id === playerToken);
+    const existingPlayer = room.getPlayer(playerToken);
     if (existingPlayer) {
-      existingPlayer.socketId = socketId;
-      existingPlayer.name = playerName; // update name just in case
+      existingPlayer.connectionStatus = 'ONLINE';
+      existingPlayer.nickname = playerName || existingPlayer.nickname;
     } else {
-      room.players.push({
-        id: playerToken,
-        name: playerName,
-        socketId,
-        isHost: false,
+      const newPlayer = new Player({
+        roomId: roomId,
+        sessionToken: playerToken,
+        nickname: playerName,
+        avatar: '👨‍🍳'
       });
+      room.addPlayer(newPlayer);
     }
 
     await this.saveSnapshot(roomId);
-    return room;
+    return room.toJSON();
   }
 
   static getRoom(roomId) {
-    return rooms.get(roomId);
+    const room = rooms.get(roomId);
+    return room ? room.toJSON() : null;
   }
 
   static reconnectPlayer(playerToken, socketId) {
     for (const [roomId, room] of rooms.entries()) {
-      const player = room.players.find(p => p.id === playerToken);
+      const player = room.getPlayer(playerToken);
       if (player) {
-        player.socketId = socketId;
-        return room;
+        player.connectionStatus = 'ONLINE';
+        this.saveSnapshot(roomId);
+        return room.toJSON();
       }
     }
     return null;
   }
 
-  static removePlayerFromRoom(roomId, playerToken) {
-    const room = rooms.get(roomId);
-    if (!room) return null;
-
-    room.players = room.players.filter(p => p.id !== playerToken);
-    
-    if (room.players.length === 0) {
-      rooms.delete(roomId);
-      if (redisClient.isOpen) {
-        redisClient.del(`room:${roomId}`).catch(console.error);
+  static disconnectPlayer(playerToken) {
+    for (const [roomId, room] of rooms.entries()) {
+      const player = room.getPlayer(playerToken);
+      if (player) {
+        player.connectionStatus = 'OFFLINE';
+        this.saveSnapshot(roomId);
+        return room.toJSON();
       }
-      return null;
-    } else if (room.hostId === playerToken) {
-      // Reassign host to the next person
-      room.hostId = room.players[0].id;
-      room.players[0].isHost = true;
     }
+    return null;
+  }
 
-    this.saveSnapshot(roomId);
-    return room;
+  static updateAvatar(roomId, playerToken, avatar) {
+    const room = rooms.get(roomId);
+    if (room) {
+      const player = room.getPlayer(playerToken);
+      if (player) {
+        player.avatar = avatar;
+        this.saveSnapshot(roomId);
+        return room.toJSON();
+      }
+    }
+    return null;
+  }
+
+  static updateMapType(roomId, hostToken, mapType) {
+    const room = rooms.get(roomId);
+    if (room && room.hostId === hostToken) {
+      room.mapType = mapType;
+      this.saveSnapshot(roomId);
+      return room.toJSON();
+    }
+    return null;
   }
 
   static async saveSnapshot(roomId) {
     const room = rooms.get(roomId);
     if (room && redisClient.isOpen) {
       try {
-        await redisClient.set(`room:${roomId}`, JSON.stringify(room));
+        await redisClient.set(`room:${roomId}`, JSON.stringify(room.toJSON()));
       } catch (err) {
         console.error('Failed to save snapshot to Redis:', err);
       }

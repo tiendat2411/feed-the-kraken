@@ -43,7 +43,7 @@
 
 ### Implementation
 - [x] T009 [P] [BR-001] Tạo entity `Room` và `Player` trong `backend/src/models/`.
-- [ ] T010 [P] [BR-001] Xây dựng màn hình Lobby (`frontend/src/pages/Lobby.jsx`) bao gồm chọn Avatar và Map. (Lưu ý: Nút Start Game phải bị disabled khi < 5 người chơi).
+- [x] T010 [P] [BR-001] Xây dựng màn hình Lobby (`frontend/src/pages/Lobby.jsx`) bao gồm chọn Avatar và Map. (Lưu ý: Nút Start Game phải bị disabled khi < 5 người chơi).
 - [ ] T011 [BR-001] Bổ sung logic Kick Player và tự rời phòng vào `RoomManager.js`.
 - [ ] T012 [BR-001] Implement `RoleDistributionService` (`backend/src/services/RoleDistribution.js`) xử lý logic chia phe, chọn Cult Leader dựa trên số lượng người chơi.
 - [ ] T013 [BR-001] Cập nhật hàm `emitPrivate` để gửi thông tin vai trò cho từng client mà không bị rò rỉ.
