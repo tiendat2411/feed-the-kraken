@@ -2,15 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../contexts/SocketContext';
 import Lobby from './Lobby';
+import RoleReveal from '../components/RoleReveal';
 
 const Game = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const socket = useSocket();
   const [room, setRoom] = useState(null);
+  const [myRole, setMyRole] = useState(null);
   const [error, setError] = useState('');
 
-  // Extract currentUserId from socket (socket.id is not stable on reconnect, but sessionToken is. For now let's assume we can use a token from localStorage)
+  // Extract currentUserId from sessionToken
   const currentUserId = localStorage.getItem('sessionToken');
 
   useEffect(() => {
@@ -19,6 +21,14 @@ const Game = () => {
     // Listen for room updates
     socket.on('room_state', (updatedRoom) => {
       setRoom(updatedRoom);
+      if (updatedRoom.myRole) {
+        setMyRole(updatedRoom.myRole);
+      }
+    });
+
+    // Listen for private role assignment
+    socket.on('ROLE_ASSIGNED', ({ role }) => {
+      setMyRole(role);
     });
 
     socket.on('ROOM_DISSOLVED', () => {
@@ -31,12 +41,9 @@ const Game = () => {
       navigate('/');
     });
 
-    // We should probably ask server for current room state if we just navigated here
-    // In a real app, join_room is called from Home, and on reconnect it's handled.
-    // For now, if we don't have room, we might just be waiting for the server to send 'room_state'
-    
     return () => {
       socket.off('room_state');
+      socket.off('ROLE_ASSIGNED');
       socket.off('ROOM_DISSOLVED');
       socket.off('PLAYER_KICKED');
     };
@@ -86,6 +93,7 @@ const Game = () => {
     );
   }
 
+  // 1. Lobby Phase
   if (room.status === 'LOBBY') {
     return (
       <Lobby 
@@ -101,11 +109,34 @@ const Game = () => {
     );
   }
 
+  // 2. Secret Role Reveal & Night Gathering Phase
+  if (room.gamePhase === 'ROLE_REVEAL' || room.gamePhase === 'PIRATES_GATHERING') {
+    return (
+      <RoleReveal 
+        room={room} 
+        myRole={myRole || room.myRole} 
+        currentUserId={currentUserId} 
+      />
+    );
+  }
+
+  // 3. Day Phase & Ongoing Game
   return (
     <div className="min-h-screen bg-slate-900 text-white p-8">
-      <h2 className="text-2xl font-bold mb-4">In Game - Room: {room.id}</h2>
-      <p>Game Phase: {room.gamePhase}</p>
-      {/* Board component will go here in the future */}
+      <div className="max-w-4xl mx-auto bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-2xl text-center space-y-4">
+        <span className="px-4 py-1 bg-yellow-500/20 text-yellow-300 font-bold rounded-full text-sm">
+          ☀️ BAN NGÀY - BÌNH MINH ĐÃ LÊN
+        </span>
+        <h2 className="text-3xl font-extrabold">Room: {room.id} - Giai đoạn: {room.gamePhase}</h2>
+        <p className="text-slate-400">
+          Thuyền trưởng hiện tại: <span className="text-emerald-400 font-bold">{room.players.find(p => p.id === room.captainId)?.nickname || 'Host'}</span>
+        </p>
+        <div className="p-4 bg-slate-800/60 rounded-2xl border border-white/5 inline-block text-left text-sm space-y-1">
+          <p>🎭 Vai trò của bạn: <strong className="text-blue-400">{myRole || room.myRole || 'Đang tải...'}</strong></p>
+          <p>🗺️ Bản đồ: <strong className="text-purple-400">{room.mapType}</strong></p>
+          <p>👥 Thủy thủ đoàn: <strong className="text-slate-200">{room.players.length} người</strong></p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -47,7 +47,7 @@
 - [x] T011 [BR-001] Bổ sung logic Kick Player và tự rời phòng vào `RoomManager.js`.
 - [x] T012 [BR-001] Implement `RoleDistributionService` (`backend/src/services/RoleDistribution.js`) xử lý logic chia phe, chọn Cult Leader dựa trên số lượng người chơi.
 - [x] T013 [BR-001] Cập nhật hàm `emitPrivate` để gửi thông tin vai trò cho từng client mà không bị rò rỉ.
-- [ ] T014 [BR-001] Xây dựng UI thông báo vai trò bí mật và Màn hình nhắm mắt cho Pirate (`frontend/src/components/RoleReveal.jsx`). (Lưu ý: Phải có đồng hồ đếm ngược 20s và tự động chuyển giao diện khi hết giờ, không cần Host bấm Tiếp tục).
+- [x] T014 [BR-001] Xây dựng UI thông báo vai trò bí mật và Màn hình nhắm mắt cho Pirate (`frontend/src/components/RoleReveal.jsx`). (Lưu ý: Phải có đồng hồ đếm ngược 20s và tự động chuyển giao diện khi hết giờ, không cần Host bấm Tiếp tục).
 
 **Checkpoint**: Sau Phase này, một nhóm bạn có thể vào phòng, bấm Start và ai cũng biết phe của mình.
 

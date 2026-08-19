@@ -114,7 +114,7 @@ export function setupSocket(server) {
       try {
         const { room } = await RoomManager.startGame(socket.sessionToken);
         
-        // 1. Broadcast trạng thái phòng mới (Sanitized - không lộ role của người khác)
+        // 1. Broadcast trạng thái phòng mới (Sanitized - chỉ Pirate thấy knownPirates)
         broadcastRoomState(io, room);
 
         // 2. Gửi riêng vai trò ẩn (ROLE_ASSIGNED) cho từng người chơi
@@ -124,12 +124,27 @@ export function setupSocket(server) {
           });
         });
 
-        // 3. Thông báo game bắt đầu cho toàn phòng
-        io.to(room.id).emit('GAME_STARTED', {
-          mapType: room.mapType,
-          totalPlayers: room.getPlayers().length,
-          currentPhase: room.gamePhase
+        // 3. Thông báo phase ban đêm 20s bắt đầu
+        io.to(room.id).emit('NIGHT_PHASE_STARTED', {
+          duration: 20,
+          phaseDeadline: room.phaseDeadline
         });
+
+        // 4. Tự động chuyển phase sau 20 giây (Server-driven, không phụ thuộc client hay Host)
+        setTimeout(() => {
+          const currentRoom = RoomManager.getRoomInstance(room.id);
+          if (currentRoom && currentRoom.status === 'IN_GAME' && currentRoom.gamePhase === 'PIRATES_GATHERING') {
+            currentRoom.gamePhase = 'DAY_1_CREW_SELECTION';
+            currentRoom.phaseDeadline = null;
+            RoomManager.saveSnapshot(currentRoom.id);
+
+            broadcastRoomState(io, currentRoom);
+            io.to(currentRoom.id).emit('DAY_PHASE_STARTED', {
+              captainId: currentRoom.captainId
+            });
+            console.log(`[Game Phase] Room ${currentRoom.id} auto-transitioned to DAY_1_CREW_SELECTION`);
+          }
+        }, 20000);
 
         if (typeof callback === 'function') callback({ success: true });
       } catch (err) {

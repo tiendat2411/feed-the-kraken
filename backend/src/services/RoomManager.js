@@ -113,9 +113,10 @@ export class RoomManager {
     // 1. Phân bổ vai trò bí mật & Khởi tạo súng (3 súng/người)
     RoleDistributionService.distributeRoles(players);
 
-    // 2. Chuyển trạng thái phòng sang IN_GAME và phase ROLE_REVEAL
+    // 2. Chuyển trạng thái phòng sang IN_GAME và phase PIRATES_GATHERING (20s)
     room.status = 'IN_GAME';
-    room.gamePhase = 'ROLE_REVEAL';
+    room.gamePhase = 'PIRATES_GATHERING';
+    room.phaseDeadline = Date.now() + 20000; // 20 giây đếm ngược ban đêm
 
     // 3. Chỉ định Thuyền trưởng ban đầu (Mặc định là Host)
     room.captainId = room.hostId;

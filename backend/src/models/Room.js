@@ -13,9 +13,10 @@ class Room {
     
     // Default values
     this.status = 'LOBBY'; // 'LOBBY' | 'IN_GAME' | 'FINISHED' | 'DISSOLVED'
-    this.gamePhase = null; // e.g., 'NIGHT_1', 'DAY_1_CREW_SELECTION'
+    this.gamePhase = null; // e.g., 'ROLE_REVEAL', 'PIRATES_GATHERING', 'DAY_1_CREW_SELECTION'
     this.mapType = 'QUICK_JOURNEY'; // 'QUICK_JOURNEY' | 'LONG_JOURNEY'
     this.captainId = null;
+    this.phaseDeadline = null; // Timestamp kết thúc phase hiện tại
     this.createdAt = Date.now();
     this.lastActivity = Date.now();
     
@@ -116,6 +117,7 @@ class Room {
       gamePhase: this.gamePhase,
       mapType: this.mapType,
       captainId: this.captainId,
+      phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
       players: playersPublic,
@@ -142,6 +144,7 @@ class Room {
       gamePhase: this.gamePhase,
       mapType: this.mapType,
       captainId: this.captainId,
+      phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
       players: playersArray
@@ -157,6 +160,7 @@ class Room {
     room.gamePhase = data.gamePhase;
     room.mapType = data.mapType;
     room.captainId = data.captainId;
+    room.phaseDeadline = data.phaseDeadline || null;
     room.createdAt = data.createdAt;
     room.lastActivity = data.lastActivity;
     
