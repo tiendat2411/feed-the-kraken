@@ -42,7 +42,7 @@
 **Goal**: Host có thể tạo phòng, player join phòng, Host start game và hệ thống tự động chia vai trò ẩn cho người chơi.
 
 ### Implementation
-- [ ] T009 [P] [BR-001] Tạo entity `Room` và `Player` trong `backend/src/models/`.
+- [x] T009 [P] [BR-001] Tạo entity `Room` và `Player` trong `backend/src/models/`.
 - [ ] T010 [P] [BR-001] Xây dựng màn hình Lobby (`frontend/src/pages/Lobby.jsx`) bao gồm chọn Avatar và Map. (Lưu ý: Nút Start Game phải bị disabled khi < 5 người chơi).
 - [ ] T011 [BR-001] Bổ sung logic Kick Player và tự rời phòng vào `RoomManager.js`.
 - [ ] T012 [BR-001] Implement `RoleDistributionService` (`backend/src/services/RoleDistribution.js`) xử lý logic chia phe, chọn Cult Leader dựa trên số lượng người chơi.
