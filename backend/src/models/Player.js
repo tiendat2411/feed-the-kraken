@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+import { randomUUID } from 'crypto';
 
 class Player {
   /**
@@ -10,14 +10,14 @@ class Player {
    * @param {string} params.avatar
    */
   constructor({ roomId, sessionToken, nickname, avatar }) {
-    this.id = uuidv4(); // Định danh duy nhất
+    this.id = randomUUID(); // Định danh duy nhất
     this.roomId = roomId; // ID của Room
     this.sessionToken = sessionToken; // Token phục hồi phiên
     this.nickname = nickname; // Tên hiển thị
-    this.avatar = avatar; // Avatar
+    this.avatar = avatar || '🧑‍✈️'; // Avatar
     
     // Default values
-    this.connectionStatus = 'ONLINE'; // 'ONLINE' | 'RECONNECTING'
+    this.connectionStatus = 'ONLINE'; // 'ONLINE' | 'OFFLINE' | 'RECONNECTING'
     this.factionRole = null; // 'SAILOR' | 'PIRATE' | 'CULT_LEADER' | 'CULTIST'
     this.publicTitles = []; // e.g., 'CAPTAIN', 'LIEUTENANT', 'NAVIGATOR'
     this.speechRestricted = false; // Bị cắt lưỡi (Off with the tongue)
@@ -33,6 +33,7 @@ class Player {
       roomId: this.roomId,
       sessionToken: this.sessionToken,
       nickname: this.nickname,
+      name: this.nickname, // Alias for frontend compatibility
       avatar: this.avatar,
       connectionStatus: this.connectionStatus,
       factionRole: this.factionRole,
@@ -47,11 +48,11 @@ class Player {
     const player = new Player({
       roomId: data.roomId,
       sessionToken: data.sessionToken,
-      nickname: data.nickname,
+      nickname: data.nickname || data.name,
       avatar: data.avatar
     });
     player.id = data.id;
-    player.connectionStatus = data.connectionStatus;
+    player.connectionStatus = data.connectionStatus || 'ONLINE';
     player.factionRole = data.factionRole;
     player.publicTitles = data.publicTitles || [];
     player.speechRestricted = data.speechRestricted || false;
@@ -61,4 +62,5 @@ class Player {
   }
 }
 
-module.exports = Player;
+export default Player;
+

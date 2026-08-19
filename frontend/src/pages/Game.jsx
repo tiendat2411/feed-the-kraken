@@ -61,8 +61,17 @@ const Game = () => {
     }
   };
 
+  const handleDissolveRoom = () => {
+    if (socket && window.confirm('Bạn có chắc chắn muốn giải tán phòng không?')) {
+      socket.emit('dissolve_room');
+      navigate('/');
+    }
+  };
+
   const handleKickPlayer = (playerId) => {
-    if (socket) socket.emit('kick_player', { targetId: playerId });
+    if (socket && window.confirm('Bạn có chắc chắn muốn kick người chơi này không?')) {
+      socket.emit('kick_player', { targetId: playerId });
+    }
   };
 
   if (error) {
@@ -86,6 +95,7 @@ const Game = () => {
         onSelectMap={handleSelectMap}
         onStartGame={handleStartGame}
         onLeaveRoom={handleLeaveRoom}
+        onDissolveRoom={handleDissolveRoom}
         onKickPlayer={handleKickPlayer}
       />
     );

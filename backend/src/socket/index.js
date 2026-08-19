@@ -75,20 +75,66 @@ export function setupSocket(server) {
     // START GAME
     socket.on('start_game', () => {
       const activeRoom = RoomManager.reconnectPlayer(socket.sessionToken, socket.id);
-      if (activeRoom && activeRoom.hostId === socket.sessionToken) {
+      if (activeRoom) {
         // T012 logic will be here for Role Distribution
-        io.to(activeRoom.id).emit('room_state', activeRoom); // For now just return
+        io.to(activeRoom.id).emit('room_state', activeRoom);
       }
     });
 
     // LEAVE ROOM
-    socket.on('leave_room', () => {
-      // Not fully implemented in RoomManager yet (T011), but placeholder here
+    socket.on('leave_room', async (callback) => {
+      try {
+        const result = await RoomManager.leaveRoom(socket.sessionToken);
+        if (result) {
+          socket.leave(result.roomId);
+          if (result.isDissolved) {
+            io.to(result.roomId).emit('ROOM_DISSOLVED', { reason: 'Người chơi cuối cùng đã rời phòng.' });
+          } else {
+            io.to(result.roomId).emit('PLAYER_LEFT', { player_id: result.leftPlayerId });
+            io.to(result.roomId).emit('room_state', result.room);
+          }
+        }
+        if (typeof callback === 'function') callback({ success: true });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
     });
 
     // KICK PLAYER
-    socket.on('kick_player', ({ targetId }) => {
-      // Not fully implemented in RoomManager yet (T011), but placeholder here
+    socket.on('kick_player', async ({ targetId }, callback) => {
+      try {
+        const result = await RoomManager.kickPlayer(socket.sessionToken, targetId);
+        if (result) {
+          // Gửi thông báo trực tiếp cho người bị kick
+          for (const [, clientSocket] of io.of('/').sockets) {
+            if (clientSocket.sessionToken === result.kickedPlayerToken) {
+              clientSocket.emit('PLAYER_KICKED', { reason: 'Bạn đã bị Chủ phòng kick khỏi phòng.' });
+              clientSocket.leave(result.roomId);
+            }
+          }
+
+          // Broadcast cho những người còn lại
+          io.to(result.roomId).emit('PLAYER_LEFT', { player_id: result.kickedPlayerId });
+          io.to(result.roomId).emit('room_state', result.room);
+        }
+        if (typeof callback === 'function') callback({ success: true });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // DISSOLVE ROOM
+    socket.on('dissolve_room', async (callback) => {
+      try {
+        const result = await RoomManager.dissolveRoom(socket.sessionToken);
+        if (result && result.isDissolved) {
+          io.to(result.roomId).emit('ROOM_DISSOLVED', { reason: 'Chủ phòng đã giải tán phòng.' });
+          io.in(result.roomId).socketsLeave(result.roomId);
+        }
+        if (typeof callback === 'function') callback({ success: true });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
     });
 
     // DISCONNECT

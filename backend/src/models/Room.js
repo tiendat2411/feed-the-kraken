@@ -1,4 +1,4 @@
-const Player = require('./Player');
+import Player from './Player.js';
 
 class Room {
   /**
@@ -19,7 +19,7 @@ class Room {
     this.createdAt = Date.now();
     this.lastActivity = Date.now();
     
-    // Danh sách người chơi dạng Map để dễ truy xuất
+    // Danh sách người chơi dạng Map<playerId, Player>
     this.players = new Map();
   }
 
@@ -47,7 +47,7 @@ class Room {
       throw new Error('Cannot join room that is already playing');
     }
     if (this.players.size >= 11) {
-      throw new Error('Room is full');
+      throw new Error('Room is full (max 11 players)');
     }
     this.players.set(player.id, player);
     this.touch();
@@ -56,19 +56,48 @@ class Room {
   /**
    * Lấy thông tin player theo ID
    * @param {string} playerId 
-   * @returns {Player}
+   * @returns {Player|undefined}
    */
   getPlayer(playerId) {
     return this.players.get(playerId);
   }
 
   /**
+   * Lấy thông tin player theo Session Token
+   * @param {string} sessionToken 
+   * @returns {Player|undefined}
+   */
+  getPlayerByToken(sessionToken) {
+    for (const player of this.players.values()) {
+      if (player.sessionToken === sessionToken) {
+        return player;
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Xóa người chơi khỏi phòng
    * @param {string} playerId 
+   * @returns {boolean}
    */
   removePlayer(playerId) {
-    this.players.delete(playerId);
-    this.touch();
+    const deleted = this.players.delete(playerId);
+    if (deleted) {
+      this.touch();
+    }
+    return deleted;
+  }
+
+  /**
+   * Chuyển quyền Host cho người chơi khác
+   * @param {string} newHostId 
+   */
+  transferHost(newHostId) {
+    if (this.players.has(newHostId)) {
+      this.hostId = newHostId;
+      this.touch();
+    }
   }
 
   toJSON() {
@@ -108,4 +137,5 @@ class Room {
   }
 }
 
-module.exports = Room;
+export default Room;
+

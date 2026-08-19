@@ -10,14 +10,15 @@ const Lobby = ({
   onSelectMap,
   onStartGame,
   onLeaveRoom,
+  onDissolveRoom,
   onKickPlayer
 }) => {
   if (!room) return <div className="text-white flex justify-center items-center h-full">Loading...</div>;
 
   const players = room.players || [];
-  const isHost = room.hostId === currentUserId;
+  const me = players.find((p) => p.id === currentUserId || p.sessionToken === currentUserId) || {};
+  const isHost = room.hostId === me.id;
   const canStart = players.length >= 5 && players.length <= 11;
-  const me = players.find((p) => p.id === currentUserId) || {};
 
   return (
     <div className="min-h-screen bg-slate-900 text-white p-4 md:p-8 font-sans bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
@@ -33,10 +34,19 @@ const Lobby = ({
               <Users size={18} /> {players.length} / 11 Players
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-3">
+            {isHost && (
+              <button
+                onClick={onDissolveRoom}
+                className="px-4 py-2 flex items-center gap-2 bg-red-600/30 text-red-300 hover:bg-red-600/40 border border-red-500/30 rounded-xl transition duration-300 font-semibold"
+                title="Giải tán phòng"
+              >
+                <LogOut size={18} /> Close Room
+              </button>
+            )}
             <button
               onClick={onLeaveRoom}
-              className="px-4 py-2 flex items-center gap-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-xl transition duration-300 font-semibold"
+              className="px-4 py-2 flex items-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl transition duration-300 font-semibold border border-white/10"
             >
               <LogOut size={18} /> Leave
             </button>
@@ -63,8 +73,10 @@ const Lobby = ({
                     <div>
                       <div className="font-semibold flex items-center gap-2">
                         {player.name}
-                        {player.id === room.hostId && <Crown size={16} className="text-yellow-400" />}
-                        {player.id === currentUserId && <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md">You</span>}
+                        {player.id === room.hostId && <Crown size={16} className="text-yellow-400" title="Chủ phòng" />}
+                        {(player.id === me.id || player.sessionToken === currentUserId) && (
+                          <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md">You</span>
+                        )}
                       </div>
                       <div className="text-sm text-slate-400 flex items-center gap-1">
                         <div className={`w-2 h-2 rounded-full ${player.connectionStatus === 'OFFLINE' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
@@ -72,7 +84,7 @@ const Lobby = ({
                       </div>
                     </div>
                   </div>
-                  {isHost && player.id !== currentUserId && (
+                  {isHost && player.id !== me.id && player.sessionToken !== currentUserId && (
                     <button 
                       onClick={() => onKickPlayer(player.id)}
                       className="text-slate-500 hover:text-red-400 transition p-2 rounded-lg hover:bg-white/5"
