@@ -27,8 +27,8 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY game logic can be implemented.
 
-- [ ] T004 Setup kết nối Redis (`backend/src/config/redis.js`) để phục vụ lưu snapshot `room_state`.
-- [ ] T005 Setup kết nối Database vật lý (`backend/src/config/db.js`) cho GameResult và Cấu hình Map.
+- [x] T004 Setup kết nối Redis (`backend/src/config/redis.js`) để phục vụ lưu snapshot `room_state`.
+- [x] T005 Setup kết nối Database vật lý (`backend/src/config/db.js`) cho GameResult và Cấu hình Map.
 - [ ] T006 Implement `SocketGateway` (`backend/src/socket/index.js`) để xử lý xác thực `sessionToken`, Connection, và Disconnection.
 - [ ] T007 Implement `RoomManager` (`backend/src/services/RoomManager.js`) để hỗ trợ Create Room, Join Room, Reconnect, và Broadcast cơ bản.
 - [ ] T008 Thiết lập giao diện Router React cơ bản (`frontend/src/App.jsx`), cấu trúc context cho Socket (`frontend/src/contexts/SocketContext.jsx`).
