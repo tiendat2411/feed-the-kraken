@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto';
 import redisClient from '../config/redis.js';
 import Room from '../models/Room.js';
 import Player from '../models/Player.js';
+import { RoleDistributionService } from './RoleDistribution.js';
 
 // Map<roomId, Room>
 const rooms = new Map();
@@ -68,6 +69,13 @@ export class RoomManager {
   }
 
   /**
+   * Lấy instance Room gốc
+   */
+  static getRoomInstance(roomId) {
+    return rooms.get(roomId) || null;
+  }
+
+  /**
    * Tìm phòng hiện tại của một sessionToken
    */
   static getRoomByToken(playerToken) {
@@ -81,6 +89,47 @@ export class RoomManager {
   }
 
   /**
+   * Bắt đầu trò chơi & phân bổ vai trò bí mật
+   */
+  static async startGame(hostToken) {
+    const found = this.getRoomByToken(hostToken);
+    if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+    const { room, player: hostPlayer } = found;
+
+    if (room.hostId !== hostPlayer.id) {
+      throw new Error('Chỉ có Chủ phòng mới có quyền bắt đầu trận đấu');
+    }
+
+    if (room.status !== 'LOBBY') {
+      throw new Error('Trận đấu đã được bắt đầu từ trước');
+    }
+
+    const players = room.getPlayers();
+    if (players.length < 5 || players.length > 11) {
+      throw new Error(`Cần từ 5 đến 11 người chơi để bắt đầu (hiện có: ${players.length})`);
+    }
+
+    // 1. Phân bổ vai trò bí mật & Khởi tạo súng (3 súng/người)
+    RoleDistributionService.distributeRoles(players);
+
+    // 2. Chuyển trạng thái phòng sang IN_GAME và phase ROLE_REVEAL
+    room.status = 'IN_GAME';
+    room.gamePhase = 'ROLE_REVEAL';
+
+    // 3. Chỉ định Thuyền trưởng ban đầu (Mặc định là Host)
+    room.captainId = room.hostId;
+    hostPlayer.publicTitles = ['CAPTAIN'];
+
+    await this.saveSnapshot(room.id);
+
+    return {
+      roomId: room.id,
+      room
+    };
+  }
+
+  /**
    * Khôi phục kết nối (Reconnect)
    */
   static reconnectPlayer(playerToken, socketId) {
@@ -89,7 +138,7 @@ export class RoomManager {
       const { room, player } = found;
       player.connectionStatus = 'ONLINE';
       this.saveSnapshot(room.id);
-      return room.toJSON();
+      return room;
     }
     return null;
   }
@@ -103,7 +152,7 @@ export class RoomManager {
       const { room, player } = found;
       player.connectionStatus = 'OFFLINE';
       this.saveSnapshot(room.id);
-      return room.toJSON();
+      return room;
     }
     return null;
   }
@@ -138,7 +187,7 @@ export class RoomManager {
     await this.saveSnapshot(room.id);
     return {
       roomId: room.id,
-      room: room.toJSON(),
+      room,
       isDissolved: false,
       leftPlayerId: player.id
     };
@@ -177,7 +226,7 @@ export class RoomManager {
 
     return {
       roomId: room.id,
-      room: room.toJSON(),
+      room,
       kickedPlayerToken,
       kickedPlayerId: targetPlayer.id
     };
@@ -215,7 +264,7 @@ export class RoomManager {
       if (player) {
         player.avatar = avatar;
         this.saveSnapshot(roomId);
-        return room.toJSON();
+        return room;
       }
     }
     return null;
@@ -231,7 +280,7 @@ export class RoomManager {
       if (player && room.hostId === player.id) {
         room.mapType = mapType;
         this.saveSnapshot(roomId);
-        return room.toJSON();
+        return room;
       }
     }
     return null;
@@ -264,4 +313,5 @@ export class RoomManager {
     }
   }
 }
+
 

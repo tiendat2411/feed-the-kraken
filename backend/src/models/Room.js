@@ -100,6 +100,39 @@ class Room {
     }
   }
 
+  /**
+   * Trả về JSON bảo mật, lọc bỏ vai trò của người khác
+   * @param {string} requestingSessionToken 
+   * @returns {Object}
+   */
+  toSanitizedJSON(requestingSessionToken) {
+    const playersPublic = this.getPlayers().map(p => p.toPublicJSON());
+    const requestingPlayer = this.getPlayerByToken(requestingSessionToken);
+
+    const result = {
+      id: this.id,
+      hostId: this.hostId,
+      status: this.status,
+      gamePhase: this.gamePhase,
+      mapType: this.mapType,
+      captainId: this.captainId,
+      createdAt: this.createdAt,
+      lastActivity: this.lastActivity,
+      players: playersPublic,
+      myRole: requestingPlayer ? requestingPlayer.factionRole : null,
+      myId: requestingPlayer ? requestingPlayer.id : null
+    };
+
+    // Nếu đang ở giai đoạn Pirate Gathering và người này là Pirate -> Cho thấy danh sách Pirate khác
+    if (this.gamePhase === 'PIRATES_GATHERING' && requestingPlayer?.factionRole === 'PIRATE') {
+      result.knownPirates = this.getPlayers()
+        .filter(p => p.factionRole === 'PIRATE')
+        .map(p => ({ id: p.id, nickname: p.nickname, name: p.nickname, avatar: p.avatar }));
+    }
+
+    return result;
+  }
+
   toJSON() {
     const playersArray = this.getPlayers().map(p => p.toJSON());
     return {

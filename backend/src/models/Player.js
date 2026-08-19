@@ -27,6 +27,21 @@ class Player {
     this.gunCount = 0;
   }
 
+  toPublicJSON() {
+    return {
+      id: this.id,
+      roomId: this.roomId,
+      nickname: this.nickname,
+      name: this.nickname, // Alias for frontend compatibility
+      avatar: this.avatar,
+      connectionStatus: this.connectionStatus,
+      publicTitles: this.publicTitles,
+      speechRestricted: this.speechRestricted,
+      status: this.status,
+      gunCount: this.gunCount
+    };
+  }
+
   toJSON() {
     return {
       id: this.id,
