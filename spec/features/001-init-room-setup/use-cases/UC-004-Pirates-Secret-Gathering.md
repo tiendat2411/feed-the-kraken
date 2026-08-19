@@ -25,8 +25,8 @@
 2. UI của người chơi phe Sailor và Cultist bị làm mờ/che tối hoàn toàn (Simulate nhắm mắt).
 3. Server gửi danh sách các Hải tặc cho riêng những người chơi mang role Pirate.
 4. Màn hình của nhóm Pirate sẽ sáng lên và hiển thị chân dung/nickname của những đồng bọn Hải tặc khác trong vòng 20 giây.
-5. Hết 20 giây, màn hình của Hải tặc tối lại.
-6. Tất cả mọi người cùng "Mở mắt" (Giao diện sáng trở lại).
+5. Hết 20 giây, hệ thống TỰ ĐỘNG kết thúc giai đoạn hội tụ mà không chờ Host hay bất kỳ ai thao tác.
+6. Màn hình của Hải tặc tối lại, sau đó tất cả mọi người cùng "Mở mắt" (Giao diện sáng trở lại) và chuyển sang giai đoạn tiếp theo.
 
 ## Alternative Flows
 - Tùy thuộc vào bộ luật mở rộng hoặc số lượng người chơi, Trưởng giáo (Cult Leader) có thể có hành động mở mắt riêng để xem xét một số người. Nếu áp dụng, thêm phase phụ cho Cult Leader.

@@ -35,7 +35,7 @@
 - **1c. Người chơi rời phòng (Leave Room):** Người chơi tự bấm "Rời phòng" khi ở sảnh chờ. Server xóa người đó khỏi phòng và phát sự kiện `PLAYER_LEFT`.
 
 ## Exceptions
-- **E1. Không đủ người chơi:** Host bấm "Bắt đầu" khi chưa đủ 5 người -> Báo lỗi "Cần tối thiểu 5 người để bắt đầu".
+- **E1. Không đủ người chơi:** Nút "Bắt đầu" bị mờ (disabled) trên giao diện của Host cho đến khi phòng có đủ tối thiểu 5 người. Nếu bằng một cách nào đó API vẫn nhận được request bắt đầu khi < 5 người -> Báo lỗi "Cần tối thiểu 5 người để bắt đầu".
 - **E2. Mất quyền Host:** Nếu Host rớt mạng và không quay lại sau khoảng thời gian nhất định, hệ thống có thể tự động đóng phòng hoặc (tùy luật) chuyển quyền Host.
 
 ## Postconditions

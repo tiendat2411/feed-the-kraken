@@ -37,6 +37,7 @@
 - **E1. Trùng lặp định danh (Multi-tabbing):** Nếu người chơi cố tình mở tab mới và join lại, hệ thống phát hiện `sessionToken` đang active -> Báo lỗi "Bạn đã có trong phòng" hoặc tự động redirect tab mới về đúng trạng thái của tab cũ (ngăn chặn duplicate connection).
 - **E2. Phòng đã đầy hoặc đang chơi:** Nếu phòng đã đủ 11 người hoặc đang trong trận -> Báo lỗi "Phòng đã đầy hoặc đang trong trận đấu".
 - **E3. Phòng không tồn tại:** Nhập sai Room Code -> Báo lỗi "Mã phòng không hợp lệ".
+- **E4. Trùng Nickname trong phòng:** Cho phép người chơi nhập Nickname giống với người đã có trong phòng. Việc định danh và phân biệt người chơi được thực hiện ngầm bằng `sessionToken` duy nhất của từng client.
 
 ## Postconditions
 - Phòng chờ được tạo thành công với ít nhất 1 Host.

@@ -17,6 +17,12 @@ Cho phép nhóm bạn tạo phòng nhanh và tham gia qua Code/Link chia sẻ v�
 - **Metric 2:** room_ccu_capacity >= 11 (đảm bảo 100% không crash hoặc mất kết nối websocket khi phòng có đủ từ 5 đến 11 người chơi cùng lúc)
 - **Metric 3:** match_completion_rate = 100% (Không bị kẹt logic Game State giữa chừng)
 
+## Clarifications
+### Session 2026-08-19
+- Q: [Domain Model] Nếu hai người chơi nhập cùng một Nickname trong cùng một phòng thì hệ thống xử lý thế nào? → A: Cho phép trùng tên (hệ thống tự phân biệt ngầm bằng Session Token).
+- Q: [Edge Case] Nếu Host bấm "Bắt đầu" khi phòng chưa đủ 5 người chơi (số lượng tối thiểu), hệ thống nên làm gì? → A: Nút "Bắt đầu" bị mờ (disabled) cho đến khi đủ 5 người.
+- Q: [Interaction Flow] Giai đoạn "Hội tụ bí mật của Hải tặc" kéo dài 20 giây sẽ kết thúc như thế nào? → A: Tự động chuyển qua giai đoạn tiếp theo cho tất cả mọi người khi hết 20 giây.
+
 ## In Scope
 - Tạo phòng chơi nhanh (không cần đăng ký tài khoản, chỉ cần nhập tên Nickname)
 - Tự động tính toán số lượng role Sailor, Pirate, Cult Leader và Cultist dựa theo số người trong phòng (5-11 bạn chơi) và phân chia map thành Q
