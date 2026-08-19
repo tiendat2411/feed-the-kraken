@@ -17,6 +17,11 @@ Xây dựng luồng xử lý tự động và tuần tự tuyệt đối cho cá
 - **Metric 2:** cultist_secrecy (Cựu Cultist tuyệt đối không nhận được gói tin mạng chứa định danh của Cult Leader và Tân Cultist, ngăn chặn hack/sniff package).
 - **Metric 3:** ui_sync (Tất cả màn hình người chơi phải khóa/nhắm mắt đồng bộ trong giai đoạn Cult Uprising để không ai đoán được Cult Leader là ai).
 
+## Clarifications
+### Session 2026-08-19
+- Q: [BR-004 - Map Actions] Hiệu ứng Mermaid cho phép xem lén 3 lá bài trên cùng của hộp bài bỏ (discard_pile). Nếu hộp bài bỏ lúc này có ít hơn 3 lá thì sao? → A: Chỉ xem số lượng lá hiện có trong hộp bài bỏ (1 hoặc 2 lá) và xáo trộn chúng.
+- Q: [BR-004 - Map Actions] Khi Thuyền trưởng dùng hành động "Feed the Kraken" để loại bỏ 1 người chơi, vai trò (role) của người bị loại có được công khai không? → A: Giấu kín vai trò của người bị hiến tế để tăng tính suy luận.
+
 ## In Scope
 - **Luồng Di chuyển Tàu (Ship Movement):**
   - Tàu thay đổi `ship_position` dựa trên màu lá bài (Đỏ, Xanh, Vàng).

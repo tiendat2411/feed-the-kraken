@@ -17,6 +17,10 @@ Số hóa việc Captain chỉ định Thuyền phó/Hoa tiêu và luồng bỏ 
 - **Metric 2:** mutiny_resolution_latency < 1s (Ngay khi tất cả người chơi hoàn tất đặt súng, hệ thống phải xử lý tính toán và công khai súng ngay lập tức).
 - **Metric 3:** sync_realtime_consistency (Tất cả client hiển thị đồng bộ kết quả súng bị trừ và quyền Captain mới, không có độ trễ lệch nhau).
 
+## Clarifications
+### Session 2026-08-19
+- Q: [BR-002 - Mutiny] Thuyền trưởng có được phép chỉ định người chơi đang mất kết nối (Offline/Reconnecting) làm Thuyền phó hoặc Hoa tiêu không? → A: Vẫn cho chọn, hệ thống sẽ auto-play/auto-pass nếu họ không phản hồi khi hết giờ.
+
 ## In Scope
 - Giao diện Captain chọn Thuyền phó (Lieutenant) và Hoa tiêu (Navigator).
 - Chặn các điều kiện lỗi tự động qua UI Smart Filtering (chọn trùng người, chọn người đang nghỉ phép Off-duty, hoặc chọn chính Captain).

@@ -44,7 +44,7 @@
 ### AC-1: Bỏ qua Jump Overboard
 - **Given:** Cult Leader đóng vai trò Navigator và quyết định bấm nút Tự Nhảy Tàu.
 - **When:** Hệ thống set Cult Leader thành `ELIMINATED`.
-- **Then:** Trò chơi KHÔNG kết thúc, phe Cultist KHÔNG thắng. Game tiếp tục tìm Hoa tiêu khẩn cấp.
+- **Then:** Trò chơi KHÔNG kết thúc, phe Cultist KHÔNG thắng ngay lúc đó. Game tiếp tục tìm Hoa tiêu khẩn cấp. (Lưu ý: Phe Cult vẫn có cơ hội thắng chung cuộc nếu sau này tàu di chuyển vào ô Kraken).
 
 ### AC-2: Cán đích tự động kết thúc
 - **Given:** Lá bài Đỏ đưa tàu vào 1 Node thuộc Crimson Cove.

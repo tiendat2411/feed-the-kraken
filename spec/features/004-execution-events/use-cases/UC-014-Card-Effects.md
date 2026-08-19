@@ -31,7 +31,7 @@ Hệ thống xử lý lập tức (hoặc yêu cầu tương tác) dựa trên l
 - **Mermaid / Telescope (Chỉ định tương tác):**
   - Giao diện yêu cầu Captain chọn 1 người KHÁC BẢN THÂN. (Timeout 60s chờ, hết giờ tự động random).
   - Người được chọn sẽ hiển thị một pop-up mật trên màn hình cá nhân:
-    - *Với Mermaid:* Lấy 3 lá bài trên cùng từ `discard_pile` (tiến hành xáo trộn vị trí của 3 lá này), gửi ẩn cho riêng người đó xem. Bấm OK để đóng.
+    - *Với Mermaid:* Lấy tối đa 3 lá bài trên cùng từ `discard_pile` (nếu `discard_pile` có ít hơn 3 lá thì chỉ lấy số lá hiện có, KHÔNG trộn bù từ `draw_pile`). Tiến hành xáo trộn vị trí của các lá này, gửi ẩn cho riêng người đó xem. Bấm OK để đóng.
     - *Với Telescope:* Lấy lá bài trên đỉnh `draw_pile`, gửi ẩn cho riêng người đó xem. Pop-up có 2 lựa chọn: "Giữ trên đỉnh" hoặc "Vứt vào Discard Pile". (Timeout 20s tự chọn Giữ). Xử lý data theo lệnh chọn.
 - **Kết thúc:** 
   - Nếu thẻ là `CULT_UPRISING`, chuyển sang UC-015.

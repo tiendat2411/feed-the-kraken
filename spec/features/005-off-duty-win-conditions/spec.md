@@ -18,6 +18,10 @@ Sau mỗi vòng điều hướng thành công (tàu thực hiện di chuyển), 
 - **Metric 2:** victory_detection_latency < 100ms (Hệ thống phát hiện thắng cuộc ngay khi điều kiện thỏa mãn).
 - **Metric 3:** rotation_integrity (Chỉ những người thực hiện điều hướng thành công mới bị Off-duty).
 
+## Clarifications
+### Session 2026-08-19
+- Q: [BR-005 - Win Conditions] Nếu Giáo chủ (Cult Leader) tự ý nhảy tàu và bị ELIMINATED (không kích hoạt thắng ngay), phe Cult còn có cơ hội thắng khi tàu vào ô Kraken nữa không? → A: Phe Cult vẫn có thể thắng nếu tàu đi vào ô Kraken.
+
 ## In Scope
 - **Cơ chế Off-Duty (Off-Duty Shift):**
   - **Điều kiện kích hoạt:** Chỉ xảy ra khi một vòng điều hướng kết thúc THÀNH CÔNG (tàu thực hiện di chuyển). Nếu vòng điều hướng bị hủy (do Mutiny thành công) hoặc thất bại (Navigator nhảy tàu mà không có người thay thế), cơ chế Off-duty không kích hoạt cho Ban điều hướng đó.

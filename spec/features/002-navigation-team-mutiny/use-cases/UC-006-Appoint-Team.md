@@ -33,7 +33,9 @@
 - Không có. (Bắt buộc phải chọn đủ 2 người hợp lệ).
 
 ## Exceptions
+
 - **E1. Captain mất kết nối (socket_disconnect):** Trò chơi tạm dừng chờ Captain quay lại (Time-out tự động sẽ KHÔNG đếm để kết thúc lượt, tuân thủ nguyên tắc Game Pace, trừ khi Host dùng quyền kick/giải tán do rời đi quá lâu).
+- **E2. Chọn người chơi đang mất kết nối:** Vẫn cho phép Captain chọn người chơi đang ở trạng thái Offline (mất kết nối/reconnecting) làm Thuyền phó hoặc Hoa tiêu. Hệ thống sẽ tự động xử lý auto-play/auto-pass (ví dụ: rút bài ngẫu nhiên, nộp 0 súng) cho người chơi này nếu họ không phản hồi khi hết thời gian quy định ở các phase sau.
 
 ## Postconditions
 - 2 người chơi được tạm thời gắn mác là "Lieutenant (đề xuất)" và "Navigator (đề xuất)" trên màn hình của tất cả mọi người.

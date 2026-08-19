@@ -27,7 +27,7 @@
    - **Cabin Search (Khám xét):** Hệ thống kiểm tra mục tiêu. Nếu `faction == CULTIST` (đã thu nạp), hệ thống chỉ gửi riêng cho màn hình Captain biểu tượng Vòi Bạch Tuộc (Tentacle). Nếu là phe gốc chưa thu nạp, gửi đúng `faction`. Gán `is_convertible = false` cho mục tiêu.
    - **Flogging (Đánh roi):** Hệ thống tự động phân tích phe thật của mục tiêu, sinh ra ngẫu nhiên 1 câu "I am not a..." của 1 trong 2 phe sai, sau đó broadcast công khai câu đó cho toàn phòng thấy. Gán `is_convertible = false` cho mục tiêu.
    - **Off with the tongue (Cắt lưỡi):** Hệ thống gán `speech_restricted = true` cho mục tiêu. Người này vĩnh viễn bị cấm chat/mic và MẤT QUYỀN trở thành Captain.
-   - **Feed the Kraken (Hiến tế):** Hệ thống gán `status = ELIMINATED` và thu hồi `gun_count = 0` cho mục tiêu. 
+   - **Feed the Kraken (Hiến tế):** Hệ thống gán `status = ELIMINATED` và thu hồi `gun_count = 0` cho mục tiêu. Vai trò (role) của người bị hiến tế sẽ được GIẤU KÍN (không công khai cho phòng biết) để duy trì tính suy luận.
    *(ĐẶC BIỆT End Game Rule: Nếu mục tiêu có `faction == CULT_LEADER`, phe CULT lập tức chiến thắng trò chơi ngay tại bước này).*
 4. Hoàn tất hành động bản đồ, luồng chuyển sang UC-014.
 

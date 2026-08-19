@@ -17,6 +17,10 @@ Kiểm soát chặt chẽ quy trình bốc, hủy bài một cách bảo mật, 
 - **Metric 2:** reshuffle_consistency (Hệ thống tự động xáo trộn lại `discard_pile` vào `draw_pile` khi hết bài theo đúng luật bất biến, không làm lộ số lượng bài).
 - **Metric 3:** overboard_resolution (Xử lý dứt điểm state khi Navigator nhảy tàu mà không làm treo game).
 
+## Clarifications
+### Session 2026-08-19
+- Q: [BR-003 - Navigation] Khi Hoa tiêu nhảy tàu, Thuyền trưởng phải chọn Hoa tiêu khẩn cấp. Thuyền trưởng có được chọn lại chính người vừa nhảy tàu không? → A: Hoa tiêu vừa nhảy tàu thì sẽ thành trạng thái ELIMINATED nên không còn tham gia vào quá trình game được nữa.
+
 ## In Scope
 - Giao diện bốc 2 lá bài cho Captain: Chọn 1 bỏ vào Hộp Nhật ký (Logbook), hủy 1 vào `discard_pile`.
 - Giao diện bốc 2 lá bài cho Lieutenant: Chọn 1 bỏ vào Hộp Nhật ký, hủy 1 vào `discard_pile`.
