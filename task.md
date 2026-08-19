@@ -31,7 +31,7 @@
 - [x] T005 Setup kết nối Database vật lý (`backend/src/config/db.js`) cho GameResult và Cấu hình Map.
 - [x] T006 Implement `SocketGateway` (`backend/src/socket/index.js`) để xử lý xác thực `sessionToken`, Connection, và Disconnection.
 - [x] T007 Implement `RoomManager` (`backend/src/services/RoomManager.js`) để hỗ trợ Create Room, Join Room, Reconnect, và Broadcast cơ bản.
-- [ ] T008 Thiết lập giao diện Router React cơ bản (`frontend/src/App.jsx`), cấu trúc context cho Socket (`frontend/src/contexts/SocketContext.jsx`).
+- [x] T008 Thiết lập giao diện Router React cơ bản (`frontend/src/App.jsx`), cấu trúc context cho Socket (`frontend/src/contexts/SocketContext.jsx`).
 
 **Checkpoint**: Nền tảng Socket hoàn chỉnh, có thể kết nối từ Client lên Server và nhận Broadcast.
 
