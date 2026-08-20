@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import { RoomManager } from '../services/RoomManager.js';
+import { MutinyService } from '../services/MutinyService.js';
 
 /**
  * Gửi event bí mật tới một player cụ thể (qua sessionToken hoặc playerId)
@@ -203,6 +204,121 @@ export function setupSocket(server) {
           io.in(result.roomId).socketsLeave(result.roomId);
         }
         if (typeof callback === 'function') callback({ success: true });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // APPOINT NAVIGATION TEAM (UC-006)
+    socket.on('appoint_team', async ({ lieutenantId, navigatorId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = MutinyService.appointTeam(room, socket.sessionToken, lieutenantId, navigatorId);
+        await RoomManager.saveSnapshot(room.id);
+
+        broadcastRoomState(io, room);
+
+        if (result.autoSkipped) {
+          io.to(room.id).emit('MUTINY_AUTO_SKIPPED', {
+            reason: 'Không có người chơi nào sở hữu súng để biểu quyết',
+            lieutenantId,
+            navigatorId
+          });
+        } else {
+          io.to(room.id).emit('TEAM_PROPOSED', {
+            proposed_lieutenant_id: lieutenantId,
+            proposed_navigator_id: navigatorId
+          });
+          io.to(room.id).emit('MUTINY_VOTE_STARTED', {
+            duration: 90,
+            requiredGuns: result.session.requiredGuns
+          });
+        }
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // SUBMIT MUTINY VOTE (UC-007)
+    socket.on('submit_mutiny_vote', async ({ gunCount }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const voteResult = MutinyService.submitVote(room, socket.sessionToken, gunCount);
+        await RoomManager.saveSnapshot(room.id);
+
+        // Broadcast thông báo đã sẵn sàng (ẩn số súng)
+        io.to(room.id).emit('PLAYER_VOTED_READY', {
+          player_id: voteResult.voterId,
+          voterName: voteResult.voterName
+        });
+        broadcastRoomState(io, room);
+
+        // Tự động phân giải kết quả khi tất cả người chơi hợp lệ đã vote xong
+        if (voteResult.isVotingComplete) {
+          const resolution = MutinyService.resolveMutiny(room);
+          await RoomManager.saveSnapshot(room.id);
+
+          io.to(room.id).emit('MUTINY_REVEALED', {
+            votes: resolution.session.votes,
+            totalGuns: resolution.totalGuns
+          });
+
+          io.to(room.id).emit('MUTINY_RESULT', resolution);
+          broadcastRoomState(io, room);
+        }
+
+        if (typeof callback === 'function') callback({ success: true, voteResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // MANUAL / TIMEOUT MUTINY RESOLUTION (UC-008)
+    socket.on('resolve_mutiny', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const resolution = MutinyService.resolveMutiny(room);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('MUTINY_REVEALED', {
+          votes: resolution.session.votes,
+          totalGuns: resolution.totalGuns
+        });
+
+        io.to(room.id).emit('MUTINY_RESULT', resolution);
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, resolution });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // ELIMINATE TIE CANDIDATE (UC-008 Alt 1b)
+    socket.on('eliminate_tie_candidate', async ({ targetCandidateId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const stepResult = MutinyService.eliminateTieCandidate(room, socket.sessionToken, targetCandidateId);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('TIE_CANDIDATE_ELIMINATED', stepResult);
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, stepResult });
       } catch (err) {
         if (typeof callback === 'function') callback({ success: false, error: err.message });
       }

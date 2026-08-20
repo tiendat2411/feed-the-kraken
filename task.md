@@ -77,7 +77,7 @@
 
 ### Implementation
 - [x] T015 [P] [BR-002] Tạo entity `MutinySession` trong `backend/src/models/`.
-- [ ] T016 [BR-002] Implement `MutinyService` (`backend/src/services/MutinyService.js`) xử lý luồng: Appoint Team -> Vote -> Resolution.
+- [x] T016 [BR-002] Implement `MutinyService` (`backend/src/services/MutinyService.js`) xử lý luồng: Appoint Team -> Vote -> Resolution.
 - [ ] T017 [BR-002] Thêm Timer Logic (không tự động nhảy state) với nút xác nhận của Captain.
 - [ ] T018 [BR-002] Bổ sung logic "Cắt lưỡi" (Người bị cắt lưỡi mất quyền làm Captain vĩnh viễn) vào `MutinyService` và `RoomState`.
 - [ ] T019 [BR-002] Xây dựng UI Bỏ phiếu Nổi loạn và UI Thể hiện kết quả súng (`frontend/src/components/MutinyBoard.jsx`).

@@ -1,0 +1,217 @@
+import { test, describe, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+import Room from '../src/models/Room.js';
+import Player from '../src/models/Player.js';
+import MutinyService from '../src/services/MutinyService.js';
+
+describe('BR-002: MutinyService Flow & Invariants (UC-006, UC-007, UC-008)', () => {
+  let room;
+  let captain;
+  let p1;
+  let p2;
+  let p3;
+  let p4;
+
+  beforeEach(() => {
+    room = new Room({ id: 'ROOM_TEST', hostId: 'cap_1' });
+    
+    captain = new Player({ roomId: 'ROOM_TEST', sessionToken: 'tok_cap', nickname: 'Captain' });
+    captain.id = 'cap_1';
+    captain.publicTitles = ['CAPTAIN'];
+    captain.gunCount = 3;
+
+    p1 = new Player({ roomId: 'ROOM_TEST', sessionToken: 'tok_p1', nickname: 'Player 1' });
+    p1.id = 'p1_id';
+    p1.gunCount = 3;
+
+    p2 = new Player({ roomId: 'ROOM_TEST', sessionToken: 'tok_p2', nickname: 'Player 2' });
+    p2.id = 'p2_id';
+    p2.gunCount = 3;
+
+    p3 = new Player({ roomId: 'ROOM_TEST', sessionToken: 'tok_p3', nickname: 'Player 3' });
+    p3.id = 'p3_id';
+    p3.gunCount = 3;
+
+    p4 = new Player({ roomId: 'ROOM_TEST', sessionToken: 'tok_p4', nickname: 'Player 4' });
+    p4.id = 'p4_id';
+    p4.gunCount = 3;
+
+    room.addPlayer(captain);
+    room.addPlayer(p1);
+    room.addPlayer(p2);
+    room.addPlayer(p3);
+    room.addPlayer(p4);
+
+    room.status = 'IN_GAME';
+    room.captainId = captain.id;
+    room.gamePhase = 'DAY_1_CREW_SELECTION';
+  });
+
+  describe('UC-006: Appoint Navigation Team', () => {
+    test('Non-captain cannot appoint team', () => {
+      assert.throws(() => {
+        MutinyService.appointTeam(room, 'tok_p1', 'p2_id', 'p3_id');
+      }, /Chỉ có Thuyền trưởng đương nhiệm mới có quyền bổ nhiệm/);
+    });
+
+    test('Captain cannot appoint himself as Lieutenant or Navigator (AC-1)', () => {
+      assert.throws(() => {
+        MutinyService.appointTeam(room, 'tok_cap', 'cap_1', 'p2_id');
+      }, /Thuyền trưởng không thể tự bổ nhiệm chính mình/);
+
+      assert.throws(() => {
+        MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'cap_1');
+      }, /Thuyền trưởng không thể tự bổ nhiệm chính mình/);
+    });
+
+    test('Lieutenant and Navigator cannot be the same person (AC-2)', () => {
+      assert.throws(() => {
+        MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p1_id');
+      }, /Thuyền phó và Hoa tiêu không thể là cùng một người/);
+    });
+
+    test('Cannot appoint OFF_DUTY or ELIMINATED player', () => {
+      p1.status = 'OFF_DUTY';
+      assert.throws(() => {
+        MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p2_id');
+      }, /đang ở trạng thái OFF_DUTY/);
+
+      p1.status = 'ELIMINATED';
+      assert.throws(() => {
+        MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p2_id');
+      }, /đang ở trạng thái ELIMINATED/);
+    });
+
+    test('Auto-skips mutiny when no one in the room has guns (UC-007 Alt 1a)', () => {
+      p1.gunCount = 0;
+      p2.gunCount = 0;
+      p3.gunCount = 0;
+      p4.gunCount = 0;
+
+      const result = MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p2_id');
+
+      assert.equal(result.autoSkipped, true);
+      assert.equal(result.reason, 'NO_GUNS_AVAILABLE');
+      assert.equal(room.lieutenantId, 'p1_id');
+      assert.equal(room.navigatorId, 'p2_id');
+      assert.equal(room.gamePhase, 'NAVIGATION');
+      assert.deepEqual(p1.publicTitles, ['LIEUTENANT']);
+      assert.deepEqual(p2.publicTitles, ['NAVIGATOR']);
+    });
+
+    test('Successfully creates MutinySession and moves to LOYALTY_CHECK when guns are available', () => {
+      const result = MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p2_id');
+
+      assert.equal(result.autoSkipped, false);
+      assert.equal(room.gamePhase, 'LOYALTY_CHECK');
+      assert.ok(room.mutinySession);
+      assert.equal(room.nominatedLieutenantId, 'p1_id');
+      assert.equal(room.nominatedNavigatorId, 'p2_id');
+    });
+  });
+
+  describe('UC-007: Mutiny Vote', () => {
+    beforeEach(() => {
+      MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p2_id');
+    });
+
+    test('Captain cannot vote in mutiny', () => {
+      assert.throws(() => {
+        MutinyService.submitVote(room, 'tok_cap', 2);
+      }, /Thuyền trưởng không được phép tham gia bỏ phiếu/);
+    });
+
+    test('Records player vote and detects vote completion', () => {
+      const v1 = MutinyService.submitVote(room, 'tok_p1', 2);
+      assert.equal(v1.recordedGuns, 2);
+      assert.equal(v1.isVotingComplete, false);
+
+      MutinyService.submitVote(room, 'tok_p2', 0);
+      MutinyService.submitVote(room, 'tok_p3', 1);
+      const v4 = MutinyService.submitVote(room, 'tok_p4', 0);
+
+      assert.equal(v4.isVotingComplete, true);
+    });
+  });
+
+  describe('UC-008: Mutiny Resolution', () => {
+    beforeEach(() => {
+      MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p2_id');
+    });
+
+    test('Failed mutiny: No guns deducted, appointed team takes office', () => {
+      MutinyService.submitVote(room, 'tok_p1', 1);
+      MutinyService.submitVote(room, 'tok_p2', 1);
+      MutinyService.submitVote(room, 'tok_p3', 0);
+      MutinyService.submitVote(room, 'tok_p4', 0);
+
+      const result = MutinyService.resolveMutiny(room);
+
+      assert.equal(result.isSuccess, false);
+      assert.equal(result.totalGuns, 2); // Required is 3 for 5 players
+      assert.equal(room.captainId, 'cap_1');
+      assert.equal(room.lieutenantId, 'p1_id');
+      assert.equal(room.navigatorId, 'p2_id');
+      assert.equal(room.gamePhase, 'NAVIGATION');
+
+      // Guns are NOT deducted
+      assert.equal(p1.gunCount, 3);
+      assert.equal(p2.gunCount, 3);
+    });
+
+    test('Successful mutiny (Single Winner): Deducts guns and appoints new Captain', () => {
+      MutinyService.submitVote(room, 'tok_p1', 2);
+      MutinyService.submitVote(room, 'tok_p2', 1);
+      MutinyService.submitVote(room, 'tok_p3', 0);
+      MutinyService.submitVote(room, 'tok_p4', 0);
+
+      const result = MutinyService.resolveMutiny(room);
+
+      assert.equal(result.isSuccess, true);
+      assert.equal(result.isTie, false);
+      assert.equal(result.newCaptainId, 'p1_id');
+      assert.equal(room.captainId, 'p1_id');
+      assert.equal(room.gamePhase, 'APPOINT_TEAM'); // New captain must appoint team
+
+      // Guns deducted
+      assert.equal(p1.gunCount, 1); // 3 - 2 = 1
+      assert.equal(p2.gunCount, 2); // 3 - 1 = 2
+      assert.equal(p3.gunCount, 3); // 0 voted
+      assert.equal(p4.gunCount, 3); // 0 voted
+
+      // Titles updated
+      assert.deepEqual(p1.publicTitles, ['CAPTAIN']);
+      assert.deepEqual(captain.publicTitles, []);
+    });
+
+    test('Successful mutiny (Tie-breaker Chain Elimination)', () => {
+      MutinyService.submitVote(room, 'tok_p1', 2);
+      MutinyService.submitVote(room, 'tok_p2', 2);
+      MutinyService.submitVote(room, 'tok_p3', 2);
+      MutinyService.submitVote(room, 'tok_p4', 0);
+
+      const result = MutinyService.resolveMutiny(room);
+
+      assert.equal(result.isSuccess, true);
+      assert.equal(result.isTie, true);
+      assert.deepEqual(result.tieCandidates, ['p1_id', 'p2_id', 'p3_id']);
+      assert.equal(result.currentChooser, 'cap_1');
+      assert.equal(room.gamePhase, 'MUTINY_TIE_BREAKER');
+
+      // Round 1: Old Captain eliminates p1
+      const step1 = MutinyService.eliminateTieCandidate(room, 'tok_cap', 'p1_id');
+      assert.equal(step1.completed, false);
+      assert.equal(step1.eliminatedId, 'p1_id');
+      assert.equal(step1.nextChooserId, 'p1_id');
+      assert.deepEqual(step1.remainingCandidates, ['p2_id', 'p3_id']);
+
+      // Round 2: Eliminated p1 eliminates p2
+      const step2 = MutinyService.eliminateTieCandidate(room, 'tok_p1', 'p2_id');
+      assert.equal(step2.completed, true);
+      assert.equal(step2.newCaptainId, 'p3_id'); // Last survivor p3 is new Captain!
+      assert.equal(room.captainId, 'p3_id');
+      assert.equal(room.gamePhase, 'APPOINT_TEAM');
+      assert.deepEqual(p3.publicTitles, ['CAPTAIN']);
+    });
+  });
+});

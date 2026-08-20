@@ -16,6 +16,11 @@ class Room {
     this.gamePhase = null; // e.g., 'ROLE_REVEAL', 'PIRATES_GATHERING', 'DAY_1_CREW_SELECTION'
     this.mapType = 'QUICK_JOURNEY'; // 'QUICK_JOURNEY' | 'LONG_JOURNEY'
     this.captainId = null;
+    this.lieutenantId = null;
+    this.navigatorId = null;
+    this.nominatedLieutenantId = null;
+    this.nominatedNavigatorId = null;
+    this.mutinySession = null;
     this.phaseDeadline = null; // Timestamp kết thúc phase hiện tại
     this.createdAt = Date.now();
     this.lastActivity = Date.now();
@@ -117,6 +122,11 @@ class Room {
       gamePhase: this.gamePhase,
       mapType: this.mapType,
       captainId: this.captainId,
+      lieutenantId: this.lieutenantId,
+      navigatorId: this.navigatorId,
+      nominatedLieutenantId: this.nominatedLieutenantId,
+      nominatedNavigatorId: this.nominatedNavigatorId,
+      mutinySession: this.mutinySession ? this.mutinySession.toSanitizedJSON(requestingPlayer?.id) : null,
       phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
@@ -144,6 +154,11 @@ class Room {
       gamePhase: this.gamePhase,
       mapType: this.mapType,
       captainId: this.captainId,
+      lieutenantId: this.lieutenantId,
+      navigatorId: this.navigatorId,
+      nominatedLieutenantId: this.nominatedLieutenantId,
+      nominatedNavigatorId: this.nominatedNavigatorId,
+      mutinySession: this.mutinySession ? this.mutinySession.toJSON() : null,
       phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
@@ -160,6 +175,10 @@ class Room {
     room.gamePhase = data.gamePhase;
     room.mapType = data.mapType;
     room.captainId = data.captainId;
+    room.lieutenantId = data.lieutenantId || null;
+    room.navigatorId = data.navigatorId || null;
+    room.nominatedLieutenantId = data.nominatedLieutenantId || null;
+    room.nominatedNavigatorId = data.nominatedNavigatorId || null;
     room.phaseDeadline = data.phaseDeadline || null;
     room.createdAt = data.createdAt;
     room.lastActivity = data.lastActivity;
