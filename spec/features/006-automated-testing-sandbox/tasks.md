@@ -49,7 +49,7 @@
 **Independent Test**: Gõ `status` hiển thị bảng thông tin bot, gõ `bot 1 vote 3` ép Bot 1 nộp 3 súng và Server ghi nhận đúng 3 súng từ Bot 1.
 
 ### Implementation Tasks
-- [ ] T044 [P] [US3] [BR-006] Tạo `CLIController.js` trong `scripts/bots/CLIController.js` sử dụng Node.js `readline` để nhận lệnh từ `stdin`, parse các lệnh `status`, `bot <id> vote <guns>`, `bot <id> appoint ...`, `auto on/off`.
+- [x] T044 [P] [US3] [BR-006] Tạo `CLIController.js` trong `scripts/bots/CLIController.js` sử dụng Node.js `readline` để nhận lệnh từ `stdin`, parse các lệnh `status`, `bot <id> vote <guns>`, `bot <id> appoint ...`, `auto on/off`.
 - [ ] T045 [US3] [BR-006] Tích hợp `CLIController` vào `spawn.js` để mở prompt tương tác `ftk-sandbox > ` ngay sau khi đàn bot join phòng thành công.
 
 **Checkpoint**: Tester có toàn quyền kiểm soát và điều khiển bất kỳ Bot nào trong phòng chơi.
