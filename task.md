@@ -80,7 +80,7 @@
 - [x] T016 [BR-002] Implement `MutinyService` (`backend/src/services/MutinyService.js`) xử lý luồng: Appoint Team -> Vote -> Resolution.
 - [x] T017 [BR-002] Thêm Timer Logic (không tự động nhảy state) với nút xác nhận của Captain.
 - [x] T018 [BR-002] Bổ sung logic "Cắt lưỡi" (Người bị cắt lưỡi mất quyền làm Captain vĩnh viễn) vào `MutinyService` và `RoomState`.
-- [ ] T019 [BR-002] Xây dựng UI Bỏ phiếu Nổi loạn và UI Thể hiện kết quả súng (`frontend/src/components/MutinyBoard.jsx`).
+- [x] T019 [BR-002] Xây dựng UI Bỏ phiếu Nổi loạn và UI Thể hiện kết quả súng (`frontend/src/components/MutinyBoard.jsx`).
 
 **Checkpoint**: Hệ thống hỗ trợ chơi đến đoạn cãi nhau và Vote thành công, có người cầm súng nổi loạn.
 

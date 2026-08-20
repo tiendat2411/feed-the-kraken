@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../contexts/SocketContext';
 import Lobby from './Lobby';
 import RoleReveal from '../components/RoleReveal';
+import MutinyBoard from '../components/MutinyBoard';
 
 const Game = () => {
   const { roomId } = useParams();
@@ -81,6 +82,26 @@ const Game = () => {
     }
   };
 
+  const handleAppointTeam = (lieutenantId, navigatorId) => {
+    if (socket) socket.emit('appoint_team', { lieutenantId, navigatorId });
+  };
+
+  const handleSubmitVote = (gunCount) => {
+    if (socket) socket.emit('submit_mutiny_vote', { gunCount });
+  };
+
+  const handleConfirmOutcome = () => {
+    if (socket) socket.emit('confirm_mutiny_outcome');
+  };
+
+  const handleEliminateTieCandidate = (targetCandidateId) => {
+    if (socket) socket.emit('eliminate_tie_candidate', { targetCandidateId });
+  };
+
+  const handleCutTongue = (targetPlayerId) => {
+    if (socket) socket.emit('cut_tongue', { targetPlayerId });
+  };
+
   if (error) {
     return <div className="min-h-screen bg-slate-900 text-white p-8">{error}</div>;
   }
@@ -122,24 +143,18 @@ const Game = () => {
     );
   }
 
-  // 3. Day Phase & Ongoing Game
+  // 3. Day Phase & Mutiny & Navigation
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8">
-      <div className="max-w-4xl mx-auto bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-2xl text-center space-y-4">
-        <span className="px-4 py-1 bg-yellow-500/20 text-yellow-300 font-bold rounded-full text-sm">
-          ☀️ BAN NGÀY - BÌNH MINH ĐÃ LÊN
-        </span>
-        <h2 className="text-3xl font-extrabold">Room: {room.id} - Giai đoạn: {room.gamePhase}</h2>
-        <p className="text-slate-400">
-          Thuyền trưởng hiện tại: <span className="text-emerald-400 font-bold">{room.players.find(p => p.id === room.captainId)?.nickname || 'Host'}</span>
-        </p>
-        <div className="p-4 bg-slate-800/60 rounded-2xl border border-white/5 inline-block text-left text-sm space-y-1">
-          <p>🎭 Vai trò của bạn: <strong className="text-blue-400">{myRole || room.myRole || 'Đang tải...'}</strong></p>
-          <p>🗺️ Bản đồ: <strong className="text-purple-400">{room.mapType}</strong></p>
-          <p>👥 Thủy thủ đoàn: <strong className="text-slate-200">{room.players.length} người</strong></p>
-        </div>
-      </div>
-    </div>
+    <MutinyBoard 
+      room={room}
+      currentUserId={effectiveUserId}
+      myRole={myRole || room.myRole}
+      onAppointTeam={handleAppointTeam}
+      onSubmitVote={handleSubmitVote}
+      onConfirmOutcome={handleConfirmOutcome}
+      onEliminateTieCandidate={handleEliminateTieCandidate}
+      onCutTongue={handleCutTongue}
+    />
   );
 };
 
