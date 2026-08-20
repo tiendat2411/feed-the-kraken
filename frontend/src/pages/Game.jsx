@@ -93,12 +93,14 @@ const Game = () => {
     );
   }
 
+  const effectiveUserId = room.myId || currentUserId;
+
   // 1. Lobby Phase
   if (room.status === 'LOBBY') {
     return (
       <Lobby 
         room={room} 
-        currentUserId={currentUserId}
+        currentUserId={effectiveUserId}
         onSelectAvatar={handleSelectAvatar}
         onSelectMap={handleSelectMap}
         onStartGame={handleStartGame}
@@ -115,7 +117,7 @@ const Game = () => {
       <RoleReveal 
         room={room} 
         myRole={myRole || room.myRole} 
-        currentUserId={currentUserId} 
+        currentUserId={effectiveUserId} 
       />
     );
   }

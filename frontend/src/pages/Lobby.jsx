@@ -16,9 +16,10 @@ const Lobby = ({
   if (!room) return <div className="text-white flex justify-center items-center h-full">Loading...</div>;
 
   const players = room.players || [];
-  const me = players.find((p) => p.id === currentUserId || p.sessionToken === currentUserId) || {};
-  const isHost = room.hostId === me.id;
-  const canStart = players.length >= 5 && players.length <= 11;
+  const myId = room.myId || currentUserId;
+  const me = players.find((p) => p.id === myId || p.id === currentUserId || p.sessionToken === currentUserId) || {};
+  const isHost = (room.hostId && (room.hostId === myId || room.hostId === me.id));
+  const canStart = isHost && players.length >= 5 && players.length <= 11;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white p-4 md:p-8 font-sans bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
@@ -61,40 +62,43 @@ const Lobby = ({
               <Users className="text-blue-400" /> Crew Members
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {players.map((player) => (
-                <div 
-                  key={player.id} 
-                  className={`flex items-center justify-between p-4 rounded-xl border transition duration-300 ${player.id === currentUserId ? 'bg-blue-900/40 border-blue-500/50' : 'bg-white/5 border-white/10'}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-2xl shadow-inner border border-white/5">
-                      {player.avatar || '❓'}
-                    </div>
-                    <div>
-                      <div className="font-semibold flex items-center gap-2">
-                        {player.name}
-                        {player.id === room.hostId && <Crown size={16} className="text-yellow-400" title="Chủ phòng" />}
-                        {(player.id === me.id || player.sessionToken === currentUserId) && (
-                          <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md">You</span>
-                        )}
+              {players.map((player) => {
+                const isMe = (player.id === myId || player.id === me.id || player.id === currentUserId || player.sessionToken === currentUserId);
+                return (
+                  <div 
+                    key={player.id} 
+                    className={`flex items-center justify-between p-4 rounded-xl border transition duration-300 ${isMe ? 'bg-blue-900/40 border-blue-500/50' : 'bg-white/5 border-white/10'}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-2xl shadow-inner border border-white/5">
+                        {player.avatar || '❓'}
                       </div>
-                      <div className="text-sm text-slate-400 flex items-center gap-1">
-                        <div className={`w-2 h-2 rounded-full ${player.connectionStatus === 'OFFLINE' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
-                        {player.connectionStatus === 'OFFLINE' ? 'Offline' : 'Online'}
+                      <div>
+                        <div className="font-semibold flex items-center gap-2">
+                          {player.name || player.nickname}
+                          {player.id === room.hostId && <Crown size={16} className="text-yellow-400" title="Chủ phòng" />}
+                          {isMe && (
+                            <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md">You</span>
+                          )}
+                        </div>
+                        <div className="text-sm text-slate-400 flex items-center gap-1">
+                          <div className={`w-2 h-2 rounded-full ${player.connectionStatus === 'OFFLINE' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+                          {player.connectionStatus === 'OFFLINE' ? 'Offline' : 'Online'}
+                        </div>
                       </div>
                     </div>
+                    {isHost && !isMe && (
+                      <button 
+                        onClick={() => onKickPlayer(player.id)}
+                        className="text-slate-500 hover:text-red-400 transition p-2 rounded-lg hover:bg-white/5"
+                        title="Kick Player"
+                      >
+                        <UserX size={18} />
+                      </button>
+                    )}
                   </div>
-                  {isHost && player.id !== me.id && player.sessionToken !== currentUserId && (
-                    <button 
-                      onClick={() => onKickPlayer(player.id)}
-                      className="text-slate-500 hover:text-red-400 transition p-2 rounded-lg hover:bg-white/5"
-                      title="Kick Player"
-                    >
-                      <UserX size={18} />
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
               
               {/* Empty slots placeholders */}
               {Array.from({ length: Math.max(0, 5 - players.length) }).map((_, i) => (
