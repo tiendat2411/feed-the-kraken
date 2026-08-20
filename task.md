@@ -65,7 +65,7 @@
 - [x] T043 [US2] [BR-006] Tích hợp `AutoResponder` vào `BotClient.js` để tự động xử lý và gửi phản hồi hợp lệ về Server khi game chuyển phase.
 - [x] T044 [P] [US3] [BR-006] Tạo `CLIController.js` trong `scripts/bots/CLIController.js` sử dụng Node.js `readline` để nhận lệnh từ `stdin`, parse các lệnh `status`, `bot <id> vote <guns>`, `bot <id> appoint ...`, `auto on/off`.
 - [x] T045 [US3] [BR-006] Tích hợp `CLIController` vào `spawn.js` để mở prompt tương tác `ftk-sandbox > ` ngay sau khi đàn bot join phòng thành công.
-- [ ] T046 [BR-006] Thêm shortcut script `"bot:spawn": "node scripts/bots/spawn.js"` vào `package.json` và kiểm thử toàn bộ luồng tạo phòng, spawn 4 bots, start game và điều khiển qua CLI.
+- [x] T046 [BR-006] Thêm shortcut script `"bot:spawn": "node scripts/bots/spawn.js"` vào `package.json` và kiểm thử toàn bộ luồng tạo phòng, spawn 4 bots, start game và điều khiển qua CLI.
 
 **Checkpoint**: Có thể dùng 1 dòng lệnh terminal để lấp đầy phòng chơi, tự động chạy qua các phase hoặc điều khiển từng bot theo ý muốn.
 

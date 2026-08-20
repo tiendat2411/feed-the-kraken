@@ -61,7 +61,7 @@
 **Goal**: Đóng gói công cụ, tạo npm shortcut và kiểm thử toàn diện kịch bản 1 Human + 4 Bots.
 
 ### Implementation Tasks
-- [ ] T046 [BR-006] Thêm shortcut script `"bot:spawn": "node scripts/bots/spawn.js"` vào `package.json` và kiểm thử toàn bộ luồng tạo phòng, spawn 4 bots, start game và điều khiển qua CLI.
+- [x] T046 [BR-006] Thêm shortcut script `"bot:spawn": "node scripts/bots/spawn.js"` vào `package.json` và kiểm thử toàn bộ luồng tạo phòng, spawn 4 bots, start game và điều khiển qua CLI.
 
 ---
 

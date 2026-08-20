@@ -1,0 +1,13 @@
+{
+  "name": "feed-the-kraken",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "backend": "npm --prefix backend run dev",
+    "backend:start": "npm --prefix backend start",
+    "frontend": "npm --prefix frontend run dev",
+    "bot:spawn": "node scripts/bots/spawn.js",
+    "test:bots": "node scripts/test_bot_client.js && node scripts/test_bot_manager.js && node scripts/test_auto_responder.js && node scripts/test_cli_controller.js"
+  }
+}
