@@ -62,7 +62,7 @@
 - [x] T040 [US1] [BR-006] Tạo `BotManager.js` trong `scripts/bots/BotManager.js` để điều phối vòng đời spawn $N$ bots, lưu trữ danh sách bots trong Map, và xử lý graceful shutdown (`SIGINT`).
 - [x] T041 [US1] [BR-006] Tạo CLI entrypoint `scripts/bots/spawn.js` nhận tham số `--room <ROOM_ID>` và `--count <N>` từ dòng lệnh.
 - [x] T042 [P] [US2] [BR-006] Tạo `AutoResponder.js` trong `scripts/bots/AutoResponder.js` chứa dictionary các handlers cho các sự kiện Server yêu cầu hành động (`REQUIRE_VOTE`, `REQUIRE_TEAM_APPOINTMENT`, `REQUIRE_CARD_DISCARD`...) kèm random delay 500-1500ms.
-- [ ] T043 [US2] [BR-006] Tích hợp `AutoResponder` vào `BotClient.js` để tự động xử lý và gửi phản hồi hợp lệ về Server khi game chuyển phase.
+- [x] T043 [US2] [BR-006] Tích hợp `AutoResponder` vào `BotClient.js` để tự động xử lý và gửi phản hồi hợp lệ về Server khi game chuyển phase.
 - [ ] T044 [P] [US3] [BR-006] Tạo `CLIController.js` trong `scripts/bots/CLIController.js` sử dụng Node.js `readline` để nhận lệnh từ `stdin`, parse các lệnh `status`, `bot <id> vote <guns>`, `bot <id> appoint ...`, `auto on/off`.
 - [ ] T045 [US3] [BR-006] Tích hợp `CLIController` vào `spawn.js` để mở prompt tương tác `ftk-sandbox > ` ngay sau khi đàn bot join phòng thành công.
 - [ ] T046 [BR-006] Thêm shortcut script `"bot:spawn": "node scripts/bots/spawn.js"` vào `package.json` và kiểm thử toàn bộ luồng tạo phòng, spawn 4 bots, start game và điều khiển qua CLI.

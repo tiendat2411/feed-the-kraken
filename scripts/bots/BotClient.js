@@ -1,5 +1,6 @@
 import { io } from 'socket.io-client';
 import { randomUUID } from 'crypto';
+import { AutoResponder } from './AutoResponder.js';
 
 const AVATAR_POOL = ['🤖', '🏴‍☠️', '⚓', '🐙', '🦜', '🧜‍♂️', '🧑‍✈️', '👩‍🔧', '👨‍🍳', '🥷'];
 
@@ -86,12 +87,25 @@ export class BotClient {
         if (typeof this.onStateChangeCallback === 'function') {
           this.onStateChangeCallback(roomState);
         }
+
+        // Tự động kiểm tra trigger theo gamePhase nếu cần
+        if (roomState.gamePhase === 'MUTINY_VOTING') {
+          AutoResponder.dispatch(this, 'REQUIRE_VOTE', roomState);
+        }
       });
 
       // Lắng nghe nhận vai trò ẩn riêng tư
       this.socket.on('ROLE_ASSIGNED', ({ role }) => {
         this.secretRole = role;
       });
+
+      // Các sự kiện yêu cầu hành động từ Server
+      this.socket.on('REQUIRE_VOTE', (payload) => AutoResponder.dispatch(this, 'REQUIRE_VOTE', payload));
+      this.socket.on('MUTINY_VOTING_STARTED', (payload) => AutoResponder.dispatch(this, 'REQUIRE_VOTE', payload));
+      this.socket.on('REQUIRE_TEAM_APPOINTMENT', (payload) => AutoResponder.dispatch(this, 'REQUIRE_TEAM_APPOINTMENT', payload));
+      this.socket.on('REQUIRE_CARD_DISCARD', (payload) => AutoResponder.dispatch(this, 'REQUIRE_CARD_DISCARD', payload));
+      this.socket.on('REQUIRE_NAVIGATION_SELECTION', (payload) => AutoResponder.dispatch(this, 'REQUIRE_NAVIGATION_SELECTION', payload));
+      this.socket.on('REQUIRE_CULT_CONVERSION', (payload) => AutoResponder.dispatch(this, 'REQUIRE_CULT_CONVERSION', payload));
 
       this.socket.on('ROOM_DISSOLVED', () => {
         this.roomId = null;
