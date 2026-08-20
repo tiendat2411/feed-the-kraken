@@ -36,7 +36,7 @@ export function setupSocket(server) {
 
   // Middleware for session authentication
   io.use((socket, next) => {
-    const sessionToken = socket.handshake.auth.token;
+    const sessionToken = socket.handshake.auth.token || socket.handshake.auth.sessionToken;
     if (!sessionToken) {
       return next(new Error('Authentication error: sessionToken is required'));
     }

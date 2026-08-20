@@ -43,6 +43,7 @@ export class BotClient {
     return new Promise((resolve, reject) => {
       this.socket = io(this.serverUrl, {
         auth: {
+          token: this.sessionToken,
           sessionToken: this.sessionToken
         },
         transports: ['websocket', 'polling'],
