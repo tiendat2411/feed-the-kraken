@@ -4,7 +4,7 @@ description: # QUY TRÌNH KIỂM ĐỊNH TỰ ĐỘNG BẰNG TRÌNH DUYỆT & HE
 
 ## 🧭 MỤC TIÊU & TỔNG QUAN
 
-Tài liệu này định nghĩa quy trình chuẩn để AI Agent tự động khởi chạy môi trường, mở trình duyệt web (Browser Subagent / Preview), tạo phòng chơi với tư cách là **Host (Human/Captain)**, sử dụng đàn **Headless Bots** để lấp đầy phòng, và tự động kiểm thử toàn diện luồng game từ Sảnh chờ (Phase 1-3) đến Bổ nhiệm Ban điều hướng & Bỏ phiếu Nổi loạn (Phase 4).
+Tài liệu này định nghĩa quy trình chuẩn để AI Agent tự động khởi chạy môi trường, mở trình duyệt web (Browser Subagent / Preview), tạo phòng chơi với tư cách là **Host (Human/Captain)**, sử dụng đàn **Headless Bots** để lấp đầy phòng, và tự động kiểm thử toàn diện luồng game từ Sảnh chờ (Phase 1-3), Bổ nhiệm Ban điều hướng & Bỏ phiếu Nổi loạn (Phase 4), đến **Bốc bài Điều hướng, Nhật ký bí mật, và Tự nhảy tàu (Phase 5 - BR-003)**.
 
 ---
 
@@ -31,7 +31,12 @@ sequenceDiagram
     Browser->>Bots: 10. Chuyển sang LOYALTY_CHECK -> Bots tự động nộp súng ẩn
     Bots-->>Browser: 11. Đủ 4 phiếu -> Chuyển sang MUTINY_REVEALED (Lật bài)
     AI->>Browser: 12. Host quan sát kết quả súng -> Bấm nút Xác nhận của Captain
-    Browser->>Browser: 13. Chuyển sang NAVIGATION (hoặc APPOINT_TEAM nếu bị lật đổ)
+    Browser->>Browser: 13. Tiến vào Phase 5: Giao diện NavigationPhase.jsx
+    AI->>Browser: 14. Lượt Captain: Xem 2 thẻ bài kín -> Chọn 1 lá bỏ vào Nhật Ký
+    Browser->>Bots: 15. Lượt Lieutenant: Bot nhận 2 thẻ kín qua emitPrivate -> Tự chọn 1 lá
+    Note over Srv: 16. Server xáo trộn bí mật 2 lá bài trong Nhật Ký (Logbook)
+    Bots-->>Browser: 17. Lượt Navigator: Bot nhận 2 thẻ xáo trộn -> Chọn 1 thẻ điều hướng
+    Browser->>Browser: 18. Chuyển sang EXECUTE_ACTIONS -> Trình diễn kết quả hải đồ
 ```
 
 ---
@@ -113,11 +118,61 @@ Agent dùng `browser_subagent` quan sát màn hình sảnh chờ:
      - **Nổi loạn thất bại:** Nếu tổng súng $< 3$ $\rightarrow$ Thuyền trưởng cũ giữ quyền.
 2. **Thao tác của Thuyền trưởng (Hiến pháp Game Pace):**
    - Chỉ Thuyền trưởng (mới hoặc cũ) thấy nút *"TIẾP TỤC HÀNH TRÌNH ĐIỀU HƯỚNG"* hoặc *"BẮT ĐẦU BỔ NHIỆM BAN ĐIỀU HƯỚNG MỚI"*.
-   - Agent bấm nút xác nhận $\rightarrow$ Phòng chuyển sang `NAVIGATION` hoặc `APPOINT_TEAM`.
+   - Agent bấm nút xác nhận $\rightarrow$ Phòng chuyển sang `NAVIGATION` (Giai đoạn Điều hướng).
 
 ---
 
-### Bước 11: Quy trình Tự Sửa Lỗi (Self-Healing Loop) & Dọn dẹp
+### Bước 11: Kiểm thử Thuyền trưởng Bốc bài (Phase 5 - Captain Draw)
+1. **Giao diện `NavigationPhase.jsx`:**
+   - Header Bar hiển thị số bài còn lại trong cọc bốc (`drawPileCount`), cọc bỏ (`discardPileCount`) và Nhật ký (`logbookCount: 0/2`).
+   - Thuyền trưởng (Host) nhìn thấy 2 lá bài hải đồ bí mật (phối màu Đỏ / Xanh / Vàng với các hiệu ứng `DRUNK`, `ARMED`, `DISARMED`, `MERMAID`, `TELESCOPE`, `CULT_UPRISING` hoặc `NONE`).
+   - Các Bot và người xem khác chỉ thấy màn hình chờ: *"Thuyền trưởng đang xem xét hải đồ..."*.
+2. **Thao tác của Thuyền trưởng:**
+   - Click chọn 1 trong 2 lá bài $\rightarrow$ Lá bài được viền vàng nổi bật.
+   - Bấm nút **"XÁC NHẬN BỎ VÀO NHẬT KÝ 📖"**.
+   - Lá được chọn đưa vào `logbookCards`, lá còn lại bị hủy úp kín vào `discardPile`.
+   - Giao diện chuyển sang lượt của Thuyền phó (`NAVIGATION_LIEUTENANT_DRAW`).
+
+---
+
+### Bước 12: Kiểm thử Thuyền phó Bốc bài (Phase 5 - Lieutenant Draw)
+1. **Lượt Thuyền phó (Bot):**
+   - Server gửi riêng 2 lá bài tiếp theo qua `emitPrivate(CARDS_DRAWN_SECRET)` chỉ cho Thuyền phó.
+   - Bot Thuyền phó qua `AutoResponder.handleCardSelection` tự động chọn 1 lá sau $0.7 - 1.6s$ và gửi `lieutenant_select_card`.
+   - Host (Captain) thấy màn hình chờ: *"Thuyền phó đang xem xét hải đồ..."*.
+2. **Xáo trộn bí mật (Secret Logbook Shuffle):**
+   - Khi Thuyền phó chốt xong lá thứ 2, Server tự động xáo trộn ngẫu nhiên vị trí của 2 lá bài trong `logbookCards`.
+   - Chuyển sang lượt của Hoa tiêu (`NAVIGATION_NAVIGATOR_DECISION`).
+
+---
+
+### Bước 13: Kiểm thử Hoa tiêu Định đoạt Hướng đi (Phase 5 - Navigator Decision)
+1. **Lượt Hoa tiêu (Bot hoặc Human):**
+   - Hoa tiêu nhận thông tin 2 lá bài trong Nhật Ký.
+   - **Trường hợp Bot:** `AutoResponder` tự động chọn 1 lá bài phù hợp với phe ẩn và gửi `navigator_select_card`.
+   - **Trường hợp Human (nếu Host làm Navigator):**
+     - Host thấy 2 lá bài trong Hộp Nhật Ký.
+     - Có 2 nút: **"CHỐT ĐIỀU HƯỚNG TÀU 🧭"** hoặc **"TỰ NHẢY TÀU (JUMP OVERBOARD) 🌊"**.
+2. **Trình diễn Thực thi (`EXECUTE_ACTIONS`):**
+   - Giao diện toàn phòng chuyển sang màn hình thông báo: *"Con Tàu Đang Rẽ Sóng Tiến Về Phía Trước!"*.
+   - Hiển thị thẻ bài màu sắc và hiệu ứng vừa được Hoa tiêu chọn.
+
+---
+
+### Bước 14: Kiểm thử Luồng Ngoại lệ: Nhảy Tàu & Bổ nhiệm Khẩn cấp (Phase 5 - Overboard & Emergency Navigator)
+*(Áp dụng khi kiểm thử kịch bản nhánh rẽ UC-011):*
+1. **Hoa tiêu bấm "TỰ NHẢY TÀU":**
+   - Mở modal cảnh báo 2 bước: *"BẠN CÓ CHẮC CHẮN MUỐN NHẢY TÀU?"*.
+   - Bấm xác nhận $\rightarrow$ Hoa tiêu chuyển sang `ELIMINATED`, súng về 0, toàn bộ bài Logbook bị hủy úp kín.
+   - Phòng chuyển sang `EMERGENCY_NAVIGATOR_SELECTION`.
+2. **Thuyền trưởng Bổ nhiệm Khẩn cấp:**
+   - Host (Captain) thấy danh sách ứng viên còn lại (cho phép chọn cả người `OFF_DUTY`).
+   - Click chọn 1 người $\rightarrow$ Bấm **"BỔ NHIỆM HOA TIÊU KHẨN CẤP 🚨"**.
+   - Vòng bốc bài bắt đầu lại từ đầu (Thuyền trưởng bốc 2 lá mới).
+
+---
+
+### Bước 15: Quy trình Tự Sửa Lỗi (Self-Healing Loop) & Dọn dẹp
 - Nếu phát hiện lỗi giao diện (CSS vỡ, component không render), lỗi console (`get_console_message`), hoặc lỗi socket:
   - Agent kiểm tra file mã nguồn liên quan (`frontend/src/...` hoặc `backend/src/...`).
   - Sử dụng `replace_file_content` sửa lỗi ngay lập tức.
@@ -133,4 +188,9 @@ Agent dùng `browser_subagent` quan sát màn hình sảnh chờ:
 - [x] **Mutiny Vote (Phase 4):** Bots tự nộp súng ẩn qua `AutoResponder`, UI nhận đủ phiếu.
 - [x] **Mutiny Resolution (Phase 4):** Lật bài súng chính xác, tạm dừng cho thảo luận.
 - [x] **Game Pace (Phase 4):** Chỉ Captain bấm xác nhận mới chuyển tiếp phase.
+- [x] **Captain Card Draw (Phase 5):** Thuyền trưởng bốc 2 lá bí mật, chọn 1 lá vào Logbook, hủy 1 lá.
+- [x] **Lieutenant Card Draw (Phase 5):** Thuyền phó nhận 2 lá qua `emitPrivate`, chọn 1 lá vào Logbook.
+- [x] **Secret Logbook Shuffle (Phase 5):** 2 lá Logbook được xáo ngẫu nhiên trước khi chuyển cho Hoa tiêu.
+- [x] **Navigator Decision & Execution (Phase 5):** Hoa tiêu chốt 1 lá, giao diện chuyển sang `EXECUTE_ACTIONS`.
+- [x] **Jump Overboard Handling (Phase 5):** Xử lý loại trừ người chơi, hủy logbook và chọn Emergency Navigator trơn tru.
 - [x] **Console:** Không có lỗi Uncaught Exceptions đỏ trên Browser Preview.
