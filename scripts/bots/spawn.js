@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { BotManager } from './BotManager.js';
+import { CLIController } from './CLIController.js';
 
 function parseArgs(args) {
   const options = {
@@ -89,10 +90,10 @@ async function main() {
     });
 
     console.log(`\n🎉 Đã lấp đầy phòng [${result.roomId}] thành công!`);
-    console.log('💡 Nhấn [Ctrl + C] bất cứ lúc nào để ngắt kết nối an toàn cho tất cả các bots.\n');
 
-    // In Dashboard tóm tắt
-    console.table(manager.getDashboard());
+    // Khởi chạy CLI Controller tương tác
+    const cli = new CLIController({ botManager: manager });
+    cli.start();
 
   } catch (err) {
     console.error('\n❌ Không thể khởi tạo Sandbox:', err.message);
