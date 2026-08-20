@@ -76,6 +76,13 @@ export class RoomManager {
   }
 
   /**
+   * Thiết lập instance Room (cho test hoặc restore)
+   */
+  static setRoomInstance(roomId, room) {
+    rooms.set(roomId, room);
+  }
+
+  /**
    * Tìm phòng hiện tại của một sessionToken
    */
   static getRoomByToken(playerToken) {

@@ -93,7 +93,7 @@
 ### Implementation
 - [x] T020 [P] [BR-003] Tạo entity `NavigationDeck` trong `backend/src/models/`.
 - [x] T021 [BR-003] Implement `NavigationService` (`backend/src/services/NavigationService.js`) xử lý rút bài, xáo bài khi hết.
-- [ ] T022 [BR-003] Xử lý luồng Captain-Lieutenant Draw. Dùng `emitPrivate` để gửi đúng lá bài cho đúng người.
+- [x] T022 [BR-003] Xử lý luồng Captain-Lieutenant Draw. Dùng `emitPrivate` để gửi đúng lá bài cho đúng người.
 - [ ] T023 [BR-003] Bổ sung Action: Cult Leader có thể nhảy tàu.
 - [ ] T024 [BR-003] Xây dựng UI Draw Cards cho Captain và Lieutenant (`frontend/src/components/NavigationPhase.jsx`).
 

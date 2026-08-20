@@ -1,13 +1,33 @@
 import { Server } from 'socket.io';
 import { RoomManager } from '../services/RoomManager.js';
 import { MutinyService } from '../services/MutinyService.js';
+import { NavigationService } from '../services/NavigationService.js';
 
 /**
  * Gửi event bí mật tới một player cụ thể (qua sessionToken hoặc playerId)
  */
 export function emitPrivate(io, roomId, targetTokenOrId, event, payload) {
+  let targetToken = targetTokenOrId;
+  let targetId = targetTokenOrId;
+
+  if (roomId) {
+    const room = RoomManager.getRoomInstance(roomId);
+    if (room) {
+      const player = room.getPlayer(targetTokenOrId) || room.getPlayerByToken(targetTokenOrId);
+      if (player) {
+        targetToken = player.sessionToken;
+        targetId = player.id;
+      }
+    }
+  }
+
   for (const [, clientSocket] of io.of('/').sockets) {
-    if (clientSocket.sessionToken === targetTokenOrId || clientSocket.playerId === targetTokenOrId) {
+    if (
+      clientSocket.sessionToken === targetToken ||
+      clientSocket.sessionToken === targetId ||
+      clientSocket.playerId === targetId ||
+      clientSocket.playerId === targetToken
+    ) {
       clientSocket.emit(event, payload);
     }
   }
@@ -54,6 +74,16 @@ export function setupSocket(server) {
       socket.join(activeRoom.id);
       const sanitized = activeRoom.toSanitizedJSON(socket.sessionToken);
       socket.emit('room_state', sanitized);
+
+      // Nếu đang trong lượt bốc bài và người này đang giữ bài trên tay -> gửi lại bài riêng tư
+      const mePlayer = activeRoom.getPlayerByToken(socket.sessionToken);
+      if (mePlayer && activeRoom.navigationHand && activeRoom.navigationHand.playerId === mePlayer.id) {
+        socket.emit('CARDS_DRAWN_SECRET', {
+          role: activeRoom.navigationHand.role,
+          cards: activeRoom.navigationHand.cards
+        });
+      }
+
       broadcastRoomState(io, activeRoom);
       console.log(`[Socket Reconnected] Token: ${socket.sessionToken} reconnected to Room: ${activeRoom.id}`);
     }
@@ -332,6 +362,17 @@ export function setupSocket(server) {
 
         const { room } = found;
         const result = MutinyService.confirmMutinyOutcome(room, socket.sessionToken);
+
+        // Nếu tiến vào giai đoạn NAVIGATION -> tự động rút 2 thẻ đầu cho Captain
+        if (result.nextPhase === 'NAVIGATION') {
+          const navResult = NavigationService.startNavigation(room);
+          emitPrivate(io, room.id, room.captainId, 'CARDS_DRAWN_SECRET', {
+            role: 'CAPTAIN',
+            cards: navResult.cards
+          });
+          io.to(room.id).emit('CAPTAIN_DRAWING', { captainId: room.captainId, timeout: 60 });
+        }
+
         await RoomManager.saveSnapshot(room.id);
 
         io.to(room.id).emit('MUTINY_OUTCOME_CONFIRMED', {
@@ -343,6 +384,145 @@ export function setupSocket(server) {
         broadcastRoomState(io, room);
 
         if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // START NAVIGATION (UC-009)
+    socket.on('start_navigation', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const navResult = NavigationService.startNavigation(room);
+        await RoomManager.saveSnapshot(room.id);
+
+        emitPrivate(io, room.id, room.captainId, 'CARDS_DRAWN_SECRET', {
+          role: 'CAPTAIN',
+          cards: navResult.cards
+        });
+        io.to(room.id).emit('CAPTAIN_DRAWING', { captainId: room.captainId, timeout: 60 });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, navResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // CAPTAIN SELECT CARD (UC-009)
+    socket.on('captain_select_card', async ({ keptCardId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const ltResult = NavigationService.captainSelectCard(room, socket.sessionToken, keptCardId);
+        await RoomManager.saveSnapshot(room.id);
+
+        emitPrivate(io, room.id, room.lieutenantId, 'CARDS_DRAWN_SECRET', {
+          role: 'LIEUTENANT',
+          cards: ltResult.cards
+        });
+        io.to(room.id).emit('LIEUTENANT_DRAWING', { lieutenantId: room.lieutenantId, timeout: 60 });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, ltResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // LIEUTENANT SELECT CARD (UC-009, UC-010)
+    socket.on('lieutenant_select_card', async ({ keptCardId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const navResult = NavigationService.lieutenantSelectCard(room, socket.sessionToken, keptCardId);
+        await RoomManager.saveSnapshot(room.id);
+
+        emitPrivate(io, room.id, room.navigatorId, 'NAVIGATOR_CARDS_SECRET', {
+          role: 'NAVIGATOR',
+          cards: navResult.cards
+        });
+        io.to(room.id).emit('NAVIGATOR_DRAWING', { navigatorId: room.navigatorId, timeout: 60 });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, navResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // NAVIGATOR SELECT CARD (UC-010)
+    socket.on('navigator_select_card', async ({ chosenCardId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const execResult = NavigationService.navigatorSelectCard(room, socket.sessionToken, chosenCardId);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('NAVIGATION_CARD_EXECUTED', {
+          card: execResult.chosenCard
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, execResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // NAVIGATOR JUMP OVERBOARD (UC-011)
+    socket.on('navigator_jump_overboard', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const obResult = NavigationService.navigatorJumpOverboard(room, socket.sessionToken);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('NAVIGATOR_JUMPED_OVERBOARD', {
+          eliminatedPlayerId: obResult.eliminatedNavigatorId,
+          eliminatedPlayerName: obResult.eliminatedNavigatorName
+        });
+        io.to(room.id).emit('EMERGENCY_NAVIGATOR_SELECTION', {
+          captainId: obResult.captainId
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, obResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // APPOINT EMERGENCY NAVIGATOR (UC-011)
+    socket.on('appoint_emergency_navigator', async ({ newNavigatorId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const newRound = NavigationService.appointEmergencyNavigator(room, socket.sessionToken, newNavigatorId);
+        await RoomManager.saveSnapshot(room.id);
+
+        emitPrivate(io, room.id, room.captainId, 'CARDS_DRAWN_SECRET', {
+          role: 'CAPTAIN',
+          cards: newRound.cards
+        });
+        io.to(room.id).emit('EMERGENCY_NAVIGATOR_APPOINTED', { newNavigatorId });
+        io.to(room.id).emit('CAPTAIN_DRAWING', { captainId: room.captainId, timeout: 60 });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, newRound });
       } catch (err) {
         if (typeof callback === 'function') callback({ success: false, error: err.message });
       }
