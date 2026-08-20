@@ -1,16 +1,26 @@
 import { createClient } from 'redis';
 
 const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
+  url: process.env.REDIS_URL || 'redis://localhost:6379',
+  socket: {
+    connectTimeout: 1000,
+    reconnectStrategy: false // Không retry vô tận nếu Redis chưa được bật
+  }
 });
 
-redisClient.on('error', (err) => console.error('Redis Client Error:', err));
-redisClient.on('connect', () => console.log('Redis Client Connected'));
+redisClient.on('error', () => {});
 
 export const connectRedis = async () => {
-  if (!redisClient.isOpen) {
-    await redisClient.connect();
+  try {
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+      console.log('[Redis] Kết nối Redis Server thành công.');
+    }
+  } catch (err) {
+    console.warn('[Redis] Không thể kết nối Redis. Hệ thống tự động chạy ở chế độ In-Memory.');
   }
 };
 
 export default redisClient;
+
+

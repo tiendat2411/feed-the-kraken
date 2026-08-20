@@ -1,1 +1,3 @@
-{"feature_directory":"spec/features/001-init-room-setup"}
+{
+  "feature_directory": "spec/features/006-automated-testing-sandbox"
+}
