@@ -233,6 +233,7 @@ export class NavigationService {
 
     // 1. Trừng phạt nhảy tàu (AC-1 UC-011)
     navigator.status = 'ELIMINATED';
+    navigator.eliminationReason = 'JUMP_OVERBOARD';
     navigator.gunCount = 0;
     navigator.publicTitles = [];
     room.navigatorId = null;
@@ -244,7 +245,20 @@ export class NavigationService {
     }
     room.navigationHand = null;
 
-    // 3. Chuyển sang chọn Hoa tiêu khẩn cấp
+    // 3. Kiểm tra xem còn ai hợp lệ để làm Emergency Navigator không (E1 UC-011)
+    const validCandidates = room.getPlayers().filter(p => 
+      p.id !== room.captainId && 
+      p.id !== room.lieutenantId && 
+      p.status !== 'ELIMINATED'
+    );
+
+    if (validCandidates.length === 0) {
+      // Fallback E1: Không còn ai khác -> Captain kiêm nhiệm làm Navigator
+      room.navigatorId = room.captainId;
+      return this.startNavigation(room);
+    }
+
+    // Chuyển sang chọn Hoa tiêu khẩn cấp
     room.gamePhase = 'EMERGENCY_NAVIGATOR_SELECTION';
     room.touch();
 
@@ -252,6 +266,7 @@ export class NavigationService {
       gamePhase: room.gamePhase,
       eliminatedNavigatorId: navigator.id,
       eliminatedNavigatorName: navigator.nickname,
+      isCultLeader: navigator.factionRole === 'CULT_LEADER',
       captainId: room.captainId,
       room
     };

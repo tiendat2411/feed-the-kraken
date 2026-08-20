@@ -24,6 +24,7 @@ class Player {
     
     // Các trạng thái mở rộng khác theo rule
     this.status = 'ACTIVE'; // 'ACTIVE' | 'OFF_DUTY' | 'ELIMINATED'
+    this.eliminationReason = null; // 'JUMP_OVERBOARD' | 'FEED_THE_KRAKEN' | 'EXECUTION'
     this.gunCount = 0;
   }
 
@@ -38,6 +39,7 @@ class Player {
       publicTitles: this.publicTitles,
       speechRestricted: this.speechRestricted,
       status: this.status,
+      eliminationReason: this.eliminationReason,
       gunCount: this.gunCount
     };
   }
@@ -55,6 +57,7 @@ class Player {
       publicTitles: this.publicTitles,
       speechRestricted: this.speechRestricted,
       status: this.status,
+      eliminationReason: this.eliminationReason,
       gunCount: this.gunCount
     };
   }
@@ -72,6 +75,7 @@ class Player {
     player.publicTitles = data.publicTitles || [];
     player.speechRestricted = data.speechRestricted || false;
     player.status = data.status || 'ACTIVE';
+    player.eliminationReason = data.eliminationReason || null;
     player.gunCount = data.gunCount || 0;
     return player;
   }

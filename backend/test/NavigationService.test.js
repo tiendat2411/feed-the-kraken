@@ -136,16 +136,31 @@ describe('BR-003: NavigationService Flow & Invariants (UC-009, UC-010, UC-011)',
     });
 
     test('Navigator jumps overboard: gets ELIMINATED with 0 guns and logbook is discarded', () => {
+      navigator.factionRole = 'CULT_LEADER';
       const result = NavigationService.navigatorJumpOverboard(room, 'tok_nav');
 
       assert.equal(result.gamePhase, 'EMERGENCY_NAVIGATOR_SELECTION');
       assert.equal(result.eliminatedNavigatorId, 'nav_1');
+      assert.equal(result.isCultLeader, true);
       assert.equal(navigator.status, 'ELIMINATED');
+      assert.equal(navigator.eliminationReason, 'JUMP_OVERBOARD');
       assert.equal(navigator.gunCount, 0);
       assert.deepEqual(navigator.publicTitles, []);
       assert.equal(room.navigatorId, null);
       assert.equal(room.navigationDeck.logbookCards.length, 0);
       assert.equal(room.navigationDeck.discardPile.length, 4); // 1 cap + 1 lt + 2 logbook discarded
+    });
+
+    test('Navigator jumps overboard fallback E1: when no candidates left, Captain acts as Navigator', () => {
+      // Eliminate otherPlayer so only Captain and Lieutenant remain
+      otherPlayer.status = 'ELIMINATED';
+
+      const result = NavigationService.navigatorJumpOverboard(room, 'tok_nav');
+
+      assert.equal(result.gamePhase, 'NAVIGATION_CAPTAIN_DRAW');
+      assert.equal(room.navigatorId, room.captainId);
+      assert.equal(room.navigationHand.role, 'CAPTAIN');
+      assert.equal(room.navigationHand.cards.length, 2);
     });
 
     test('Captain appoints Emergency Navigator (allows OFF_DUTY, forbids Captain/Lieutenant/ELIMINATED)', () => {
