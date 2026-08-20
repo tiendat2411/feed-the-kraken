@@ -95,9 +95,9 @@
 - [x] T021 [BR-003] Implement `NavigationService` (`backend/src/services/NavigationService.js`) xử lý rút bài, xáo bài khi hết.
 - [x] T022 [BR-003] Xử lý luồng Captain-Lieutenant Draw. Dùng `emitPrivate` để gửi đúng lá bài cho đúng người.
 - [x] T023 [BR-003] Bổ sung Action: Cult Leader có thể nhảy tàu.
-- [ ] T024 [BR-003] Xây dựng UI Draw Cards cho Captain và Lieutenant (`frontend/src/components/NavigationPhase.jsx`).
+- [x] T024 [BR-003] Xây dựng UI Draw Cards cho Captain và Lieutenant (`frontend/src/components/NavigationPhase.jsx`).
 
-**Checkpoint**: Tàu đã bắt đầu di chuyển dựa trên kết quả các thẻ mà Navigator chọn.
+**Checkpoint**: Tàu đã bắt đầu di chuyển dựa trên kết quả các thẻ mà Navigator chọn (Phase 5 HOÀN THÀNH).
 
 ---
 

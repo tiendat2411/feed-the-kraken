@@ -4,6 +4,7 @@ import { useSocket } from '../contexts/SocketContext';
 import Lobby from './Lobby';
 import RoleReveal from '../components/RoleReveal';
 import MutinyBoard from '../components/MutinyBoard';
+import NavigationPhase from '../components/NavigationPhase';
 
 const Game = () => {
   const { roomId } = useParams();
@@ -11,6 +12,7 @@ const Game = () => {
   const socket = useSocket();
   const [room, setRoom] = useState(null);
   const [myRole, setMyRole] = useState(null);
+  const [privateCards, setPrivateCards] = useState([]);
   const [error, setError] = useState('');
 
   // Extract currentUserId from sessionToken
@@ -32,6 +34,23 @@ const Game = () => {
       setMyRole(role);
     });
 
+    // Listen for secret cards drawn (Captain, Lieutenant, Navigator)
+    socket.on('CARDS_DRAWN_SECRET', ({ role, cards }) => {
+      setPrivateCards(cards || []);
+    });
+
+    socket.on('NAVIGATOR_CARDS_SECRET', ({ role, cards }) => {
+      setPrivateCards(cards || []);
+    });
+
+    socket.on('NAVIGATION_CARD_EXECUTED', () => {
+      setPrivateCards([]);
+    });
+
+    socket.on('NAVIGATOR_JUMPED_OVERBOARD', () => {
+      setPrivateCards([]);
+    });
+
     socket.on('ROOM_DISSOLVED', () => {
       alert('Phòng đã bị chủ phòng giải tán.');
       navigate('/');
@@ -45,6 +64,10 @@ const Game = () => {
     return () => {
       socket.off('room_state');
       socket.off('ROLE_ASSIGNED');
+      socket.off('CARDS_DRAWN_SECRET');
+      socket.off('NAVIGATOR_CARDS_SECRET');
+      socket.off('NAVIGATION_CARD_EXECUTED');
+      socket.off('NAVIGATOR_JUMPED_OVERBOARD');
       socket.off('ROOM_DISSOLVED');
       socket.off('PLAYER_KICKED');
     };
@@ -102,6 +125,26 @@ const Game = () => {
     if (socket) socket.emit('cut_tongue', { targetPlayerId });
   };
 
+  const handleCaptainSelectCard = (keptCardId) => {
+    if (socket) socket.emit('captain_select_card', { keptCardId });
+  };
+
+  const handleLieutenantSelectCard = (keptCardId) => {
+    if (socket) socket.emit('lieutenant_select_card', { keptCardId });
+  };
+
+  const handleNavigatorSelectCard = (chosenCardId) => {
+    if (socket) socket.emit('navigator_select_card', { chosenCardId });
+  };
+
+  const handleNavigatorJumpOverboard = () => {
+    if (socket) socket.emit('navigator_jump_overboard');
+  };
+
+  const handleAppointEmergencyNavigator = (newNavigatorId) => {
+    if (socket) socket.emit('appoint_emergency_navigator', { newNavigatorId });
+  };
+
   if (error) {
     return <div className="min-h-screen bg-slate-900 text-white p-8">{error}</div>;
   }
@@ -143,7 +186,33 @@ const Game = () => {
     );
   }
 
-  // 3. Day Phase & Mutiny & Navigation
+  // 3. Navigation & Card Drawing Phase (BR-003)
+  const isNavigationPhase = [
+    'NAVIGATION',
+    'NAVIGATION_CAPTAIN_DRAW',
+    'NAVIGATION_LIEUTENANT_DRAW',
+    'NAVIGATION_NAVIGATOR_DECISION',
+    'EMERGENCY_NAVIGATOR_SELECTION',
+    'EXECUTE_ACTIONS'
+  ].includes(room.gamePhase);
+
+  if (isNavigationPhase) {
+    return (
+      <NavigationPhase
+        room={room}
+        currentUserId={effectiveUserId}
+        myRole={myRole || room.myRole}
+        privateCards={privateCards}
+        onCaptainSelectCard={handleCaptainSelectCard}
+        onLieutenantSelectCard={handleLieutenantSelectCard}
+        onNavigatorSelectCard={handleNavigatorSelectCard}
+        onNavigatorJumpOverboard={handleNavigatorJumpOverboard}
+        onAppointEmergencyNavigator={handleAppointEmergencyNavigator}
+      />
+    );
+  }
+
+  // 4. Day Phase & Mutiny Voting (BR-002)
   return (
     <MutinyBoard 
       room={room}

@@ -137,7 +137,7 @@ export class AutoResponder {
   }
 
   /**
-   * Xử lý tự động khi Bot cần chọn / bỏ thẻ bài điều hướng
+   * Xử lý tự động khi Bot cần chọn / bỏ thẻ bài điều hướng (Captain, Lieutenant, Navigator)
    * @param {BotClient} bot 
    * @param {Object} payload 
    */
@@ -162,11 +162,53 @@ export class AutoResponder {
 
     if (!bot.socket || !bot.socket.connected) return;
 
-    bot.socket.emit('select_navigation_card', {
-      cardId: chosenCard.id || chosenCard
-    }, (res) => {
+    const role = payload?.role;
+    if (role === 'CAPTAIN') {
+      bot.socket.emit('captain_select_card', { keptCardId: chosenCard.id }, (res) => {
+        if (res?.success) {
+          console.log(`[Auto-Responder] [${bot.nickname}] (Captain) Đã giữ thẻ [${chosenCard.direction}] vào Logbook 📖`);
+        }
+      });
+    } else if (role === 'LIEUTENANT') {
+      bot.socket.emit('lieutenant_select_card', { keptCardId: chosenCard.id }, (res) => {
+        if (res?.success) {
+          console.log(`[Auto-Responder] [${bot.nickname}] (Lieutenant) Đã giữ thẻ [${chosenCard.direction}] vào Logbook 📖`);
+        }
+      });
+    } else if (role === 'NAVIGATOR') {
+      bot.socket.emit('navigator_select_card', { chosenCardId: chosenCard.id }, (res) => {
+        if (res?.success) {
+          console.log(`[Auto-Responder] [${bot.nickname}] (Navigator) Đã chốt thẻ điều hướng [${chosenCard.direction}] 🧭`);
+        }
+      });
+    }
+  }
+
+  /**
+   * Xử lý tự động khi Bot là Thuyền trưởng và cần bổ nhiệm Hoa tiêu khẩn cấp
+   * @param {BotClient} bot 
+   */
+  static async handleAppointEmergencyNavigator(bot) {
+    if (bot.currentRoomState?.captainId !== bot.id) return;
+
+    const players = bot.currentRoomState?.players || [];
+    const candidates = players.filter(p => 
+      p.id !== bot.id && 
+      p.id !== bot.currentRoomState?.lieutenantId && 
+      p.status !== 'ELIMINATED'
+    );
+
+    if (!candidates.length) return;
+
+    const target = candidates[Math.floor(Math.random() * candidates.length)];
+
+    await this.delay(this.getRandomDelay(800, 1800));
+
+    if (!bot.socket || !bot.socket.connected) return;
+
+    bot.socket.emit('appoint_emergency_navigator', { newNavigatorId: target.id }, (res) => {
       if (res?.success) {
-        console.log(`[Auto-Responder] [${bot.nickname}] Đã chọn thẻ điều hướng [${chosenCard.direction || chosenCard}]`);
+        console.log(`[Auto-Responder] [${bot.nickname}] (Captain) Đã bổ nhiệm Hoa tiêu khẩn cấp [${target.nickname}] 🚨`);
       }
     });
   }

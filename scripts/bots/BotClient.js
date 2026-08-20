@@ -97,6 +97,8 @@ export class BotClient {
           AutoResponder.dispatch(this, 'MUTINY_REVEALED', roomState);
         } else if (roomState.gamePhase === 'MUTINY_TIE_BREAKER') {
           AutoResponder.dispatch(this, 'MUTINY_TIE_BREAKER', roomState);
+        } else if (roomState.gamePhase === 'EMERGENCY_NAVIGATOR_SELECTION') {
+          AutoResponder.handleAppointEmergencyNavigator(this);
         }
       });
 
@@ -104,6 +106,11 @@ export class BotClient {
       this.socket.on('ROLE_ASSIGNED', ({ role }) => {
         this.secretRole = role;
       });
+
+      // Lắng nghe nhận bài bốc riêng tư (Captain, Lieutenant, Navigator)
+      this.socket.on('CARDS_DRAWN_SECRET', (payload) => AutoResponder.handleCardSelection(this, payload));
+      this.socket.on('NAVIGATOR_CARDS_SECRET', (payload) => AutoResponder.handleCardSelection(this, payload));
+      this.socket.on('EMERGENCY_NAVIGATOR_SELECTION', () => AutoResponder.handleAppointEmergencyNavigator(this));
 
       // Các sự kiện yêu cầu hành động từ Server
       this.socket.on('REQUIRE_VOTE', (payload) => AutoResponder.dispatch(this, 'REQUIRE_VOTE', payload));
