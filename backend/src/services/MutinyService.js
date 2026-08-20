@@ -7,6 +7,7 @@ import MutinySession from '../models/MutinySession.js';
  * 2. Biểu quyết nộp súng nổi loạn (Mutiny Vote - UC-007)
  * 3. Phân giải kết quả & Trừ súng (Mutiny Resolution - UC-008)
  * 4. Chuỗi loại trừ hòa liên hoàn (Tie-breaker Chain Elimination - UC-008)
+ * 5. Timer Logic & Nút xác nhận của Captain (Game Pace Logic - Constitution)
  */
 export class MutinyService {
   /**
@@ -70,6 +71,7 @@ export class MutinyService {
       room.lieutenantId = lieutenantId;
       room.navigatorId = navigatorId;
       room.mutinySession = null;
+      room.phaseDeadline = null;
 
       // Cập nhật chức danh công khai
       this.updateOfficerTitles(room, room.captainId, lieutenantId, navigatorId);
@@ -101,6 +103,9 @@ export class MutinyService {
 
     room.mutinySession = mutinySession;
     room.gamePhase = 'LOYALTY_CHECK';
+
+    // Cập nhật timer: Chỉ đếm ngược khi có người rớt mạng (Constitution Rule)
+    this.updateVotingDeadline(room);
     room.touch();
 
     return {
@@ -109,6 +114,7 @@ export class MutinyService {
       nominatedLieutenantId: lieutenantId,
       nominatedNavigatorId: navigatorId,
       gamePhase: room.gamePhase,
+      phaseDeadline: room.phaseDeadline,
       room
     };
   }
@@ -139,11 +145,13 @@ export class MutinyService {
     }
 
     const recordedGuns = room.mutinySession.recordVote(voter.id, gunCount, voter);
-    room.touch();
 
     // Tính số người vote hợp lệ (tất cả người chơi trừ Captain và ELIMINATED)
     const eligibleVoters = room.getPlayers().filter(p => p.id !== room.captainId && p.status !== 'ELIMINATED');
     const isVotingComplete = room.mutinySession.isVotingComplete(eligibleVoters.length);
+
+    this.updateVotingDeadline(room);
+    room.touch();
 
     return {
       voterId: voter.id,
@@ -158,6 +166,7 @@ export class MutinyService {
 
   /**
    * Phân giải kết quả biểu quyết nổi loạn
+   * Dừng lại ở phase 'MUTINY_REVEALED' để người chơi thảo luận trước khi Captain bấm xác nhận
    * @param {Object} room - Instance Room
    * @returns {Object}
    */
@@ -170,6 +179,7 @@ export class MutinyService {
 
     const session = room.mutinySession;
     const resolution = session.resolve(room.players);
+    room.phaseDeadline = null; // Tắt timer khi đã có kết quả
 
     // 1. Phân giải NỔI LOẠN THÀNH CÔNG
     if (resolution.isSuccess) {
@@ -198,14 +208,8 @@ export class MutinyService {
         // Cập nhật chức danh: Xóa mọi chức vụ cũ, chỉ định Captain mới
         this.updateOfficerTitles(room, newCaptainId, null, null);
 
-        // Reset ban điều hướng đề xuất
-        room.nominatedLieutenantId = null;
-        room.nominatedNavigatorId = null;
-        room.lieutenantId = null;
-        room.navigatorId = null;
-
-        // Quay lại giai đoạn chọn ban điều hướng mới (UC-006)
-        room.gamePhase = 'APPOINT_TEAM';
+        // Dừng lại ở MUTINY_REVEALED để Thuyền trưởng mới xem kết quả và bấm xác nhận
+        room.gamePhase = 'MUTINY_REVEALED';
         room.touch();
 
         return {
@@ -222,6 +226,7 @@ export class MutinyService {
 
       // 1b. Thành công nhưng HÒA (Tie-breaker Chain Elimination)
       room.gamePhase = 'MUTINY_TIE_BREAKER';
+      this.updateTieBreakerDeadline(room);
       room.touch();
 
       return {
@@ -233,6 +238,7 @@ export class MutinyService {
         requiredGuns: resolution.requiredGuns,
         deductedPlayers,
         gamePhase: room.gamePhase,
+        phaseDeadline: room.phaseDeadline,
         session: session.toSanitizedJSON()
       };
     }
@@ -241,14 +247,12 @@ export class MutinyService {
     // Không ai bị trừ súng (AC-2). Ban điều hướng đề xuất chính thức nhậm chức.
     room.lieutenantId = session.nominatedLieutenantId;
     room.navigatorId = session.nominatedNavigatorId;
-    room.nominatedLieutenantId = null;
-    room.nominatedNavigatorId = null;
 
     // Cập nhật chức danh công khai
     this.updateOfficerTitles(room, room.captainId, room.lieutenantId, room.navigatorId);
 
-    // Chuyển sang giai đoạn Điều hướng chính thức (BR-003)
-    room.gamePhase = 'NAVIGATION';
+    // Dừng lại ở MUTINY_REVEALED để Captain cũ xác nhận chuyển sang Điều hướng
+    room.gamePhase = 'MUTINY_REVEALED';
     room.touch();
 
     return {
@@ -263,6 +267,64 @@ export class MutinyService {
       gamePhase: room.gamePhase,
       session: session.toSanitizedJSON()
     };
+  }
+
+  /**
+   * Thuyền trưởng (hoặc Tân Thuyền trưởng) bấm nút xác nhận chuyển sang phase kế tiếp
+   * (Tuân thủ nguyên tắc Game Pace & Captain Button trong Constitution)
+   * @param {Object} room - Instance Room
+   * @param {string} captainToken - sessionToken của Thuyền trưởng
+   * @returns {Object}
+   */
+  static confirmMutinyOutcome(room, captainToken) {
+    if (!room) throw new Error('Phòng không tồn tại');
+
+    if (room.gamePhase !== 'MUTINY_REVEALED') {
+      throw new Error('Hiện tại không ở màn hình kết quả biểu quyết');
+    }
+
+    const caller = room.getPlayerByToken(captainToken);
+    if (!caller) throw new Error('Người chơi không tồn tại');
+
+    if (room.captainId !== caller.id) {
+      throw new Error('Chỉ có Thuyền trưởng mới có quyền xác nhận chuyển tiếp hành trình');
+    }
+
+    const isMutinySuccess = room.mutinySession?.isSuccess;
+
+    if (isMutinySuccess) {
+      // Nổi loạn thành công -> Tân Thuyền trưởng bắt đầu chọn Ban điều hướng mới
+      room.nominatedLieutenantId = null;
+      room.nominatedNavigatorId = null;
+      room.lieutenantId = null;
+      room.navigatorId = null;
+      room.mutinySession = null;
+      room.phaseDeadline = null;
+      room.gamePhase = 'APPOINT_TEAM';
+      room.touch();
+
+      return {
+        nextPhase: 'APPOINT_TEAM',
+        captainId: room.captainId,
+        room
+      };
+    } else {
+      // Nổi loạn thất bại -> Chuyển sang giai đoạn Điều hướng chính thức (BR-003)
+      room.nominatedLieutenantId = null;
+      room.nominatedNavigatorId = null;
+      room.mutinySession = null;
+      room.phaseDeadline = null;
+      room.gamePhase = 'NAVIGATION';
+      room.touch();
+
+      return {
+        nextPhase: 'NAVIGATION',
+        captainId: room.captainId,
+        lieutenantId: room.lieutenantId,
+        navigatorId: room.navigatorId,
+        room
+      };
+    }
   }
 
   /**
@@ -292,12 +354,9 @@ export class MutinyService {
 
       this.updateOfficerTitles(room, newCaptainId, null, null);
 
-      room.nominatedLieutenantId = null;
-      room.nominatedNavigatorId = null;
-      room.lieutenantId = null;
-      room.navigatorId = null;
-
-      room.gamePhase = 'APPOINT_TEAM';
+      // Chuyển sang MUTINY_REVEALED để hiển thị kết quả và chờ Tân Captain xác nhận
+      room.gamePhase = 'MUTINY_REVEALED';
+      room.phaseDeadline = null;
       room.touch();
 
       return {
@@ -310,6 +369,7 @@ export class MutinyService {
     }
 
     // Nếu vẫn còn >= 2 người -> Chuyển lượt loại trừ tiếp theo
+    this.updateTieBreakerDeadline(room);
     room.touch();
     return {
       completed: false,
@@ -317,8 +377,88 @@ export class MutinyService {
       nextChooserId: stepResult.nextChooser,
       remainingCandidates: stepResult.remainingCandidates,
       gamePhase: room.gamePhase,
+      phaseDeadline: room.phaseDeadline,
       session: session.toSanitizedJSON()
     };
+  }
+
+  /**
+   * Tự động hoàn tất lượt cho người chơi rớt mạng khi hết timer (Time-out Logic - Constitution)
+   * @param {Object} room
+   * @returns {Object|null}
+   */
+  static autoResolveOfflineVoters(room) {
+    if (!room || !room.mutinySession) return null;
+
+    if (room.mutinySession.status === 'VOTING') {
+      const eligibleVoters = room.getPlayers().filter(p => p.id !== room.captainId && p.status !== 'ELIMINATED');
+      let autoVoted = false;
+
+      for (const player of eligibleVoters) {
+        if (!room.mutinySession.hasPlayerVoted(player.id) && player.connectionStatus === 'OFFLINE') {
+          room.mutinySession.recordVote(player.id, 0, player);
+          autoVoted = true;
+        }
+      }
+
+      if (autoVoted && room.mutinySession.isVotingComplete(eligibleVoters.length)) {
+        return this.resolveMutiny(room);
+      }
+    }
+
+    if (room.mutinySession.status === 'TIE_BREAKER') {
+      const chooserId = room.mutinySession.currentChooser;
+      const chooser = room.getPlayer(chooserId);
+
+      if (chooser && chooser.connectionStatus === 'OFFLINE') {
+        // Chọn ngẫu nhiên 1 ứng viên khác trong danh sách hòa để loại
+        const candidates = room.mutinySession.tieCandidates;
+        const target = candidates.find(id => id !== chooserId) || candidates[0];
+        return this.eliminateTieCandidate(room, chooser.sessionToken, target);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Cập nhật thời hạn biểu quyết (Chỉ đếm 90s khi có người rớt mạng)
+   * @private
+   */
+  static updateVotingDeadline(room) {
+    if (!room || !room.mutinySession || room.mutinySession.status !== 'VOTING') {
+      room.phaseDeadline = null;
+      return;
+    }
+
+    const eligibleVoters = room.getPlayers().filter(p => p.id !== room.captainId && p.status !== 'ELIMINATED');
+    const hasOfflineUnvoted = eligibleVoters.some(p => !room.mutinySession.hasPlayerVoted(p.id) && p.connectionStatus === 'OFFLINE');
+
+    if (hasOfflineUnvoted) {
+      if (!room.phaseDeadline) {
+        room.phaseDeadline = Date.now() + 90000; // 90s đếm ngược cho người offline
+      }
+    } else {
+      room.phaseDeadline = null; // Tất cả online -> Thời gian tự do
+    }
+  }
+
+  /**
+   * Cập nhật thời hạn tie-breaker (Chỉ đếm 120s khi người đang chọn bị offline)
+   * @private
+   */
+  static updateTieBreakerDeadline(room) {
+    if (!room || !room.mutinySession || room.mutinySession.status !== 'TIE_BREAKER') {
+      room.phaseDeadline = null;
+      return;
+    }
+
+    const chooser = room.getPlayer(room.mutinySession.currentChooser);
+    if (chooser && chooser.connectionStatus === 'OFFLINE') {
+      room.phaseDeadline = Date.now() + 120000; // 120s đếm ngược
+    } else {
+      room.phaseDeadline = null;
+    }
   }
 
   /**

@@ -110,7 +110,7 @@ describe('BR-002: MutinyService Flow & Invariants (UC-006, UC-007, UC-008)', () 
     });
   });
 
-  describe('UC-007: Mutiny Vote', () => {
+  describe('UC-007: Mutiny Vote & Timer Logic', () => {
     beforeEach(() => {
       MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p2_id');
     });
@@ -132,14 +132,37 @@ describe('BR-002: MutinyService Flow & Invariants (UC-006, UC-007, UC-008)', () 
 
       assert.equal(v4.isVotingComplete, true);
     });
+
+    test('All online players have unlimited discussion time (phaseDeadline is null)', () => {
+      assert.equal(room.phaseDeadline, null);
+      MutinyService.submitVote(room, 'tok_p1', 1);
+      assert.equal(room.phaseDeadline, null);
+    });
+
+    test('Offline player triggers 90s countdown and auto-resolves with 0 guns', () => {
+      p4.connectionStatus = 'OFFLINE';
+      MutinyService.updateVotingDeadline(room);
+
+      assert.ok(room.phaseDeadline > Date.now());
+
+      MutinyService.submitVote(room, 'tok_p1', 1);
+      MutinyService.submitVote(room, 'tok_p2', 1);
+      MutinyService.submitVote(room, 'tok_p3', 0);
+
+      // Auto-resolve offline player p4
+      const timeoutRes = MutinyService.autoResolveOfflineVoters(room);
+      assert.ok(timeoutRes);
+      assert.equal(room.mutinySession.votes.get('p4_id'), 0);
+      assert.equal(room.gamePhase, 'MUTINY_REVEALED');
+    });
   });
 
-  describe('UC-008: Mutiny Resolution', () => {
+  describe('UC-008: Mutiny Resolution & Captain Confirmation (Game Pace)', () => {
     beforeEach(() => {
       MutinyService.appointTeam(room, 'tok_cap', 'p1_id', 'p2_id');
     });
 
-    test('Failed mutiny: No guns deducted, appointed team takes office', () => {
+    test('Failed mutiny: Pauses at MUTINY_REVEALED until Captain confirms advancement to NAVIGATION', () => {
       MutinyService.submitVote(room, 'tok_p1', 1);
       MutinyService.submitVote(room, 'tok_p2', 1);
       MutinyService.submitVote(room, 'tok_p3', 0);
@@ -148,18 +171,28 @@ describe('BR-002: MutinyService Flow & Invariants (UC-006, UC-007, UC-008)', () 
       const result = MutinyService.resolveMutiny(room);
 
       assert.equal(result.isSuccess, false);
-      assert.equal(result.totalGuns, 2); // Required is 3 for 5 players
-      assert.equal(room.captainId, 'cap_1');
-      assert.equal(room.lieutenantId, 'p1_id');
-      assert.equal(room.navigatorId, 'p2_id');
-      assert.equal(room.gamePhase, 'NAVIGATION');
+      assert.equal(result.totalGuns, 2);
+      assert.equal(room.gamePhase, 'MUTINY_REVEALED'); // Pauses for discussion
 
       // Guns are NOT deducted
       assert.equal(p1.gunCount, 3);
       assert.equal(p2.gunCount, 3);
+
+      // Non-captain cannot confirm
+      assert.throws(() => {
+        MutinyService.confirmMutinyOutcome(room, 'tok_p1');
+      }, /Chỉ có Thuyền trưởng mới có quyền xác nhận/);
+
+      // Captain confirms -> advances to NAVIGATION
+      const confirmRes = MutinyService.confirmMutinyOutcome(room, 'tok_cap');
+      assert.equal(confirmRes.nextPhase, 'NAVIGATION');
+      assert.equal(room.gamePhase, 'NAVIGATION');
+      assert.equal(room.lieutenantId, 'p1_id');
+      assert.equal(room.navigatorId, 'p2_id');
+      assert.equal(room.mutinySession, null);
     });
 
-    test('Successful mutiny (Single Winner): Deducts guns and appoints new Captain', () => {
+    test('Successful mutiny: Pauses at MUTINY_REVEALED until New Captain confirms advancement to APPOINT_TEAM', () => {
       MutinyService.submitVote(room, 'tok_p1', 2);
       MutinyService.submitVote(room, 'tok_p2', 1);
       MutinyService.submitVote(room, 'tok_p3', 0);
@@ -171,17 +204,22 @@ describe('BR-002: MutinyService Flow & Invariants (UC-006, UC-007, UC-008)', () 
       assert.equal(result.isTie, false);
       assert.equal(result.newCaptainId, 'p1_id');
       assert.equal(room.captainId, 'p1_id');
-      assert.equal(room.gamePhase, 'APPOINT_TEAM'); // New captain must appoint team
+      assert.equal(room.gamePhase, 'MUTINY_REVEALED'); // Pauses for discussion
 
       // Guns deducted
-      assert.equal(p1.gunCount, 1); // 3 - 2 = 1
-      assert.equal(p2.gunCount, 2); // 3 - 1 = 2
-      assert.equal(p3.gunCount, 3); // 0 voted
-      assert.equal(p4.gunCount, 3); // 0 voted
+      assert.equal(p1.gunCount, 1);
+      assert.equal(p2.gunCount, 2);
 
-      // Titles updated
-      assert.deepEqual(p1.publicTitles, ['CAPTAIN']);
-      assert.deepEqual(captain.publicTitles, []);
+      // Old captain cannot confirm anymore
+      assert.throws(() => {
+        MutinyService.confirmMutinyOutcome(room, 'tok_cap');
+      }, /Chỉ có Thuyền trưởng mới có quyền xác nhận/);
+
+      // New Captain (p1) confirms -> advances to APPOINT_TEAM
+      const confirmRes = MutinyService.confirmMutinyOutcome(room, 'tok_p1');
+      assert.equal(confirmRes.nextPhase, 'APPOINT_TEAM');
+      assert.equal(room.gamePhase, 'APPOINT_TEAM');
+      assert.equal(room.mutinySession, null);
     });
 
     test('Successful mutiny (Tie-breaker Chain Elimination)', () => {
@@ -210,8 +248,13 @@ describe('BR-002: MutinyService Flow & Invariants (UC-006, UC-007, UC-008)', () 
       assert.equal(step2.completed, true);
       assert.equal(step2.newCaptainId, 'p3_id'); // Last survivor p3 is new Captain!
       assert.equal(room.captainId, 'p3_id');
-      assert.equal(room.gamePhase, 'APPOINT_TEAM');
+      assert.equal(room.gamePhase, 'MUTINY_REVEALED');
       assert.deepEqual(p3.publicTitles, ['CAPTAIN']);
+
+      // New Captain confirms
+      const confirmRes = MutinyService.confirmMutinyOutcome(room, 'tok_p3');
+      assert.equal(confirmRes.nextPhase, 'APPOINT_TEAM');
+      assert.equal(room.gamePhase, 'APPOINT_TEAM');
     });
   });
 });

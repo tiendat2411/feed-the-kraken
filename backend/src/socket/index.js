@@ -324,6 +324,49 @@ export function setupSocket(server) {
       }
     });
 
+    // CONFIRM MUTINY OUTCOME & ADVANCE (Constitution Game Pace - Captain Button)
+    socket.on('confirm_mutiny_outcome', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = MutinyService.confirmMutinyOutcome(room, socket.sessionToken);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('MUTINY_OUTCOME_CONFIRMED', {
+          nextPhase: result.nextPhase,
+          captainId: result.captainId,
+          lieutenantId: result.lieutenantId,
+          navigatorId: result.navigatorId
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // CHECK MUTINY TIMEOUT (Auto-resolve offline voters when timer ends)
+    socket.on('check_mutiny_timeout', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const timeoutResult = MutinyService.autoResolveOfflineVoters(room);
+        if (timeoutResult) {
+          await RoomManager.saveSnapshot(room.id);
+          broadcastRoomState(io, room);
+        }
+
+        if (typeof callback === 'function') callback({ success: true, timeoutResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
     // DISCONNECT
     socket.on('disconnect', () => {
       console.log(`[Socket Disconnected] ID: ${socket.id}`);
