@@ -1,0 +1,12 @@
+{
+  "name": "feed-the-kraken-sandbox-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "spawn": "node bots/spawn.js"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.8.3"
+  }
+}

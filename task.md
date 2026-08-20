@@ -58,7 +58,7 @@
 **Goal**: Xây dựng công cụ giả lập người chơi ảo (Headless Bots) trên Node.js để lấp đầy phòng 5-11 người và tự động hóa thao tác qua các phase game mà không cần mở nhiều trình duyệt.
 
 ### Implementation
-- [ ] T039 [P] [US1] [BR-006] Tạo `BotClient.js` trong `scripts/bots/BotClient.js` quản lý 1 kết nối WebSocket qua `socket.io-client`, sinh `sessionToken` độc lập in-memory và emit `join_room`.
+- [x] T039 [P] [US1] [BR-006] Tạo `BotClient.js` trong `scripts/bots/BotClient.js` quản lý 1 kết nối WebSocket qua `socket.io-client`, sinh `sessionToken` độc lập in-memory và emit `join_room`.
 - [ ] T040 [US1] [BR-006] Tạo `BotManager.js` trong `scripts/bots/BotManager.js` để điều phối vòng đời spawn $N$ bots, lưu trữ danh sách bots trong Map, và xử lý graceful shutdown (`SIGINT`).
 - [ ] T041 [US1] [BR-006] Tạo CLI entrypoint `scripts/bots/spawn.js` nhận tham số `--room <ROOM_ID>` và `--count <N>` từ dòng lệnh.
 - [ ] T042 [P] [US2] [BR-006] Tạo `AutoResponder.js` trong `scripts/bots/AutoResponder.js` chứa dictionary các handlers cho các sự kiện Server yêu cầu hành động (`REQUIRE_VOTE`, `REQUIRE_TEAM_APPOINTMENT`, `REQUIRE_CARD_DISCARD`...) kèm random delay 500-1500ms.
