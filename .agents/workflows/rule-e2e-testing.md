@@ -2,34 +2,41 @@
 description: # QUY TRÌNH KIỂM ĐỊNH TỰ ĐỘNG BẰNG TRÌNH DUYỆT & HEADLESS BOTS (E2E TESTING WORKFLOW)
 ---
 
-##
+## 🧭 MỤC TIÊU & TỔNG QUAN
 
-Tài liệu này định nghĩa quy trình chuẩn để AI Agent tự động khởi chạy môi trường, mở trình duyệt web (Browser Subagent / Preview), tạo phòng chơi với tư cách là **Host (Human)**, sử dụng đàn **Headless Bots** để lấp đầy phòng, và tự động kiểm thử toàn diện luồng game để phát hiện và sửa lỗi.
+Tài liệu này định nghĩa quy trình chuẩn để AI Agent tự động khởi chạy môi trường, mở trình duyệt web (Browser Subagent / Preview), tạo phòng chơi với tư cách là **Host (Human/Captain)**, sử dụng đàn **Headless Bots** để lấp đầy phòng, và tự động kiểm thử toàn diện luồng game từ Sảnh chờ (Phase 1-3) đến Bổ nhiệm Ban điều hướng & Bỏ phiếu Nổi loạn (Phase 4).
 
 ---
 
-## 🔄 QUY TRÌNH 7 BƯỚC THỰC THI (7-STEP EXECUTION WORKFLOW)
+## 🔄 QUY TRÌNH THỰC THI (END-TO-END WORKFLOW)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor AI as AI Agent
+    actor AI as AI Agent (Host/Captain)
     participant Srv as Backend & Frontend
-    participant Browser as Browser Preview (Host)
+    participant Browser as Browser Preview (UI)
     participant Bots as Headless Bots (Node.js)
     
     AI->>Srv: 1. Kiểm tra / Khởi chạy Server (Port 3001 & 5173)
-    AI->>Browser: 2. Mở trình duyệt truy cập http://localhost:5173
-    AI->>Browser: 3. Nhập Nickname Host, Avatar -> Bấm "Create Voyage"
-    Browser-->>AI: 4. Đọc Room Code từ giao diện phòng chờ (VD: "ABCD")
-    AI->>Bots: 5. Chạy spawn.js --room ABCD --count 4 (chạy nền)
+    AI->>Browser: 2. Mở trình duyệt http://localhost:5173
+    AI->>Browser: 3. Nhập Nickname, Avatar -> Bấm "Create Voyage"
+    Browser-->>AI: 4. Đọc Room Code từ URL/giao diện (VD: "2370")
+    AI->>Bots: 5. Chạy spawn.js --room 2370 --count 4 (chạy nền)
     Bots-->>Browser: 6. 4 Bots kết nối Socket.io -> UI cập nhật đủ 5/5
-    AI->>Browser: 7. Bấm "START VOYAGE" -> Kiểm thử Game Phases & Tự fix lỗi
+    AI->>Browser: 7. Bấm "START VOYAGE" -> Chuyển sang Phase Ban Đêm
+    Note over Browser,Bots: Phase Ban Đêm: Role Reveal (20s Countdown)
+    Browser->>Browser: 8. Hết 20s -> Bình minh lên (DAY_1_CREW_SELECTION)
+    AI->>Browser: 9. Host (Captain) chọn Thuyền phó + Hoa tiêu -> Bấm "XÁC NHẬN"
+    Browser->>Bots: 10. Chuyển sang LOYALTY_CHECK -> Bots tự động nộp súng ẩn
+    Bots-->>Browser: 11. Đủ 4 phiếu -> Chuyển sang MUTINY_REVEALED (Lật bài)
+    AI->>Browser: 12. Host quan sát kết quả súng -> Bấm nút Xác nhận của Captain
+    Browser->>Browser: 13. Chuyển sang NAVIGATION (hoặc APPOINT_TEAM nếu bị lật đổ)
 ```
 
 ---
 
-## 📋 CHI TIẾT TỪNG BƯỚC THỰC HIỆN
+## 📋 CHI TIẾT CÁC BƯỚC KIỂM THỬ
 
 ### Bước 1: Khởi chạy môi trường dịch vụ (Service Bootstrap)
 Trước khi mở trình duyệt, Agent kiểm tra xem Backend và Frontend đã chạy chưa. Nếu chưa, khởi chạy dưới dạng daemon background tasks:
@@ -51,7 +58,7 @@ Agent gọi tool `browser_subagent` để tương tác với giao diện Web:
 ---
 
 ### Bước 4 & 5: Đọc Room Code và Kích hoạt Headless Bots
-1. **Lấy Room Code:** Agent đọc text trên tiêu đề phòng hoặc URL hiện tại (ví dụ: mã phòng `4-6` ký tự như `AB12` hoặc `661C`).
+1. **Lấy Room Code:** Agent đọc text trên tiêu đề phòng hoặc URL hiện tại (ví dụ: mã phòng `4-6` ký tự như `2370` hoặc `661C`).
 2. **Spawn Bots:** Agent gọi `run_command` chạy script bot ở chế độ nền:
    ```bash
    node scripts/bots/spawn.js --room <ROOM_CODE> --count 4
@@ -68,29 +75,62 @@ Agent dùng `browser_subagent` quan sát màn hình sảnh chờ:
 
 ---
 
-### Bước 7: Khởi chạy Game, Soi chiếu AC và Tự sửa lỗi (Game Phase Testing & Self-Healing)
+### Bước 7: Kiểm thử Giai đoạn Ban Đêm (Role Reveal & Pirates Gathering)
 1. **Bấm "START VOYAGE":** Agent click nút bắt đầu trên Browser Preview.
-2. **Kiểm tra Phase Ban đêm (Night Phase / Pirates Gathering):**
-   - Màn hình chuyển sang giao diện `RoleReveal.jsx`.
+2. **Xác minh Giao diện `RoleReveal.jsx`:**
    - Host nhìn thấy đúng vai trò bí mật của mình (`SAILOR`, `PIRATE` hoặc `CULT_LEADER`).
    - Nếu là `PIRATE`, hiển thị danh sách các đồng bọn hải tặc.
-   - Timer đếm ngược 20s hoạt động đồng bộ.
-3. **Kiểm tra Phase Ban ngày (Day Phase / Mutiny & Appointments):**
-   - Đàn Bots tự động phản hồi qua `AutoResponder` hoặc Agent có thể gửi lệnh can thiệp qua CLI Sandbox (`manage_task send_input`).
-   - Giao diện bàn cờ, nhật ký ván chơi, súng và chức danh cập nhật đúng logic.
-4. **Quy trình Tự Sửa Lỗi (Self-Healing Loop):**
-   - Nếu phát hiện lỗi giao diện (CSS vỡ, component không render), lỗi console (`get_console_message`), hoặc lỗi socket:
-     - Agent kiểm tra file mã nguồn liên quan (`src/...`).
-     - Sử dụng `replace_file_content` sửa lỗi ngay lập tức.
-     - Tải lại trang (F5) hoặc chạy lại luồng test để kiểm tra lại.
-5. **Dọn dẹp (Teardown):**
-   - Sau khi test xong, Agent tắt tiến trình bot an toàn (`SIGINT` hoặc gửi lệnh `exit`).
+   - Timer đếm ngược 20s hoạt động đồng bộ. Sau khi hết 20s, màn hình tự động chuyển sang Giai đoạn Ban ngày.
+
+---
+
+### Bước 8: Kiểm thử Bổ nhiệm Ban điều hướng (Phase 4 - Appoint Team)
+1. **Giao diện `MutinyBoard.jsx`:**
+   - Host (Thuyền trưởng đương nhiệm 👑) thấy bảng chọn Thuyền phó (🎖️) và Hoa tiêu (🧭).
+   - Kiểm tra **Smart Filtering**: Thuyền trưởng không thể chọn chính mình; không thể chọn 1 người cho cả 2 vị trí.
+2. **Thao tác:**
+   - Click chọn 1 Bot làm Thuyền phó (`selectedLt`).
+   - Click chọn 1 Bot khác làm Hoa tiêu (`selectedNav`).
+   - Nút **"XÁC NHẬN BAN ĐIỀU HƯỚNG"** sáng lên $\rightarrow$ Agent click xác nhận.
+
+---
+
+### Bước 9: Kiểm thử Biểu quyết Nổi loạn (Phase 4 - Loyalty Check / Mutiny Vote)
+1. **Chuyển sang `LOYALTY_CHECK`:**
+   - Giao diện hiển thị số súng cần thiết để lật đổ (VD: $3$ súng cho phòng 5 người).
+   - Đàn Headless Bots qua `AutoResponder` tự động gửi lệnh `submit_mutiny_vote` (chọn ngẫu nhiên $0, 1, 2$ súng sau 0.6 - 1.8s).
+   - Grid trạng thái thủy thủ đoàn cập nhật biểu tượng ✅ *"Đã nộp"* cho từng bot.
+   - Thuyền trưởng không có quyền vote (hiển thị banner quan sát).
+
+---
+
+### Bước 10: Kiểm thử Lật bài & Xác nhận của Thuyền trưởng (Phase 4 - Mutiny Reveal & Game Pace)
+1. **Chuyển sang `MUTINY_REVEALED`:**
+   - Màn hình lật mở số súng từng người đã nộp và tổng số súng thu được.
+   - Hệ thống **tạm dừng** (không tự động nhảy phase) để người chơi đọc kết quả.
+   - Hiển thị Banner kết quả:
+     - **Nổi loạn thành công:** Nếu tổng súng $\ge 3$ $\rightarrow$ Hiển thị Tân Thuyền trưởng.
+     - **Nổi loạn thất bại:** Nếu tổng súng $< 3$ $\rightarrow$ Thuyền trưởng cũ giữ quyền.
+2. **Thao tác của Thuyền trưởng (Hiến pháp Game Pace):**
+   - Chỉ Thuyền trưởng (mới hoặc cũ) thấy nút *"TIẾP TỤC HÀNH TRÌNH ĐIỀU HƯỚNG"* hoặc *"BẮT ĐẦU BỔ NHIỆM BAN ĐIỀU HƯỚNG MỚI"*.
+   - Agent bấm nút xác nhận $\rightarrow$ Phòng chuyển sang `NAVIGATION` hoặc `APPOINT_TEAM`.
+
+---
+
+### Bước 11: Quy trình Tự Sửa Lỗi (Self-Healing Loop) & Dọn dẹp
+- Nếu phát hiện lỗi giao diện (CSS vỡ, component không render), lỗi console (`get_console_message`), hoặc lỗi socket:
+  - Agent kiểm tra file mã nguồn liên quan (`frontend/src/...` hoặc `backend/src/...`).
+  - Sử dụng `replace_file_content` sửa lỗi ngay lập tức.
+  - Tải lại trang (F5) hoặc chạy lại luồng test để kiểm tra lại.
+- **Dọn dẹp:** Sau khi kiểm thử thành công, Agent tắt tiến trình bot nền (`kill`).
 
 ---
 
 ## 🎯 TIÊU CHUẨN ĐÁNH GIÁ THÀNH CÔNG (PASS CRITERIA)
-- [x] Host tạo phòng và lấy được Room Code hợp lệ.
-- [x] Đàn bot kết nối và render lên UI phòng chờ trong $< 3$ giây.
-- [x] Bấm "START VOYAGE" chuyển trạng thái mượt mà sang `PLAYING`.
-- [x] Không có lỗi console đỏ (Uncaught Exceptions) trên trình duyệt.
-- [x] Không bị rò rỉ vai trò của người chơi khác trong `room_state`.
+- [x] **Lobby (Phase 1-3):** Host tạo phòng, 4 bots vào đủ 5/5, Start Voyage hoạt động.
+- [x] **Night Phase:** Lật mở vai trò bí mật và Pirates Gathering trong 20s.
+- [x] **Appoint Team (Phase 4):** Captain chọn Thuyền phó và Hoa tiêu hợp lệ.
+- [x] **Mutiny Vote (Phase 4):** Bots tự nộp súng ẩn qua `AutoResponder`, UI nhận đủ phiếu.
+- [x] **Mutiny Resolution (Phase 4):** Lật bài súng chính xác, tạm dừng cho thảo luận.
+- [x] **Game Pace (Phase 4):** Chỉ Captain bấm xác nhận mới chuyển tiếp phase.
+- [x] **Console:** Không có lỗi Uncaught Exceptions đỏ trên Browser Preview.

@@ -23,11 +23,21 @@ export class AutoResponder {
   }
 
   /**
-   * Xử lý tự động bỏ phiếu Nổi loạn (Mutiny Voting)
+   * Xử lý tự động bỏ phiếu Nổi loạn (Mutiny Voting / Loyalty Check)
    * @param {BotClient} bot 
    * @param {Object} [payload] 
    */
   static async handleMutinyVote(bot, payload) {
+    // Không vote nếu là Captain
+    if (bot.currentRoomState?.captainId === bot.id) return;
+
+    // Kiểm tra xem đã vote chưa
+    const session = bot.currentRoomState?.mutinySession;
+    if (session) {
+      const myVote = session.votes?.find(v => v.playerId === bot.id);
+      if (myVote && myVote.hasVoted) return;
+    }
+
     const maxGuns = bot.guns || 0;
     let gunsToVote = 0;
 
@@ -47,7 +57,7 @@ export class AutoResponder {
 
     if (!bot.socket || !bot.socket.connected) return;
 
-    bot.socket.emit('submit_vote', { guns: gunsToVote }, (res) => {
+    bot.socket.emit('submit_mutiny_vote', { gunCount: gunsToVote }, (res) => {
       if (res?.success) {
         console.log(`[Auto-Responder] [${bot.nickname}] Đã bỏ phiếu Mutiny với ${gunsToVote} súng 🔫`);
       }
@@ -61,7 +71,7 @@ export class AutoResponder {
    */
   static async handleTeamAppointment(bot, payload) {
     const players = bot.currentRoomState?.players || [];
-    const candidates = players.filter(p => p.id !== bot.id);
+    const candidates = players.filter(p => p.id !== bot.id && p.status !== 'OFF_DUTY' && p.status !== 'ELIMINATED');
 
     if (candidates.length < 2) return;
 
@@ -74,12 +84,54 @@ export class AutoResponder {
 
     if (!bot.socket || !bot.socket.connected) return;
 
-    bot.socket.emit('appoint_crew', {
+    bot.socket.emit('appoint_team', {
       lieutenantId,
       navigatorId
     }, (res) => {
       if (res?.success) {
         console.log(`[Auto-Responder] [${bot.nickname}] (Captain) Đã bổ nhiệm: Lt=${shuffled[0].nickname}, Nav=${shuffled[1].nickname}`);
+      }
+    });
+  }
+
+  /**
+   * Xử lý tự động khi Bot là Thuyền trưởng và cần bấm xác nhận chuyển phase (MUTINY_REVEALED)
+   * @param {BotClient} bot 
+   */
+  static async handleConfirmOutcome(bot) {
+    if (bot.currentRoomState?.captainId !== bot.id) return;
+
+    await this.delay(this.getRandomDelay(1200, 2500));
+
+    if (!bot.socket || !bot.socket.connected) return;
+
+    bot.socket.emit('confirm_mutiny_outcome', (res) => {
+      if (res?.success) {
+        console.log(`[Auto-Responder] [${bot.nickname}] (Captain) Đã bấm xác nhận chuyển sang phase tiếp theo ➡️`);
+      }
+    });
+  }
+
+  /**
+   * Xử lý tự động khi Bot cần loại ứng viên hòa súng (Tie-breaker)
+   * @param {BotClient} bot 
+   */
+  static async handleEliminateTieCandidate(bot) {
+    const session = bot.currentRoomState?.mutinySession;
+    if (!session || session.currentChooser !== bot.id) return;
+
+    const candidates = (session.tieCandidates || []).filter(id => id !== bot.id);
+    if (!candidates.length) return;
+
+    const targetCandidateId = candidates[Math.floor(Math.random() * candidates.length)];
+
+    await this.delay(this.getRandomDelay(800, 2000));
+
+    if (!bot.socket || !bot.socket.connected) return;
+
+    bot.socket.emit('eliminate_tie_candidate', { targetCandidateId }, (res) => {
+      if (res?.success) {
+        console.log(`[Auto-Responder] [${bot.nickname}] Đã loại ứng viên hòa súng [${targetCandidateId}] ⚔️`);
       }
     });
   }
@@ -103,7 +155,6 @@ export class AutoResponder {
     } else if (bot.secretRole === 'CULT_LEADER' || bot.secretRole === 'CULTIST') {
       chosenCard = cards.find(c => c.direction === 'YELLOW' || c.color === 'YELLOW') || cards[0];
     } else {
-      // Chọn ngẫu nhiên
       chosenCard = cards[Math.floor(Math.random() * cards.length)];
     }
 
@@ -157,13 +208,28 @@ export class AutoResponder {
     switch (eventName) {
       case 'REQUIRE_VOTE':
       case 'MUTINY_VOTING_STARTED':
+      case 'LOYALTY_CHECK':
         await this.handleMutinyVote(bot, payload);
         break;
 
       case 'REQUIRE_TEAM_APPOINTMENT':
       case 'APPOINT_TEAM_PHASE':
+      case 'DAY_1_CREW_SELECTION':
+      case 'APPOINT_TEAM':
         if (bot.id && bot.currentRoomState?.captainId === bot.id) {
           await this.handleTeamAppointment(bot, payload);
+        }
+        break;
+
+      case 'MUTINY_REVEALED':
+        if (bot.id && bot.currentRoomState?.captainId === bot.id) {
+          await this.handleConfirmOutcome(bot);
+        }
+        break;
+
+      case 'MUTINY_TIE_BREAKER':
+        if (bot.id && bot.currentRoomState?.mutinySession?.currentChooser === bot.id) {
+          await this.handleEliminateTieCandidate(bot);
         }
         break;
 

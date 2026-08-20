@@ -88,9 +88,15 @@ export class BotClient {
           this.onStateChangeCallback(roomState);
         }
 
-        // Tự động kiểm tra trigger theo gamePhase nếu cần
-        if (roomState.gamePhase === 'MUTINY_VOTING') {
-          AutoResponder.dispatch(this, 'REQUIRE_VOTE', roomState);
+        // Tự động kiểm tra trigger theo gamePhase
+        if (roomState.gamePhase === 'LOYALTY_CHECK') {
+          AutoResponder.dispatch(this, 'LOYALTY_CHECK', roomState);
+        } else if (roomState.gamePhase === 'DAY_1_CREW_SELECTION' || roomState.gamePhase === 'APPOINT_TEAM') {
+          AutoResponder.dispatch(this, 'APPOINT_TEAM', roomState);
+        } else if (roomState.gamePhase === 'MUTINY_REVEALED') {
+          AutoResponder.dispatch(this, 'MUTINY_REVEALED', roomState);
+        } else if (roomState.gamePhase === 'MUTINY_TIE_BREAKER') {
+          AutoResponder.dispatch(this, 'MUTINY_TIE_BREAKER', roomState);
         }
       });
 
