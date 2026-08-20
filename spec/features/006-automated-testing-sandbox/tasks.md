@@ -21,7 +21,7 @@
 
 ### Implementation Tasks
 - [x] T039 [P] [US1] [BR-006] Tạo `BotClient.js` trong `scripts/bots/BotClient.js` quản lý 1 kết nối WebSocket qua `socket.io-client`, sinh `sessionToken` độc lập in-memory và emit `join_room`.
-- [ ] T040 [US1] [BR-006] Tạo `BotManager.js` trong `scripts/bots/BotManager.js` để điều phối vòng đời spawn $N$ bots, lưu trữ danh sách bots trong Map, và xử lý graceful shutdown (`SIGINT`).
+- [x] T040 [US1] [BR-006] Tạo `BotManager.js` trong `scripts/bots/BotManager.js` để điều phối vòng đời spawn $N$ bots, lưu trữ danh sách bots trong Map, và xử lý graceful shutdown (`SIGINT`).
 - [ ] T041 [US1] [BR-006] Tạo CLI entrypoint `scripts/bots/spawn.js` nhận tham số `--room <ROOM_ID>` và `--count <N>` từ dòng lệnh.
 
 **Checkpoint**: Có thể dùng script lấp đầy bất kỳ phòng chờ nào từ 1 đến 10 bots chỉ trong 1 dòng lệnh.
