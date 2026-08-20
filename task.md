@@ -91,7 +91,7 @@
 **Goal**: Rút thẻ điều hướng, Captain chọn 2 đưa cho Lieutenant, Lieutenant chọn 1 để đi.
 
 ### Implementation
-- [ ] T020 [P] [BR-003] Tạo entity `NavigationDeck` trong `backend/src/models/`.
+- [x] T020 [P] [BR-003] Tạo entity `NavigationDeck` trong `backend/src/models/`.
 - [ ] T021 [BR-003] Implement `NavigationService` (`backend/src/services/NavigationService.js`) xử lý rút bài, xáo bài khi hết.
 - [ ] T022 [BR-003] Xử lý luồng Captain-Lieutenant Draw. Dùng `emitPrivate` để gửi đúng lá bài cho đúng người.
 - [ ] T023 [BR-003] Bổ sung Action: Cult Leader có thể nhảy tàu.
