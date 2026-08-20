@@ -257,4 +257,53 @@ describe('BR-002: MutinyService Flow & Invariants (UC-006, UC-007, UC-008)', () 
       assert.equal(room.gamePhase, 'APPOINT_TEAM');
     });
   });
+
+  describe('BR-002: Speech Restriction (Cut Tongue / Off with the tongue) Invariants', () => {
+    test('Captain can apply cut tongue on a player', () => {
+      const res = MutinyService.applyCutTongue(room, 'tok_cap', 'p1_id');
+      assert.equal(res.success, true);
+      assert.equal(p1.speechRestricted, true);
+    });
+
+    test('Non-captain cannot apply cut tongue', () => {
+      assert.throws(() => {
+        MutinyService.applyCutTongue(room, 'tok_p1', 'p2_id');
+      }, /Chỉ có Thuyền trưởng đương nhiệm mới có quyền/);
+    });
+
+    test('Captain cannot cut his own tongue', () => {
+      assert.throws(() => {
+        MutinyService.applyCutTongue(room, 'tok_cap', 'cap_1');
+      }, /Thuyền trưởng không thể tự cắt lưỡi chính mình/);
+    });
+
+    test('Cut tongue player can vote guns but is NEVER appointed Captain (AC-4)', () => {
+      // Cut p1's tongue
+      MutinyService.applyCutTongue(room, 'tok_cap', 'p1_id');
+      assert.equal(p1.speechRestricted, true);
+
+      MutinyService.appointTeam(room, 'tok_cap', 'p2_id', 'p3_id');
+
+      // p1 votes 3 guns (highest), p2 votes 1 gun (second highest)
+      MutinyService.submitVote(room, 'tok_p1', 3);
+      MutinyService.submitVote(room, 'tok_p2', 1);
+      MutinyService.submitVote(room, 'tok_p3', 0);
+      MutinyService.submitVote(room, 'tok_p4', 0);
+
+      const result = MutinyService.resolveMutiny(room);
+
+      assert.equal(result.isSuccess, true);
+      assert.equal(result.totalGuns, 4); // 3 + 1 = 4 guns
+
+      // Both contributors have guns deducted
+      assert.equal(p1.gunCount, 0); // 3 - 3 = 0
+      assert.equal(p2.gunCount, 2); // 3 - 1 = 2
+
+      // New Captain MUST be p2, not p1 (p1 is skipped because speechRestricted is true)
+      assert.equal(result.newCaptainId, 'p2_id');
+      assert.equal(room.captainId, 'p2_id');
+      assert.deepEqual(p2.publicTitles, ['CAPTAIN']);
+      assert.deepEqual(p1.publicTitles, []);
+    });
+  });
 });

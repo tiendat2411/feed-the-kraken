@@ -367,6 +367,28 @@ export function setupSocket(server) {
       }
     });
 
+    // APPLY CUT TONGUE / SPEECH RESTRICTION (BR-002 / BR-004)
+    socket.on('cut_tongue', async ({ targetPlayerId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = MutinyService.applyCutTongue(room, socket.sessionToken, targetPlayerId);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('PLAYER_SPEECH_RESTRICTED', {
+          targetId: result.targetId,
+          targetName: result.targetName
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
     // DISCONNECT
     socket.on('disconnect', () => {
       console.log(`[Socket Disconnected] ID: ${socket.id}`);

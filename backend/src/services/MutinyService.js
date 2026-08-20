@@ -462,6 +462,45 @@ export class MutinyService {
   }
 
   /**
+   * Áp dụng hiệu ứng Cắt Lưỡi (Off with the tongue)
+   * Người bị cắt lưỡi vĩnh viễn không bao giờ được làm Captain (nhưng vẫn được nộp súng).
+   * @param {Object} room
+   * @param {string} captainToken - sessionToken của người ra quyết định (Thuyền trưởng)
+   * @param {string} targetPlayerId - ID người bị cắt lưỡi
+   * @returns {Object}
+   */
+  static applyCutTongue(room, captainToken, targetPlayerId) {
+    if (!room) throw new Error('Phòng không tồn tại');
+
+    const captain = room.getPlayerByToken(captainToken);
+    if (!captain) throw new Error('Người chơi không tồn tại');
+
+    if (room.captainId !== captain.id) {
+      throw new Error('Chỉ có Thuyền trưởng đương nhiệm mới có quyền ra lệnh Cắt Lưỡi');
+    }
+
+    const targetPlayer = room.getPlayer(targetPlayerId);
+    if (!targetPlayer) {
+      throw new Error('Người chơi chỉ định không tồn tại trong phòng');
+    }
+
+    if (targetPlayer.id === captain.id) {
+      throw new Error('Thuyền trưởng không thể tự cắt lưỡi chính mình');
+    }
+
+    targetPlayer.speechRestricted = true;
+    room.touch();
+
+    return {
+      success: true,
+      targetId: targetPlayer.id,
+      targetName: targetPlayer.nickname,
+      speechRestricted: true,
+      room
+    };
+  }
+
+  /**
    * Cập nhật danh sách publicTitles của các thuyền viên
    * @private
    */
