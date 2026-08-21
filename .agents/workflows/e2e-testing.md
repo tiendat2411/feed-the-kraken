@@ -4,7 +4,11 @@ description: # QUY TRÌNH KIỂM ĐỊNH TỰ ĐỘNG BẰNG TRÌNH DUYỆT & HE
 
 ## 🧭 MỤC TIÊU & TỔNG QUAN
 
-Tài liệu này định nghĩa quy trình chuẩn để AI Agent tự động khởi chạy môi trường, mở trình duyệt web (Browser Subagent / Preview), tạo phòng chơi với tư cách là **Host (Human/Captain)**, sử dụng đàn **Headless Bots** để lấp đầy phòng, và tự động kiểm thử toàn diện luồng game từ Sảnh chờ (Phase 1-3), Bổ nhiệm Ban điều hướng & Bỏ phiếu Nổi loạn (Phase 4), đến **Bốc bài Điều hướng, Nhật ký bí mật, và Tự nhảy tàu (Phase 5 - BR-003)**.
+Tài liệu này định nghĩa quy trình chuẩn để AI Agent tự động khởi chạy môi trường, mở trình duyệt web (Browser Subagent / Preview), tạo phòng chơi với tư cách là **Host (Human/Captain)**, sử dụng đàn **Headless Bots** để lấp đầy phòng, và tự động kiểm thử toàn diện luồng game từ:
+- **Sảnh chờ (Phase 1-3 - BR-001)**
+- **Bổ nhiệm Ban điều hướng & Bỏ phiếu Nổi loạn (Phase 4 - BR-002)**
+- **Bốc bài Điều hướng, Nhật ký bí mật, và Tự nhảy tàu (Phase 5 - BR-003)**
+- **Bản Đồ Lục Giác, Hành Động Ô, Hiệu Ứng Thẻ Bài & Nghi Thức Tà Giáo (Phase 6 - BR-004)**
 
 ---
 
@@ -36,7 +40,13 @@ sequenceDiagram
     Browser->>Bots: 15. Lượt Lieutenant: Bot nhận 2 thẻ kín qua emitPrivate -> Tự chọn 1 lá
     Note over Srv: 16. Server xáo trộn bí mật 2 lá bài trong Nhật Ký (Logbook)
     Bots-->>Browser: 17. Lượt Navigator: Bot nhận 2 thẻ xáo trộn -> Chọn 1 thẻ điều hướng
-    Browser->>Browser: 18. Chuyển sang EXECUTE_ACTIONS -> Trình diễn kết quả hải đồ
+    Browser->>Browser: 18. Tàu rẽ sóng di chuyển trên Bản đồ lục giác MapBoardUI.jsx (Phase 6)
+    Note over Browser,Bots: Phase 6: Di chuyển tàu (UC-012) -> Kích hoạt Map Actions (UC-013)
+    AI->>Browser: 19. Host (Captain) chọn mục tiêu thực thi Map Action (Search/Flog/Tongue/Kraken)
+    AI->>Browser: 20. Host bấm "Xác Nhận & Tiếp Tục" -> Kích hoạt Card Effects (UC-014)
+    Note over Browser,Bots: Xử lý Drunk (chuyển Captain), Armed/Disarmed, Mermaid/Telescope
+    Note over Browser,Bots: Nếu lá bài là CULT_UPRISING -> Kích hoạt Nghi Thức Tà Giáo (UC-015)
+    Browser->>Browser: 21. Cả phòng mù (CULT_UPRISING_BLIND) -> Giáo chủ hành động ẩn danh
 ```
 
 ---
@@ -153,26 +163,66 @@ Agent dùng `browser_subagent` quan sát màn hình sảnh chờ:
    - **Trường hợp Human (nếu Host làm Navigator):**
      - Host thấy 2 lá bài trong Hộp Nhật Ký.
      - Có 2 nút: **"CHỐT ĐIỀU HƯỚNG TÀU 🧭"** hoặc **"TỰ NHẢY TÀU (JUMP OVERBOARD) 🌊"**.
-2. **Trình diễn Thực thi (`EXECUTE_ACTIONS`):**
-   - Giao diện toàn phòng chuyển sang màn hình thông báo: *"Con Tàu Đang Rẽ Sóng Tiến Về Phía Trước!"*.
-   - Hiển thị thẻ bài màu sắc và hiệu ứng vừa được Hoa tiêu chọn.
+2. **Thực thi Hải đồ:**
+   - Hệ thống tự động di chuyển con tàu trên bản đồ và chuyển sang Giai đoạn Bản Đồ & Sự Kiện (`MapBoardUI.jsx`).
 
 ---
 
-### Bước 14: Kiểm thử Luồng Ngoại lệ: Nhảy Tàu & Bổ nhiệm Khẩn cấp (Phase 5 - Overboard & Emergency Navigator)
-*(Áp dụng khi kiểm thử kịch bản nhánh rẽ UC-011):*
-1. **Hoa tiêu bấm "TỰ NHẢY TÀU":**
-   - Mở modal cảnh báo 2 bước: *"BẠN CÓ CHẮC CHẮN MUỐN NHẢY TÀU?"*.
-   - Bấm xác nhận $\rightarrow$ Hoa tiêu chuyển sang `ELIMINATED`, súng về 0, toàn bộ bài Logbook bị hủy úp kín.
-   - Phòng chuyển sang `EMERGENCY_NAVIGATOR_SELECTION`.
-2. **Thuyền trưởng Bổ nhiệm Khẩn cấp:**
-   - Host (Captain) thấy danh sách ứng viên còn lại (cho phép chọn cả người `OFF_DUTY`).
-   - Click chọn 1 người $\rightarrow$ Bấm **"BỔ NHIỆM HOA TIÊU KHẨN CẤP 🚨"**.
-   - Vòng bốc bài bắt đầu lại từ đầu (Thuyền trưởng bốc 2 lá mới).
+### Bước 14: Kiểm thử Di Chuyển Tàu & Đồ Thị Bản Đồ Lục Giác (Phase 6 - UC-012)
+1. **Giao diện `MapBoardUI.jsx`:**
+   - Toàn bộ bản đồ Pointy-topped Hexagonal SVG hiển thị rõ nét với tọa độ node và các đường nối có mũi tên màu sắc (🔴 Đỏ Tây Bắc, 🟡 Vàng Bắc, 🔵 Xanh Đông Bắc).
+   - Con tàu ⛵ neo đậu tại Node mới tương ứng với màu bài Hoa tiêu vừa chọn.
+   - Đường đi lịch sử được nối liền bằng vệt sáng (`visitedNodes`).
+2. **Kiểm thử Tuyến tiếp tế (Supply Line - Map Long):**
+   - Khi tàu cắt qua ranh giới tiếp tế ở Long Journey, xác minh toàn bộ người chơi active được sạc đầy $3$ súng.
+3. **Kiểm thử Ô Thắng Cuộc (Victory Zones):**
+   - Nếu tàu cập bến `CRIMSON_COVE` (Pirate Win), `KRAKEN_NEST` (Cult Win), hoặc `BLUEWATER_BAY` (Sailor Win), xác nhận phòng chuyển sang kết thúc trò chơi.
 
 ---
 
-### Bước 15: Quy trình Tự Sửa Lỗi (Self-Healing Loop) & Dọn dẹp
+### Bước 15: Kiểm thử Hành Động Ô Bản Đồ (Phase 6 - UC-013 Map Actions)
+1. **Giao diện Modal `EXECUTE_MAP_ACTION`:**
+   - Khi ô cập bến có Action (`CABIN_SEARCH`, `FLOGGING`, `OFF_WITH_THE_TONGUE`, `FEED_THE_KRAKEN`), Modal nổi lên trên bản đồ.
+2. **Thao tác của Thuyền trưởng:**
+   - Chọn 1 người chơi từ danh sách thủy thủ đoàn (chặn chọn chính mình, chặn chọn người đã bị loại).
+   - Bấm nút **"THỰC THI HÀNH ĐỘNG NGAY"**.
+3. **Xác minh Kết quả Hành Động:**
+   - **`CABIN_SEARCH`:** Thuyền trưởng thấy phe thật (hoặc Tentacle 🐙 nếu đã chuyển thành Cultist); mục tiêu nhận `is_convertible = false`.
+   - **`FLOGGING`:** Cả phòng nhận thông báo câu loại trừ: *"Tôi không phải là [Phe X]"*; mục tiêu nhận `is_convertible = false`.
+   - **`OFF_WITH_THE_TONGUE`:** Mục tiêu bị gán `speech_restricted = true` (khóa chat và tước quyền làm Captain).
+   - **`FEED_THE_KRAKEN`:** Mục tiêu bị chuyển sang `ELIMINATED`, súng về 0. Nếu mục tiêu là `CULT_LEADER` $\rightarrow$ Phe Tà giáo lập tức thắng game!
+4. **Kiểm soát Nhịp độ Game (Game Pace):**
+   - Thuyền trưởng bấm nút **"XÁC NHẬN & TIẾP TỤC HẢI TRÌNH ➔"** (`confirm_map_action`) để chuyển sang Giai đoạn Hiệu Ứng Thẻ Bài.
+
+---
+
+### Bước 16: Kiểm thử Hiệu Ứng Thẻ Bài (Phase 6 - UC-014 Card Effects)
+1. **`DRUNK` (Say rượu):**
+   - Chức Thuyền trưởng tự động xoay theo chiều kim đồng hồ sang người kế tiếp (tự động bỏ qua người bị cắt lưỡi hoặc bị loại; người đang nghỉ phép `OFF_DUTY` vẫn nhận chức hợp lệ).
+2. **`ARMED` & `DISARMED`:**
+   - Hoa tiêu đương nhiệm nhận thêm $+1$ súng (với `ARMED`) hoặc bị tước $-1$ súng (với `DISARMED`, chặn dưới ở mức 0).
+3. **`MERMAID` (Tiếng hát Tiên cá):**
+   - Thuyền trưởng chỉ định 1 người chơi $\rightarrow$ Người chơi nhận popup riêng hiển thị 3 lá bài ngẫu nhiên từ Hòm Bỏ (`discard_pile`).
+   - Người chơi bấm **"ĐÃ LẮNG NGHE XONG"** để đóng popup.
+4. **`TELESCOPE` (Kính viễn vọng):**
+   - Thuyền trưởng chỉ định 1 người chơi $\rightarrow$ Người chơi nhận popup riêng soi lá bài đỉnh Chồng Rút (`draw_pile`).
+   - Người chơi bấm chọn **"GIỮ TRÊN ĐỈNH (KEEP)"** hoặc **"VỨT VÀO HÒM BỎ (DISCARD)"**.
+
+---
+
+### Bước 17: Kiểm thử Nghi Thức Tà Giáo (Phase 6 - UC-015 Cult Uprising)
+1. **Kích hoạt Nghi Thức:**
+   - Khi lá bài là `CULT_UPRISING`, Thuyền trưởng bấm **"LẬT MỞ BÀI NGHI THỨC"** từ bộ bài 5 lá `cultRitualDeck`.
+2. **Màn Đêm Toàn Cục (`CULT_UPRISING_BLIND`):**
+   - Người chơi thông thường thấy màn hình đen tuyền: *"MÀN ĐÊM BUÔNG XUỐNG..."* (Chống lộ danh tính Giáo chủ Anti-Sniffing AC-1).
+3. **Quyền Năng Giáo Chủ (`CULT_LEADER`):**
+   - **`GUNS_STASH`:** Giáo chủ phân phát đúng 3 khẩu súng cho thủy thủ đoàn $\rightarrow$ Kết thúc đêm, súng được cập nhật ẩn danh (AC-2).
+   - **`CULT_CABIN_SEARCH`:** Giáo chủ xem bảng hồ sơ mật danh tính thật của Bộ ba Ban điều hướng $\rightarrow$ Bấm hoàn tất thị kiến.
+   - **`CONVERSION`:** Giáo chủ chọn 1 người có `is_convertible == true` $\rightarrow$ Nạn nhân nhận thông báo mật `CULTIST_CONVERTED` kèm danh tính Giáo chủ (AC-3).
+
+---
+
+### Bước 18: Quy trình Tự Sửa Lỗi (Self-Healing Loop) & Dọn dẹp
 - Nếu phát hiện lỗi giao diện (CSS vỡ, component không render), lỗi console (`get_console_message`), hoặc lỗi socket:
   - Agent kiểm tra file mã nguồn liên quan (`frontend/src/...` hoặc `backend/src/...`).
   - Sử dụng `replace_file_content` sửa lỗi ngay lập tức.
@@ -193,4 +243,9 @@ Agent dùng `browser_subagent` quan sát màn hình sảnh chờ:
 - [x] **Secret Logbook Shuffle (Phase 5):** 2 lá Logbook được xáo ngẫu nhiên trước khi chuyển cho Hoa tiêu.
 - [x] **Navigator Decision & Execution (Phase 5):** Hoa tiêu chốt 1 lá, giao diện chuyển sang `EXECUTE_ACTIONS`.
 - [x] **Jump Overboard Handling (Phase 5):** Xử lý loại trừ người chơi, hủy logbook và chọn Emergency Navigator trơn tru.
-- [x] **Console:** Không có lỗi Uncaught Exceptions đỏ trên Browser Preview.
+- [x] **Hexagonal MapBoard UI (Phase 6):** Lưới lục giác SVG, đường nối 3 màu định hướng, hiển thị vị trí tàu và lịch sử đường đi.
+- [x] **Map Actions Execution (Phase 6):** Modal Khám xét, Đánh roi, Cắt lưỡi, Tế thần Kraken hoạt động mượt mà với quyền Thuyền trưởng.
+- [x] **Game Pace Map Confirmation (Phase 6):** Nút xác nhận của Thuyền trưởng điều phối tiến trình an toàn.
+- [x] **Card Effects (Phase 6):** Say rượu chuyển Thuyền trưởng bỏ qua cắt lưỡi/chết; Tiếp/tước súng Hoa tiêu; Popup Tiên cá và Kính viễn vọng hoạt động đúng quyền hạn.
+- [x] **Cult Uprising (Phase 6):** Màn đêm toàn cục bảo mật Anti-Sniffing; Giáo chủ phát 3 súng ẩn danh, soi ban điều hướng, thu nạp giáo đồ một chiều.
+- [x] **Console & Test Suite:** Không có lỗi Uncaught Exceptions đỏ trên Browser Preview; Toàn bộ 87/87 tests passed 100%.
