@@ -1,0 +1,225 @@
+{
+  "mapType": "QUICK_JOURNEY",
+  "name": "Hải Trình Nhanh (Quick Journey)",
+  "startNodeId": "START",
+  "victoryNodes": {
+    "PIRATE": "CRIMSON_COVE",
+    "CULT": "KRAKEN_NEST",
+    "SAILOR": "BLUEWATER_BAY"
+  },
+  "nodes": [
+    {
+      "id": "START",
+      "name": "Vịnh Crab Island (Xuất Phát)",
+      "row": 0,
+      "col": 0,
+      "x": 50,
+      "y": 88,
+      "mapAction": "NONE",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "Q_R1_C1",
+        "YELLOW": "Q_R1_C2",
+        "BLUE": "Q_R1_C3"
+      }
+    },
+    {
+      "id": "Q_R1_C1",
+      "name": "Vùng Biển Tây Nam",
+      "row": 1,
+      "col": 1,
+      "x": 36,
+      "y": 72,
+      "mapAction": "CABIN_SEARCH",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "Q_R2_C1",
+        "YELLOW": "Q_R2_C2",
+        "BLUE": "Q_R2_C3"
+      }
+    },
+    {
+      "id": "Q_R1_C2",
+      "name": "Vùng Biển Trung Nam",
+      "row": 1,
+      "col": 2,
+      "x": 50,
+      "y": 68,
+      "mapAction": "CABIN_SEARCH",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "Q_R2_C2",
+        "YELLOW": "Q_R2_C3",
+        "BLUE": "Q_R2_C4"
+      }
+    },
+    {
+      "id": "Q_R1_C3",
+      "name": "Vùng Biển Đông Nam",
+      "row": 1,
+      "col": 3,
+      "x": 64,
+      "y": 72,
+      "mapAction": "CABIN_SEARCH",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "Q_R2_C3",
+        "YELLOW": "Q_R2_C4",
+        "BLUE": "Q_R2_C5"
+      }
+    },
+    {
+      "id": "Q_R2_C1",
+      "name": "Rạn San Hô Hải Tặc",
+      "row": 2,
+      "col": 1,
+      "x": 23,
+      "y": 56,
+      "mapAction": "NONE",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "CRIMSON_COVE",
+        "YELLOW": "Q_R3_C1",
+        "BLUE": "Q_R3_C2"
+      }
+    },
+    {
+      "id": "Q_R2_C2",
+      "name": "Vùng Biển Tây Đảo",
+      "row": 2,
+      "col": 2,
+      "x": 36,
+      "y": 52,
+      "mapAction": "NONE",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "CRIMSON_COVE",
+        "YELLOW": "Q_R3_C1",
+        "BLUE": "Q_R3_C2"
+      }
+    },
+    {
+      "id": "Q_R2_C3",
+      "name": "Đảo Trung Tâm",
+      "row": 2,
+      "col": 3,
+      "x": 50,
+      "y": 48,
+      "mapAction": "FLOGGING",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "Q_R3_C1",
+        "YELLOW": "Q_R3_C2",
+        "BLUE": "Q_R3_C3"
+      }
+    },
+    {
+      "id": "Q_R2_C4",
+      "name": "Vùng Biển Đông Đảo",
+      "row": 2,
+      "col": 4,
+      "x": 64,
+      "y": 52,
+      "mapAction": "NONE",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "Q_R3_C2",
+        "YELLOW": "Q_R3_C3",
+        "BLUE": "BLUEWATER_BAY"
+      }
+    },
+    {
+      "id": "Q_R2_C5",
+      "name": "Hải Lưu Thủy Thủ",
+      "row": 2,
+      "col": 5,
+      "x": 77,
+      "y": 56,
+      "mapAction": "NONE",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "Q_R3_C2",
+        "YELLOW": "Q_R3_C3",
+        "BLUE": "BLUEWATER_BAY"
+      }
+    },
+    {
+      "id": "Q_R3_C1",
+      "name": "Vực Sâu Hải Tặc",
+      "row": 3,
+      "col": 1,
+      "x": 36,
+      "y": 34,
+      "mapAction": "FEED_THE_KRAKEN",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "CRIMSON_COVE",
+        "YELLOW": "KRAKEN_NEST",
+        "BLUE": "KRAKEN_NEST"
+      }
+    },
+    {
+      "id": "Q_R3_C2",
+      "name": "Vùng Biển Sương Mù",
+      "row": 3,
+      "col": 2,
+      "x": 50,
+      "y": 30,
+      "mapAction": "NONE",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "CRIMSON_COVE",
+        "YELLOW": "KRAKEN_NEST",
+        "BLUE": "BLUEWATER_BAY"
+      }
+    },
+    {
+      "id": "Q_R3_C3",
+      "name": "Vực Sâu Thủy Thủ",
+      "row": 3,
+      "col": 3,
+      "x": 64,
+      "y": 34,
+      "mapAction": "FEED_THE_KRAKEN",
+      "victoryZone": null,
+      "transitions": {
+        "RED": "KRAKEN_NEST",
+        "YELLOW": "KRAKEN_NEST",
+        "BLUE": "BLUEWATER_BAY"
+      }
+    },
+    {
+      "id": "CRIMSON_COVE",
+      "name": "Vịnh Hải Tặc (Crimson Cove)",
+      "row": 4,
+      "col": 1,
+      "x": 23,
+      "y": 22,
+      "mapAction": "NONE",
+      "victoryZone": "PIRATE_VICTORY",
+      "transitions": {}
+    },
+    {
+      "id": "KRAKEN_NEST",
+      "name": "Hang Ổ Kraken (Kraken's Nest)",
+      "row": 4,
+      "col": 2,
+      "x": 50,
+      "y": 12,
+      "mapAction": "NONE",
+      "victoryZone": "CULT_VICTORY",
+      "transitions": {}
+    },
+    {
+      "id": "BLUEWATER_BAY",
+      "name": "Vịnh Thủy Thủ (Bluewater Bay)",
+      "row": 4,
+      "col": 3,
+      "x": 77,
+      "y": 22,
+      "mapAction": "NONE",
+      "victoryZone": "SAILOR_VICTORY",
+      "transitions": {}
+    }
+  ]
+}
