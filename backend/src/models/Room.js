@@ -1,5 +1,6 @@
 import Player from './Player.js';
 import NavigationDeck from './NavigationDeck.js';
+import MapBoard from './MapBoard.js';
 
 class Room {
   /**
@@ -23,6 +24,7 @@ class Room {
     this.nominatedNavigatorId = null;
     this.mutinySession = null;
     this.navigationDeck = null;
+    this.mapBoard = null;
     this.phaseDeadline = null; // Timestamp kết thúc phase hiện tại
     this.createdAt = Date.now();
     this.lastActivity = Date.now();
@@ -130,6 +132,7 @@ class Room {
       nominatedNavigatorId: this.nominatedNavigatorId,
       mutinySession: this.mutinySession ? this.mutinySession.toSanitizedJSON(requestingPlayer?.id) : null,
       navigationDeck: this.navigationDeck ? this.navigationDeck.toSanitizedJSON() : null,
+      mapBoard: this.mapBoard ? this.mapBoard.toSanitizedJSON() : null,
       phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
@@ -165,6 +168,7 @@ class Room {
       nominatedNavigatorId: this.nominatedNavigatorId,
       mutinySession: this.mutinySession ? this.mutinySession.toJSON() : null,
       navigationDeck: this.navigationDeck ? this.navigationDeck.toJSON() : null,
+      mapBoard: this.mapBoard ? this.mapBoard.toJSON() : null,
       navigationHand: this.navigationHand || null,
       executedNavigationCard: this.executedNavigationCard || null,
       phaseDeadline: this.phaseDeadline,
@@ -189,6 +193,7 @@ class Room {
     room.nominatedNavigatorId = data.nominatedNavigatorId || null;
     room.mutinySession = data.mutinySession ? data.mutinySession : null;
     room.navigationDeck = data.navigationDeck ? NavigationDeck.fromJSON(data.navigationDeck) : null;
+    room.mapBoard = data.mapBoard ? MapBoard.fromJSON(data.mapBoard) : null;
     room.navigationHand = data.navigationHand || null;
     room.executedNavigationCard = data.executedNavigationCard || null;
     room.phaseDeadline = data.phaseDeadline || null;

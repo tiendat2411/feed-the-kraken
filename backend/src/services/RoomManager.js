@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto';
 import redisClient from '../config/redis.js';
 import Room from '../models/Room.js';
 import Player from '../models/Player.js';
+import MapBoard from '../models/MapBoard.js';
 import { RoleDistributionService } from './RoleDistribution.js';
 
 // Map<roomId, Room>
@@ -124,6 +125,12 @@ export class RoomManager {
     room.status = 'IN_GAME';
     room.gamePhase = 'PIRATES_GATHERING';
     room.phaseDeadline = Date.now() + 20000; // 20 giây đếm ngược ban đêm
+
+    // Khởi tạo MapBoard (ENT-005) cho ván chơi
+    room.mapBoard = new MapBoard({
+      roomId: room.id,
+      mapMode: room.mapType
+    });
 
     // 3. Chỉ định Thuyền trưởng ban đầu (Mặc định là Host)
     room.captainId = room.hostId;
