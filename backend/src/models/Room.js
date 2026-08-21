@@ -27,6 +27,9 @@ class Room {
     this.mapBoard = null;
     this.pendingMapAction = null;
     this.lastMapActionResult = null;
+    this.pendingCardAction = null;
+    this.pendingMermaidInspection = null;
+    this.pendingTelescopeInspection = null;
     this.phaseDeadline = null; // Timestamp kết thúc phase hiện tại
     this.createdAt = Date.now();
     this.lastActivity = Date.now();
@@ -146,6 +149,9 @@ class Room {
             }
           : this.lastMapActionResult
       ) : null,
+      pendingCardAction: this.pendingCardAction || null,
+      myMermaidCards: (this.pendingMermaidInspection && requestingPlayer && this.pendingMermaidInspection.targetPlayerId === requestingPlayer.id) ? (this.pendingMermaidInspection.cards || []) : [],
+      myTelescopeCard: (this.pendingTelescopeInspection && requestingPlayer && this.pendingTelescopeInspection.targetPlayerId === requestingPlayer.id) ? (this.pendingTelescopeInspection.card || null) : null,
       phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
@@ -184,6 +190,9 @@ class Room {
       mapBoard: this.mapBoard ? this.mapBoard.toJSON() : null,
       pendingMapAction: this.pendingMapAction || null,
       lastMapActionResult: this.lastMapActionResult || null,
+      pendingCardAction: this.pendingCardAction || null,
+      pendingMermaidInspection: this.pendingMermaidInspection || null,
+      pendingTelescopeInspection: this.pendingTelescopeInspection || null,
       navigationHand: this.navigationHand || null,
       executedNavigationCard: this.executedNavigationCard || null,
       phaseDeadline: this.phaseDeadline,
@@ -211,6 +220,9 @@ class Room {
     room.mapBoard = data.mapBoard ? MapBoard.fromJSON(data.mapBoard) : null;
     room.pendingMapAction = data.pendingMapAction || null;
     room.lastMapActionResult = data.lastMapActionResult || null;
+    room.pendingCardAction = data.pendingCardAction || null;
+    room.pendingMermaidInspection = data.pendingMermaidInspection || null;
+    room.pendingTelescopeInspection = data.pendingTelescopeInspection || null;
     room.navigationHand = data.navigationHand || null;
     room.executedNavigationCard = data.executedNavigationCard || null;
     room.phaseDeadline = data.phaseDeadline || null;

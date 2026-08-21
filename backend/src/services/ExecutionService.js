@@ -297,6 +297,347 @@ export class ExecutionService {
       room
     };
   }
+
+  /**
+   * Tự động kích hoạt Hiệu Ứng Thẻ Bài khi bước vào phase EXECUTE_CARD_ACTION (UC-014)
+   * @param {Object} room - Instance Room
+   * @returns {Object}
+   */
+  static executeCardAction(room) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'EXECUTE_CARD_ACTION') {
+      throw new Error(`Không thể thực thi Card Action ở giai đoạn ${room.gamePhase}`);
+    }
+
+    const executedCard = room.executedNavigationCard;
+    const cardAction = executedCard?.action || 'NONE';
+
+    switch (cardAction) {
+      case 'DRUNK': {
+        // Say rượu (AC-1 UC-014): Chuyển Thuyền trưởng theo vòng tròn kim đồng hồ, bỏ qua bị cắt lưỡi / eliminated
+        const players = room.getPlayers();
+        const currentIndex = players.findIndex(p => p.id === room.captainId);
+        
+        let newCaptain = null;
+        for (let i = 1; i < players.length; i++) {
+          const candidate = players[(currentIndex + i) % players.length];
+          if (candidate.status !== 'ELIMINATED' && !candidate.speechRestricted) {
+            newCaptain = candidate;
+            break;
+          }
+        }
+
+        if (newCaptain && newCaptain.id !== room.captainId) {
+          const oldCaptain = room.getPlayer(room.captainId);
+          if (oldCaptain) {
+            oldCaptain.publicTitles = oldCaptain.publicTitles.filter(t => t !== 'CAPTAIN');
+          }
+          room.captainId = newCaptain.id;
+          if (!newCaptain.publicTitles.includes('CAPTAIN')) {
+            newCaptain.publicTitles.push('CAPTAIN');
+          }
+
+          room.gamePhase = 'ROUND_END';
+          room.pendingCardAction = null;
+          room.touch();
+
+          return {
+            actionType: 'DRUNK',
+            oldCaptainId: oldCaptain?.id,
+            newCaptainId: newCaptain.id,
+            newCaptainName: newCaptain.nickname,
+            nextPhase: 'ROUND_END',
+            publicMessage: `${oldCaptain?.nickname || 'Thuyền trưởng'} bị Say Rượu! Chức Thuyền trưởng được chuyển giao cho ${newCaptain.nickname}.`,
+            room
+          };
+        }
+
+        room.gamePhase = 'ROUND_END';
+        room.touch();
+        return {
+          actionType: 'DRUNK',
+          nextPhase: 'ROUND_END',
+          publicMessage: 'Thuyền trưởng bị Say Rượu nhưng không tìm thấy người kế nhiệm hợp lệ.',
+          room
+        };
+      }
+
+      case 'ARMED': {
+        // Vũ trang: Tiếp 1 súng cho Hoa tiêu đương nhiệm
+        const navigator = room.getPlayer(room.navigatorId);
+        if (navigator) {
+          navigator.gunCount += 1;
+        }
+
+        room.gamePhase = 'ROUND_END';
+        room.pendingCardAction = null;
+        room.touch();
+
+        return {
+          actionType: 'ARMED',
+          navigatorId: navigator?.id,
+          navigatorName: navigator?.nickname,
+          gunCount: navigator?.gunCount,
+          nextPhase: 'ROUND_END',
+          publicMessage: `Hoa tiêu ${navigator?.nickname || ''} được tiếp thêm 1 khẩu súng!`,
+          room
+        };
+      }
+
+      case 'DISARMED': {
+        // Tước vũ khí: Trừ 1 súng của Hoa tiêu đương nhiệm nếu có
+        const navigator = room.getPlayer(room.navigatorId);
+        if (navigator) {
+          navigator.gunCount = Math.max(0, navigator.gunCount - 1);
+        }
+
+        room.gamePhase = 'ROUND_END';
+        room.pendingCardAction = null;
+        room.touch();
+
+        return {
+          actionType: 'DISARMED',
+          navigatorId: navigator?.id,
+          navigatorName: navigator?.nickname,
+          gunCount: navigator?.gunCount,
+          nextPhase: 'ROUND_END',
+          publicMessage: `Hoa tiêu ${navigator?.nickname || ''} bị tước 1 khẩu súng!`,
+          room
+        };
+      }
+
+      case 'MERMAID': {
+        // Tiếng hát Tiên cá (AC-2 UC-014): Chờ Thuyền trưởng chỉ định 1 người
+        room.gamePhase = 'CARD_ACTION_TARGET_SELECTION';
+        room.pendingCardAction = {
+          type: 'MERMAID',
+          captainId: room.captainId
+        };
+        room.touch();
+
+        return {
+          actionType: 'MERMAID',
+          requiresTargetSelection: true,
+          captainId: room.captainId,
+          nextPhase: 'CARD_ACTION_TARGET_SELECTION',
+          publicMessage: 'Tiếng hát Tiên cá vang lên! Thuyền trưởng hãy chỉ định 1 người chơi bí mật lắng nghe.',
+          room
+        };
+      }
+
+      case 'TELESCOPE': {
+        // Kính Viễn Vọng (AC-2 UC-014): Chờ Thuyền trưởng chỉ định 1 người
+        room.gamePhase = 'CARD_ACTION_TARGET_SELECTION';
+        room.pendingCardAction = {
+          type: 'TELESCOPE',
+          captainId: room.captainId
+        };
+        room.touch();
+
+        return {
+          actionType: 'TELESCOPE',
+          requiresTargetSelection: true,
+          captainId: room.captainId,
+          nextPhase: 'CARD_ACTION_TARGET_SELECTION',
+          publicMessage: 'Kính Viễn Vọng được kích hoạt! Thuyền trưởng hãy chỉ định 1 người chơi bí mật soi đỉnh cọc bài.',
+          room
+        };
+      }
+
+      case 'CULT_UPRISING': {
+        // Nghi thức Tà giáo (UC-015)
+        room.gamePhase = 'CULT_UPRISING';
+        room.pendingCardAction = null;
+        room.touch();
+
+        return {
+          actionType: 'CULT_UPRISING',
+          nextPhase: 'CULT_UPRISING',
+          publicMessage: 'Nghi thức Tà Giáo (Cult Uprising) bắt đầu trỗi dậy!',
+          room
+        };
+      }
+
+      case 'NONE':
+      default: {
+        room.gamePhase = 'ROUND_END';
+        room.pendingCardAction = null;
+        room.touch();
+
+        return {
+          actionType: 'NONE',
+          nextPhase: 'ROUND_END',
+          publicMessage: 'Lá bài không có hiệu ứng đặc biệt.',
+          room
+        };
+      }
+    }
+  }
+
+  /**
+   * Thuyền trưởng chỉ định người nhận hiệu ứng Mermaid hoặc Telescope (AC-2 UC-014)
+   * @param {Object} room 
+   * @param {string} captainToken 
+   * @param {string} targetPlayerId 
+   * @returns {Object}
+   */
+  static designateCardActionTarget(room, captainToken, targetPlayerId) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'CARD_ACTION_TARGET_SELECTION') {
+      throw new Error(`Không thể chỉ định mục tiêu ở giai đoạn ${room.gamePhase}`);
+    }
+
+    if (!room.pendingCardAction || !room.pendingCardAction.type) {
+      throw new Error('Không có hiệu ứng thẻ bài nào đang chờ chỉ định mục tiêu');
+    }
+
+    const captain = room.getPlayerByToken(captainToken);
+    if (!captain || room.captainId !== captain.id) {
+      throw new Error('Chỉ có Thuyền trưởng đương nhiệm mới có quyền chỉ định người nhận hiệu ứng');
+    }
+
+    const targetPlayer = room.getPlayer(targetPlayerId);
+    if (!targetPlayer) {
+      throw new Error('Người chơi mục tiêu không tồn tại trong phòng');
+    }
+
+    if (targetPlayer.status === 'ELIMINATED') {
+      throw new Error('Không thể chỉ định người chơi đã bị loại khỏi tàu');
+    }
+
+    if (targetPlayer.id === room.captainId) {
+      throw new Error('Thuyền trưởng không thể tự chỉ định chính mình');
+    }
+
+    const actionType = room.pendingCardAction.type;
+
+    if (actionType === 'MERMAID') {
+      // Lấy tối đa 3 lá bài bị hủy gần nhất đã xáo trộn
+      const mermaidCards = room.navigationDeck.peekRecentDiscard(3);
+      room.pendingMermaidInspection = {
+        targetPlayerId: targetPlayer.id,
+        cards: mermaidCards
+      };
+      room.gamePhase = 'MERMAID_INSPECTION';
+      room.touch();
+
+      return {
+        actionType: 'MERMAID',
+        targetPlayerId: targetPlayer.id,
+        targetPlayerName: targetPlayer.nickname,
+        cards: mermaidCards,
+        nextPhase: 'MERMAID_INSPECTION',
+        publicMessage: `Thuyền trưởng đã chỉ định ${targetPlayer.nickname} lắng nghe Tiếng hát Tiên cá.`,
+        room
+      };
+    }
+
+    if (actionType === 'TELESCOPE') {
+      // Lấy lá bài trên cùng của draw_pile
+      const topCard = room.navigationDeck.peekTopDrawPile();
+      room.pendingTelescopeInspection = {
+        targetPlayerId: targetPlayer.id,
+        card: topCard
+      };
+      room.gamePhase = 'TELESCOPE_INSPECTION';
+      room.touch();
+
+      return {
+        actionType: 'TELESCOPE',
+        targetPlayerId: targetPlayer.id,
+        targetPlayerName: targetPlayer.nickname,
+        card: topCard,
+        nextPhase: 'TELESCOPE_INSPECTION',
+        publicMessage: `Thuyền trưởng đã trao Kính viễn vọng cho ${targetPlayer.nickname} soi đỉnh cọc bài.`,
+        room
+      };
+    }
+
+    throw new Error(`Loại hiệu ứng không hỗ trợ chỉ định mục tiêu: ${actionType}`);
+  }
+
+  /**
+   * Người được chỉ định Kính viễn vọng quyết định GIỮ hoặc VỨT lá bài trên đỉnh cọc bài (AC-3 UC-014)
+   * @param {Object} room 
+   * @param {string} playerToken 
+   * @param {'KEEP'|'DISCARD'} decision 
+   * @returns {Object}
+   */
+  static resolveTelescopeDecision(room, playerToken, decision) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'TELESCOPE_INSPECTION') {
+      throw new Error(`Không thể giải quyết Kính viễn vọng ở giai đoạn ${room.gamePhase}`);
+    }
+
+    const player = room.getPlayerByToken(playerToken);
+    if (!player || !room.pendingTelescopeInspection || room.pendingTelescopeInspection.targetPlayerId !== player.id) {
+      throw new Error('Bạn không phải là người được chỉ định sử dụng Kính viễn vọng');
+    }
+
+    let publicMessage;
+    if (decision === 'DISCARD') {
+      const discarded = room.navigationDeck.discardTopDrawPile();
+      publicMessage = `${player.nickname} đã dùng Kính viễn vọng và quyết định VỨT lá bài trên đỉnh vào Discard Pile.`;
+    } else {
+      // 'KEEP'
+      publicMessage = `${player.nickname} đã dùng Kính viễn vọng và quyết định GIỮ lá bài trên đỉnh.`;
+    }
+
+    room.pendingTelescopeInspection = null;
+    room.pendingCardAction = null;
+    room.gamePhase = 'ROUND_END';
+    room.touch();
+
+    return {
+      success: true,
+      decision,
+      nextPhase: 'ROUND_END',
+      publicMessage,
+      room
+    };
+  }
+
+  /**
+   * Người được chỉ định Tiếng hát tiên cá xác nhận đã xem xong các lá bài bị hủy (AC-2 UC-014)
+   * @param {Object} room 
+   * @param {string} playerToken 
+   * @returns {Object}
+   */
+  static acknowledgeMermaidInspection(room, playerToken) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'MERMAID_INSPECTION') {
+      throw new Error(`Không thể xác nhận Tiên cá ở giai đoạn ${room.gamePhase}`);
+    }
+
+    const player = room.getPlayerByToken(playerToken);
+    if (!player || !room.pendingMermaidInspection || room.pendingMermaidInspection.targetPlayerId !== player.id) {
+      throw new Error('Bạn không phải là người được chỉ định lắng nghe Tiếng hát Tiên cá');
+    }
+
+    room.pendingMermaidInspection = null;
+    room.pendingCardAction = null;
+    room.gamePhase = 'ROUND_END';
+    room.touch();
+
+    return {
+      success: true,
+      nextPhase: 'ROUND_END',
+      publicMessage: `${player.nickname} đã nghe xong Tiếng hát Tiên cá.`,
+      room
+    };
+  }
 }
 
 export default ExecutionService;

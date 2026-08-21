@@ -644,7 +644,7 @@ export function setupSocket(server) {
       }
     });
 
-    // CONFIRM MAP ACTION & ADVANCE (UC-013 Game Pace)
+    // CONFIRM MAP ACTION & ADVANCE (UC-013 Game Pace -> UC-014 Card Actions)
     socket.on('confirm_map_action', async (callback) => {
       try {
         const found = RoomManager.getRoomByToken(socket.sessionToken);
@@ -652,15 +652,151 @@ export function setupSocket(server) {
 
         const { room } = found;
         const advanceResult = ExecutionService.confirmMapActionAndAdvance(room, socket.sessionToken);
+
+        // Tự động kích hoạt Card Action sau khi xác nhận Map Action
+        const cardActionResult = ExecutionService.executeCardAction(room);
         await RoomManager.saveSnapshot(room.id);
 
         io.to(room.id).emit('MAP_ACTION_CONFIRMED', {
-          nextPhase: advanceResult.nextPhase,
+          nextPhase: cardActionResult.nextPhase,
           cardAction: advanceResult.cardAction
+        });
+
+        io.to(room.id).emit('CARD_ACTION_EXECUTED', {
+          actionType: cardActionResult.actionType,
+          publicMessage: cardActionResult.publicMessage,
+          nextPhase: cardActionResult.nextPhase,
+          requiresTargetSelection: cardActionResult.requiresTargetSelection || false,
+          captainId: cardActionResult.captainId || null,
+          newCaptainId: cardActionResult.newCaptainId || null
+        });
+
+        if (cardActionResult.requiresTargetSelection) {
+          io.to(room.id).emit('CARD_ACTION_TARGET_SELECTION_STARTED', {
+            action: cardActionResult.actionType,
+            captainId: cardActionResult.captainId
+          });
+        }
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, advanceResult, cardActionResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // EXECUTE CARD ACTION (UC-014)
+    socket.on('execute_card_action', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const cardActionResult = ExecutionService.executeCardAction(room);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('CARD_ACTION_EXECUTED', {
+          actionType: cardActionResult.actionType,
+          publicMessage: cardActionResult.publicMessage,
+          nextPhase: cardActionResult.nextPhase,
+          requiresTargetSelection: cardActionResult.requiresTargetSelection || false,
+          captainId: cardActionResult.captainId || null,
+          newCaptainId: cardActionResult.newCaptainId || null
+        });
+
+        if (cardActionResult.requiresTargetSelection) {
+          io.to(room.id).emit('CARD_ACTION_TARGET_SELECTION_STARTED', {
+            action: cardActionResult.actionType,
+            captainId: cardActionResult.captainId
+          });
+        }
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, cardActionResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // DESIGNATE CARD ACTION TARGET (Mermaid / Telescope - UC-014 AC-2)
+    socket.on('designate_card_action_target', async ({ targetPlayerId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.designateCardActionTarget(room, socket.sessionToken, targetPlayerId);
+        await RoomManager.saveSnapshot(room.id);
+
+        // Công khai người được chỉ định cho toàn phòng
+        io.to(room.id).emit('CARD_ACTION_TARGET_DESIGNATED', {
+          actionType: result.actionType,
+          targetPlayerId: result.targetPlayerId,
+          targetPlayerName: result.targetPlayerName,
+          publicMessage: result.publicMessage
+        });
+
+        // Gửi dữ liệu bí mật chỉ riêng cho người được chỉ định
+        if (result.actionType === 'MERMAID') {
+          emitPrivate(io, room.id, result.targetPlayerId, 'MERMAID_DATA', {
+            cards: result.cards
+          });
+        } else if (result.actionType === 'TELESCOPE') {
+          emitPrivate(io, room.id, result.targetPlayerId, 'TELESCOPE_DATA', {
+            card: result.card
+          });
+        }
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // RESOLVE TELESCOPE DECISION (UC-014 AC-3)
+    socket.on('resolve_telescope_decision', async ({ decision }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.resolveTelescopeDecision(room, socket.sessionToken, decision);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('TELESCOPE_DECISION_RESOLVED', {
+          decision: result.decision,
+          publicMessage: result.publicMessage,
+          nextPhase: result.nextPhase
         });
         broadcastRoomState(io, room);
 
-        if (typeof callback === 'function') callback({ success: true, advanceResult });
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // ACKNOWLEDGE MERMAID INSPECTION (UC-014 AC-2)
+    socket.on('acknowledge_mermaid', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.acknowledgeMermaidInspection(room, socket.sessionToken);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('MERMAID_INSPECTION_COMPLETED', {
+          publicMessage: result.publicMessage,
+          nextPhase: result.nextPhase
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
       } catch (err) {
         if (typeof callback === 'function') callback({ success: false, error: err.message });
       }

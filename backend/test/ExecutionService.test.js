@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import Room from '../src/models/Room.js';
 import Player from '../src/models/Player.js';
 import MapBoard from '../src/models/MapBoard.js';
+import NavigationDeck from '../src/models/NavigationDeck.js';
 import { ExecutionService } from '../src/services/ExecutionService.js';
 
-describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
+describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', () => {
   function setupTestRoom(mapType = 'QUICK_JOURNEY') {
     const room = new Room({ id: 'EXEC01', hostId: 'p_host' });
     room.mapType = mapType;
@@ -19,6 +20,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
     const p5 = new Player({ id: 'p5', sessionToken: 'tok_5', nickname: 'Sailor2', gunCount: 3 });
 
     p1.factionRole = 'SAILOR';
+    p1.publicTitles = ['CAPTAIN'];
     p2.factionRole = 'SAILOR';
     p3.factionRole = 'PIRATE';
     p4.factionRole = 'CULT_LEADER';
@@ -28,6 +30,8 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
     room.captainId = p1.id;
     room.lieutenantId = p2.id;
     room.navigatorId = p3.id;
+
+    room.navigationDeck = new NavigationDeck({ roomId: room.id, mapType });
 
     return { room, p1, p2, p3, p4, p5 };
   }
@@ -50,7 +54,6 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
       assert.equal(room.mapBoard.shipPosition, 'Q_R1_C3');
       assert.deepEqual(room.mapBoard.visitedNodes, ['START', 'Q_R1_C3']);
 
-      // Q_R1_C3 có mapAction: CABIN_SEARCH -> rẽ nhánh sang EXECUTE_MAP_ACTION
       assert.equal(result.nextPhase, 'EXECUTE_MAP_ACTION');
       assert.equal(room.gamePhase, 'EXECUTE_MAP_ACTION');
       assert.equal(result.mapAction, 'CABIN_SEARCH');
@@ -184,7 +187,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
     });
 
     test('FLOGGING (AC-4): Công khai câu loại trừ và gán isConvertible = false', () => {
-      const { room, p1, p2 } = setupTestRoom(); // p2 là SAILOR
+      const { room, p1, p2 } = setupTestRoom();
       room.gamePhase = 'EXECUTE_MAP_ACTION';
       room.pendingMapAction = { type: 'FLOGGING', nodeId: 'Q_R2_C3' };
 
@@ -208,7 +211,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
     });
 
     test('FEED_THE_KRAKEN (AC-3): Ném trúng Cult Leader lập tức kết thúc game với chiến thắng cho phe CULT', () => {
-      const { room, p1, p4 } = setupTestRoom(); // p4 là CULT_LEADER
+      const { room, p1, p4 } = setupTestRoom();
       room.gamePhase = 'EXECUTE_MAP_ACTION';
       room.pendingMapAction = { type: 'FEED_THE_KRAKEN', nodeId: 'Q_R3_C1' };
 
@@ -223,7 +226,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
     });
 
     test('FEED_THE_KRAKEN: Ném người chơi thường loại bỏ khỏi tàu nhưng không kết thúc game', () => {
-      const { room, p1, p3 } = setupTestRoom(); // p3 là PIRATE
+      const { room, p1, p3 } = setupTestRoom();
       room.gamePhase = 'EXECUTE_MAP_ACTION';
       room.pendingMapAction = { type: 'FEED_THE_KRAKEN', nodeId: 'Q_R3_C1' };
 
@@ -247,13 +250,134 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
     });
   });
 
+  describe('UC-014: Card Actions (Drunk, Armed, Disarmed, Mermaid, Telescope)', () => {
+    test('DRUNK (AC-1): Chuyển Thuyền trưởng theo chiều kim đồng hồ, bỏ qua speechRestricted, cho phép OFF_DUTY', () => {
+      const { room, p1, p2, p3 } = setupTestRoom();
+      // p1 là Captain hiện tại. p2 là người kế tiếp nhưng bị cut tongue. p3 là người tiếp theo (đang OFF_DUTY).
+      p2.speechRestricted = true;
+      p3.status = 'OFF_DUTY';
+
+      room.gamePhase = 'EXECUTE_CARD_ACTION';
+      room.executedNavigationCard = { color: 'BLUE', action: 'DRUNK' };
+
+      const result = ExecutionService.executeCardAction(room);
+
+      assert.equal(result.actionType, 'DRUNK');
+      assert.equal(result.oldCaptainId, p1.id);
+      assert.equal(result.newCaptainId, p3.id);
+      assert.equal(room.captainId, p3.id);
+      assert.ok(!p1.publicTitles.includes('CAPTAIN'));
+      assert.ok(p3.publicTitles.includes('CAPTAIN'));
+      assert.equal(result.nextPhase, 'ROUND_END');
+    });
+
+    test('ARMED: Tiếp thêm 1 súng cho Hoa tiêu đương nhiệm', () => {
+      const { room, p3 } = setupTestRoom();
+      assert.equal(p3.gunCount, 0);
+
+      room.gamePhase = 'EXECUTE_CARD_ACTION';
+      room.executedNavigationCard = { color: 'RED', action: 'ARMED' };
+
+      const result = ExecutionService.executeCardAction(room);
+
+      assert.equal(result.actionType, 'ARMED');
+      assert.equal(p3.gunCount, 1);
+      assert.equal(result.nextPhase, 'ROUND_END');
+    });
+
+    test('DISARMED: Tước 1 súng của Hoa tiêu đương nhiệm (chặn dưới mức 0)', () => {
+      const { room, p3 } = setupTestRoom();
+      p3.gunCount = 2;
+
+      room.gamePhase = 'EXECUTE_CARD_ACTION';
+      room.executedNavigationCard = { color: 'BLUE', action: 'DISARMED' };
+
+      const result = ExecutionService.executeCardAction(room);
+
+      assert.equal(result.actionType, 'DISARMED');
+      assert.equal(p3.gunCount, 1);
+      assert.equal(result.nextPhase, 'ROUND_END');
+    });
+
+    test('MERMAID (AC-2): Chuyển sang CARD_ACTION_TARGET_SELECTION và Thuyền trưởng chỉ định người nhận', () => {
+      const { room, p1, p2 } = setupTestRoom();
+      // Đưa sẵn 3 lá vào discard pile
+      room.navigationDeck.discard({ id: 'd1', direction: 'BLUE' });
+      room.navigationDeck.discard({ id: 'd2', direction: 'RED' });
+      room.navigationDeck.discard({ id: 'd3', direction: 'YELLOW' });
+
+      room.gamePhase = 'EXECUTE_CARD_ACTION';
+      room.executedNavigationCard = { color: 'RED', action: 'MERMAID' };
+
+      const cardResult = ExecutionService.executeCardAction(room);
+      assert.equal(cardResult.requiresTargetSelection, true);
+      assert.equal(room.gamePhase, 'CARD_ACTION_TARGET_SELECTION');
+
+      // Thuyền trưởng chỉ định p2
+      const targetResult = ExecutionService.designateCardActionTarget(room, p1.sessionToken, p2.id);
+      assert.equal(targetResult.actionType, 'MERMAID');
+      assert.equal(targetResult.targetPlayerId, p2.id);
+      assert.equal(targetResult.cards.length, 3);
+      assert.equal(room.gamePhase, 'MERMAID_INSPECTION');
+
+      // p2 xác nhận đã nghe xong Tiếng hát Tiên cá
+      const ackResult = ExecutionService.acknowledgeMermaidInspection(room, p2.sessionToken);
+      assert.equal(ackResult.success, true);
+      assert.equal(ackResult.nextPhase, 'ROUND_END');
+      assert.equal(room.pendingMermaidInspection, null);
+    });
+
+    test('TELESCOPE (AC-2, AC-3): Thuyền trưởng chỉ định người soi đỉnh và người đó chọn VỨT (DISCARD)', () => {
+      const { room, p1, p2 } = setupTestRoom();
+      room.gamePhase = 'EXECUTE_CARD_ACTION';
+      room.executedNavigationCard = { color: 'RED', action: 'TELESCOPE' };
+
+      const cardResult = ExecutionService.executeCardAction(room);
+      assert.equal(cardResult.requiresTargetSelection, true);
+
+      // Thuyền trưởng chỉ định p2
+      const targetResult = ExecutionService.designateCardActionTarget(room, p1.sessionToken, p2.id);
+      assert.equal(targetResult.actionType, 'TELESCOPE');
+      assert.equal(targetResult.targetPlayerId, p2.id);
+      assert.ok(targetResult.card);
+      assert.equal(room.gamePhase, 'TELESCOPE_INSPECTION');
+
+      const initialDrawCount = room.navigationDeck.drawPile.length;
+      const initialDiscardCount = room.navigationDeck.discardPile.length;
+      const peekedCardId = targetResult.card.id;
+
+      // p2 chọn DISCARD (Vứt)
+      const decisionResult = ExecutionService.resolveTelescopeDecision(room, p2.sessionToken, 'DISCARD');
+      assert.equal(decisionResult.decision, 'DISCARD');
+      assert.equal(decisionResult.nextPhase, 'ROUND_END');
+      assert.equal(room.navigationDeck.drawPile.length, initialDrawCount - 1);
+      assert.equal(room.navigationDeck.discardPile.length, initialDiscardCount + 1);
+      assert.equal(room.navigationDeck.discardPile[room.navigationDeck.discardPile.length - 1].id, peekedCardId);
+    });
+
+    test('TELESCOPE: Người được chỉ định chọn GIỮ (KEEP)', () => {
+      const { room, p1, p2 } = setupTestRoom();
+      room.gamePhase = 'EXECUTE_CARD_ACTION';
+      room.executedNavigationCard = { color: 'RED', action: 'TELESCOPE' };
+
+      ExecutionService.executeCardAction(room);
+      ExecutionService.designateCardActionTarget(room, p1.sessionToken, p2.id);
+
+      const initialDrawCount = room.navigationDeck.drawPile.length;
+      const decisionResult = ExecutionService.resolveTelescopeDecision(room, p2.sessionToken, 'KEEP');
+      assert.equal(decisionResult.decision, 'KEEP');
+      assert.equal(room.navigationDeck.drawPile.length, initialDrawCount);
+      assert.equal(decisionResult.nextPhase, 'ROUND_END');
+    });
+  });
+
   describe('UC-013: Supply Line Gun Refill (AC-2)', () => {
     test('Cắt qua Tuyến tiếp tế sạc đầy 3 súng cho toàn bộ người chơi ACTIVE đang thiếu súng', () => {
       const { room, p2, p3, p4 } = setupTestRoom('LONG_JOURNEY');
       room.mapBoard = new MapBoard({
         roomId: room.id,
         mapMode: 'LONG_JOURNEY',
-        shipPosition: 'L_R3_C2' // Node này có crossesSupplyLine: true khi đi tiếp
+        shipPosition: 'L_R3_C2'
       });
 
       assert.equal(p2.gunCount, 1);
@@ -298,15 +422,15 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013)', () => {
       }, /Thuyền trưởng không thể chọn chính mình/);
     });
 
-    test('Throw lỗi khi chọn người chơi đã bị ELIMINATED', () => {
+    test('Throw lỗi khi chỉ định người đã bị ELIMINATED cho Mermaid / Telescope', () => {
       const { room, p1, p3 } = setupTestRoom();
       p3.status = 'ELIMINATED';
-      room.gamePhase = 'EXECUTE_MAP_ACTION';
-      room.pendingMapAction = { type: 'CABIN_SEARCH' };
+      room.gamePhase = 'CARD_ACTION_TARGET_SELECTION';
+      room.pendingCardAction = { type: 'MERMAID', captainId: p1.id };
 
       assert.throws(() => {
-        ExecutionService.executeMapAction(room, p1.sessionToken, p3.id);
-      }, /Không thể chọn người chơi đã bị loại/);
+        ExecutionService.designateCardActionTarget(room, p1.sessionToken, p3.id);
+      }, /Không thể chỉ định người chơi đã bị loại/);
     });
   });
 });

@@ -109,7 +109,7 @@
 - [x] T025 [P] [BR-004] Tạo entity `MapBoard` trong `backend/src/models/`.
 - [x] T026 [BR-004] [UC-012] Tích hợp file JSON cấu hình map (Quick/Long) vào `ExecutionService.js` (`backend/src/services/ExecutionService.js`) và xử lý logic điều hướng di chuyển tàu.
 - [x] T027 [BR-004] [UC-013] Xử lý sự kiện Hành Động Ô Bản Đồ (Map Actions): Tra khảo (Search cabin), Chặt tay (Flogging), Cắt lưỡi (Off with the tongue), Cho Kraken ăn (Feed the Kraken), Tuyến tiếp tế súng (Supply line).
-- [ ] T028 [BR-004] [UC-014] Xử lý Hiệu Ứng Thẻ Bài (Card Effects): Say rượu (Drunk), Tiếp vũ khí (Armed), Tước khí (Disarmed), Tiếng hát tiên cá (Mermaid - Captain chỉ định 1 người bí mật xem 3 lá discard ngẫu nhiên), Kính viễn vọng (Telescope - Captain chỉ định 1 người bí mật xem đỉnh draw pile và chọn giữ/vứt).
+- [x] T028 [BR-004] [UC-014] Xử lý Hiệu Ứng Thẻ Bài (Card Effects): Say rượu (Drunk), Tiếp vũ khí (Armed), Tước khí (Disarmed), Tiếng hát tiên cá (Mermaid - Captain chỉ định 1 người bí mật xem 3 lá discard ngẫu nhiên), Kính viễn vọng (Telescope - Captain chỉ định 1 người bí mật xem đỉnh draw pile và chọn giữ/vứt).
 - [ ] T029 [BR-004] [UC-015] Xử lý Cult Uprising (Nghi thức Tà giáo): Captain lật mở bài Ritual, hệ thống ép nhắm mắt, Cult Leader nhặt giáo đồ, `emitPrivate` báo cho giáo đồ mới.
 - [ ] T030 [BR-004] Xây dựng UI Bản đồ và Hiệu ứng (`frontend/src/components/MapBoardUI.jsx`).
 

@@ -215,6 +215,20 @@ export class NavigationDeck {
   }
 
   /**
+   * Hủy lá bài trên cùng của draw_pile vào discard_pile (Hiệu ứng TELESCOPE - AC-3 UC-014)
+   * @returns {Object|null} Lá bài vừa bị hủy
+   */
+  discardTopDrawPile() {
+    if (this.drawPile.length === 0 && this.discardPile.length > 0) {
+      this.reshuffleDiscardIntoDraw();
+    }
+    if (this.drawPile.length === 0) return null;
+    const topCard = this.drawPile.shift();
+    this.discard(topCard);
+    return topCard;
+  }
+
+  /**
    * Lấy danh sách tối đa `count` lá bài bị hủy gần nhất trong discard_pile,
    * sau khi đã xáo trộn chúng (Hiệu ứng MERMAID)
    * @param {number} [count=3] 
