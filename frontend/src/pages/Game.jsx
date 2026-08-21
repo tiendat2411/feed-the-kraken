@@ -5,6 +5,7 @@ import Lobby from './Lobby';
 import RoleReveal from '../components/RoleReveal';
 import MutinyBoard from '../components/MutinyBoard';
 import NavigationPhase from '../components/NavigationPhase';
+import MapBoardUI from '../components/MapBoardUI';
 import GameHeader from '../components/GameHeader';
 
 const Game = () => {
@@ -18,6 +19,8 @@ const Game = () => {
   const [myRole, setMyRole] = useState(location.state?.initialRoom?.myRole || null);
   const [privateCards, setPrivateCards] = useState(location.state?.initialRoom?.myNavigationCards || []);
   const [error, setError] = useState('');
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [conversionNotification, setConversionNotification] = useState(null);
 
   // Extract currentUserId from sessionToken
   const currentUserId = localStorage.getItem('sessionToken');
@@ -81,6 +84,12 @@ const Game = () => {
       setPrivateCards([]);
     });
 
+    // Listen for Cult Conversion Private Notification (UC-015 AC-3)
+    socket.on('CULTIST_CONVERTED', (data) => {
+      setMyRole('CULTIST');
+      setConversionNotification(data);
+    });
+
     socket.on('ROOM_DISSOLVED', () => {
       alert('Phòng đã bị chủ phòng giải tán.');
       navigate('/');
@@ -99,6 +108,7 @@ const Game = () => {
       socket.off('NAVIGATOR_CARDS_SECRET');
       socket.off('NAVIGATION_CARD_EXECUTED');
       socket.off('NAVIGATOR_JUMPED_OVERBOARD');
+      socket.off('CULTIST_CONVERTED');
       socket.off('ROOM_DISSOLVED');
       socket.off('PLAYER_KICKED');
     };
@@ -182,6 +192,43 @@ const Game = () => {
     if (socket) socket.emit('appoint_emergency_navigator', { newNavigatorId });
   };
 
+  // BR-004 Execution Actions Handlers
+  const handleExecuteMapAction = (targetPlayerId) => {
+    if (socket) socket.emit('execute_map_action', { targetPlayerId });
+  };
+
+  const handleConfirmMapAction = () => {
+    if (socket) socket.emit('confirm_map_action');
+  };
+
+  const handleDesignateCardTarget = (targetPlayerId) => {
+    if (socket) socket.emit('designate_card_action_target', { targetPlayerId });
+  };
+
+  const handleResolveTelescope = (decision) => {
+    if (socket) socket.emit('resolve_telescope_decision', { decision });
+  };
+
+  const handleAcknowledgeMermaid = () => {
+    if (socket) socket.emit('acknowledge_mermaid');
+  };
+
+  const handleStartCultUprising = () => {
+    if (socket) socket.emit('start_cult_uprising');
+  };
+
+  const handleResolveCultGuns = (allocations) => {
+    if (socket) socket.emit('resolve_cult_guns_stash', { allocations });
+  };
+
+  const handleResolveCultCabinSearch = () => {
+    if (socket) socket.emit('resolve_cult_cabin_search');
+  };
+
+  const handleResolveCultConversion = (targetPlayerId) => {
+    if (socket) socket.emit('resolve_cult_conversion', { targetPlayerId });
+  };
+
   if (error) {
     return (
       <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center space-y-4">
@@ -216,6 +263,33 @@ const Game = () => {
 
   const effectiveUserId = room.myId || currentUserId;
 
+  // Conversion Private Alert Overlay (UC-015 AC-3)
+  const renderConversionToast = () => {
+    if (!conversionNotification) return null;
+    return (
+      <div className="fixed top-6 right-6 z-50 max-w-md p-5 rounded-3xl bg-purple-950 border border-purple-400 shadow-[0_0_50px_rgba(168,85,247,0.5)] text-white space-y-3 animate-bounce">
+        <div className="flex items-center space-x-3">
+          <span className="text-3xl">🐙</span>
+          <div>
+            <h4 className="font-black text-purple-300 text-sm">THU NẠP TÀ GIÁO BÍ MẬT</h4>
+            <p className="text-xs text-purple-200">
+              {conversionNotification.message}
+            </p>
+          </div>
+        </div>
+        <div className="p-2 rounded-xl bg-purple-900/60 text-xs border border-purple-500/40 text-amber-300">
+          Giáo chủ của bạn: <span className="font-black">{conversionNotification.cult_leader_name}</span>
+        </div>
+        <button
+          onClick={() => setConversionNotification(null)}
+          className="w-full py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 font-bold text-xs"
+        >
+          ĐÃ HIỂU
+        </button>
+      </div>
+    );
+  };
+
   // 1. Lobby Phase
   if (room.status === 'LOBBY') {
     return (
@@ -236,6 +310,7 @@ const Game = () => {
   if (room.gamePhase === 'ROLE_REVEAL' || room.gamePhase === 'PIRATES_GATHERING') {
     return (
       <div className="min-h-screen flex flex-col">
+        {renderConversionToast()}
         <GameHeader
           room={room}
           currentUserId={effectiveUserId}
@@ -253,7 +328,49 @@ const Game = () => {
     );
   }
 
-  // 3. Navigation & Card Drawing Phase (BR-003)
+  // 3. Execution & Map Actions Phase (BR-004)
+  const isExecutionPhase = [
+    'EXECUTE_MAP_ACTION',
+    'EXECUTE_CARD_ACTION',
+    'CARD_ACTION_TARGET_SELECTION',
+    'MERMAID_INSPECTION',
+    'TELESCOPE_INSPECTION',
+    'CULT_UPRISING',
+    'CULT_UPRISING_BLIND',
+    'ROUND_END'
+  ].includes(room.gamePhase);
+
+  if (isExecutionPhase) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        {renderConversionToast()}
+        <GameHeader
+          room={room}
+          currentUserId={effectiveUserId}
+          onLeaveRoom={handleLeaveRoom}
+          onDissolveRoom={handleDissolveRoom}
+        />
+        <div className="flex-1">
+          <MapBoardUI
+            room={room}
+            currentUserId={effectiveUserId}
+            myRole={myRole || room.myRole}
+            onExecuteMapAction={handleExecuteMapAction}
+            onConfirmMapAction={handleConfirmMapAction}
+            onDesignateCardTarget={handleDesignateCardTarget}
+            onResolveTelescope={handleResolveTelescope}
+            onAcknowledgeMermaid={handleAcknowledgeMermaid}
+            onStartCultUprising={handleStartCultUprising}
+            onResolveCultGuns={handleResolveCultGuns}
+            onResolveCultCabinSearch={handleResolveCultCabinSearch}
+            onResolveCultConversion={handleResolveCultConversion}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Navigation & Card Drawing Phase (BR-003)
   const isNavigationPhase = [
     'NAVIGATION',
     'NAVIGATION_CAPTAIN_DRAW',
@@ -266,6 +383,7 @@ const Game = () => {
   if (isNavigationPhase) {
     return (
       <div className="min-h-screen flex flex-col">
+        {renderConversionToast()}
         <GameHeader
           room={room}
           currentUserId={effectiveUserId}
@@ -290,9 +408,10 @@ const Game = () => {
     );
   }
 
-  // 4. Day Phase & Mutiny Voting (BR-002)
+  // 5. Day Phase & Mutiny Voting (BR-002)
   return (
     <div className="min-h-screen flex flex-col">
+      {renderConversionToast()}
       <GameHeader
         room={room}
         currentUserId={effectiveUserId}
