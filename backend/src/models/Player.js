@@ -4,13 +4,15 @@ class Player {
   /**
    * Tạo một instance Player mới
    * @param {Object} params
+   * @param {string} [params.id]
    * @param {string} params.roomId
    * @param {string} params.sessionToken
    * @param {string} params.nickname
    * @param {string} params.avatar
+   * @param {number} [params.gunCount=0]
    */
-  constructor({ roomId, sessionToken, nickname, avatar }) {
-    this.id = randomUUID(); // Định danh duy nhất
+  constructor({ id = randomUUID(), roomId, sessionToken, nickname, avatar, gunCount = 0 }) {
+    this.id = id; // Định danh duy nhất
     this.roomId = roomId; // ID của Room
     this.sessionToken = sessionToken; // Token phục hồi phiên
     this.nickname = nickname; // Tên hiển thị
@@ -25,7 +27,7 @@ class Player {
     // Các trạng thái mở rộng khác theo rule
     this.status = 'ACTIVE'; // 'ACTIVE' | 'OFF_DUTY' | 'ELIMINATED'
     this.eliminationReason = null; // 'JUMP_OVERBOARD' | 'FEED_THE_KRAKEN' | 'EXECUTION'
-    this.gunCount = 0;
+    this.gunCount = gunCount;
   }
 
   toPublicJSON() {

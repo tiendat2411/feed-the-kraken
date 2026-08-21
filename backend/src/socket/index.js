@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import { RoomManager } from '../services/RoomManager.js';
 import { MutinyService } from '../services/MutinyService.js';
 import { NavigationService } from '../services/NavigationService.js';
+import { ExecutionService } from '../services/ExecutionService.js';
 
 /**
  * Gửi event bí mật tới một player cụ thể (qua sessionToken hoặc playerId)
@@ -493,7 +494,7 @@ export function setupSocket(server) {
       }
     });
 
-    // NAVIGATOR SELECT CARD (UC-010)
+    // NAVIGATOR SELECT CARD (UC-010, UC-012)
     socket.on('navigator_select_card', async ({ chosenCardId }, callback) => {
       try {
         const found = RoomManager.getRoomByToken(socket.sessionToken);
@@ -501,14 +502,47 @@ export function setupSocket(server) {
 
         const { room } = found;
         const execResult = NavigationService.navigatorSelectCard(room, socket.sessionToken, chosenCardId);
-        await RoomManager.saveSnapshot(room.id);
 
+        // Thông báo lá bài điều hướng được thực thi
         io.to(room.id).emit('NAVIGATION_CARD_EXECUTED', {
           card: execResult.chosenCard
         });
+
+        // Kích hoạt di chuyển tàu trên bản đồ lục giác (UC-012)
+        const moveResult = ExecutionService.executeShipMovement(room);
+        await RoomManager.saveSnapshot(room.id);
+
+        // Broadcast sự kiện tàu di chuyển
+        io.to(room.id).emit('SHIP_MOVED', {
+          previousNode: moveResult.previousNode,
+          currentNode: moveResult.currentNode,
+          cardColor: moveResult.cardColor,
+          visitedNodes: room.mapBoard?.visitedNodes || [],
+          crossedSupplyLine: moveResult.crossedSupplyLine,
+          isGameOver: moveResult.isGameOver,
+          winnerFaction: moveResult.winnerFaction,
+          nextPhase: moveResult.nextPhase
+        });
+
+        // Nếu cắt qua đường tiếp tế -> Broadcast thông báo nạp súng
+        if (moveResult.crossedSupplyLine) {
+          io.to(room.id).emit('SUPPLY_LINE_CROSSED', {
+            refilledPlayerIds: moveResult.supplyLineRefilledPlayers
+          });
+        }
+
+        // Nếu trò chơi kết thúc -> Broadcast sự kiện GAME_OVER
+        if (moveResult.isGameOver) {
+          io.to(room.id).emit('GAME_OVER', {
+            winnerFaction: moveResult.winnerFaction,
+            winReason: moveResult.winReason,
+            terminalNode: moveResult.currentNode
+          });
+        }
+
         broadcastRoomState(io, room);
 
-        if (typeof callback === 'function') callback({ success: true, execResult });
+        if (typeof callback === 'function') callback({ success: true, execResult, moveResult });
       } catch (err) {
         if (typeof callback === 'function') callback({ success: false, error: err.message });
       }
