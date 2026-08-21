@@ -12,6 +12,11 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
     assert.equal(board.hasCrossedSupplyLine, false);
     assert.deepEqual(board.visitedNodes, ['START']);
     assert.equal(board.cultRitualDeck.length, 5);
+
+    const currentNode = board.getCurrentNode();
+    assert.ok(currentNode);
+    assert.equal(currentNode.id, 'START');
+    assert.equal(currentNode.row, 0);
   });
 
   test('Bộ bài Nghi thức Tà giáo (Cult Ritual Deck) luôn gồm đúng 5 lá (1 Guns, 1 Search, 3 Conversion)', () => {
@@ -44,30 +49,69 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
     assert.equal(emptyDraw, null);
   });
 
-  test('moveShip cập nhật shipPosition và ghi lại lịch sử visitedNodes', () => {
-    const board = new MapBoard({ roomId: 'ROOM_MAP_04' });
+  test('getNextNodeId tra cứu chính xác node tiếp theo theo màu bài điều hướng', () => {
+    const board = new MapBoard({ roomId: 'ROOM_MAP_NAV', mapMode: 'QUICK_JOURNEY' });
 
-    board.moveShip('NODE_Y1');
-    assert.equal(board.shipPosition, 'NODE_Y1');
-    assert.deepEqual(board.visitedNodes, ['START', 'NODE_Y1']);
-
-    board.moveShip('NODE_B2');
-    assert.equal(board.shipPosition, 'NODE_B2');
-    assert.deepEqual(board.visitedNodes, ['START', 'NODE_Y1', 'NODE_B2']);
+    assert.equal(board.getNextNodeId('RED'), 'Q_R1_C1');
+    assert.equal(board.getNextNodeId('YELLOW'), 'Q_R1_C2');
+    assert.equal(board.getNextNodeId('BLUE'), 'Q_R1_C3');
   });
 
-  test('crossSupplyLine chỉ kích hoạt thành công 1 lần duy nhất', () => {
-    const board = new MapBoard({ roomId: 'ROOM_MAP_05', mapMode: 'LONG_JOURNEY' });
+  test('moveByDirection cập nhật vị trí tàu, lưu vết lastMovement và lịch sử visitedNodes', () => {
+    const board = new MapBoard({ roomId: 'ROOM_MAP_04', mapMode: 'QUICK_JOURNEY' });
+
+    const result = board.moveByDirection('BLUE');
+    assert.equal(result.previousNode.id, 'START');
+    assert.equal(result.currentNode.id, 'Q_R1_C3');
+    assert.equal(board.shipPosition, 'Q_R1_C3');
+    assert.deepEqual(board.visitedNodes, ['START', 'Q_R1_C3']);
+    assert.deepEqual(board.lastMovement, {
+      fromNodeId: 'START',
+      toNodeId: 'Q_R1_C3',
+      cardColor: 'BLUE'
+    });
+  });
+
+  test('Phát hiện chính xác Victory Node và trả về Faction thắng cuộc', () => {
+    const board = new MapBoard({
+      roomId: 'ROOM_MAP_WIN',
+      mapMode: 'QUICK_JOURNEY',
+      shipPosition: 'BLUEWATER_BAY'
+    });
+
+    assert.equal(board.isVictoryNode(), true);
+    assert.equal(board.getVictoryFaction(), 'SAILOR');
+
+    board.shipPosition = 'CRIMSON_COVE';
+    assert.equal(board.isVictoryNode(), true);
+    assert.equal(board.getVictoryFaction(), 'PIRATE');
+
+    board.shipPosition = 'KRAKEN_NEST';
+    assert.equal(board.isVictoryNode(), true);
+    assert.equal(board.getVictoryFaction(), 'CULT');
+
+    board.shipPosition = 'START';
+    assert.equal(board.isVictoryNode(), false);
+    assert.equal(board.getVictoryFaction(), null);
+  });
+
+  test('Tuyến tiếp tế (Supply Line) tự động kích hoạt khi tàu cắt qua ở Long Journey', () => {
+    const board = new MapBoard({
+      roomId: 'ROOM_MAP_05',
+      mapMode: 'LONG_JOURNEY',
+      shipPosition: 'L_R3_C2'
+    });
 
     assert.equal(board.hasCrossedSupplyLine, false);
+    assert.equal(board.willCrossSupplyLine('YELLOW'), true);
 
-    const firstCross = board.crossSupplyLine();
-    assert.equal(firstCross, true);
+    const result = board.moveByDirection('YELLOW');
+    assert.equal(result.crossedSupplyLine, true);
     assert.equal(board.hasCrossedSupplyLine, true);
+    assert.equal(board.shipPosition, 'L_R4_C2');
 
-    const secondCross = board.crossSupplyLine();
-    assert.equal(secondCross, false);
-    assert.equal(board.hasCrossedSupplyLine, true);
+    // Lần di chuyển tiếp theo không kích hoạt lại
+    assert.equal(board.willCrossSupplyLine('YELLOW'), false);
   });
 
   test('toSanitizedJSON che giấu danh sách các lá bài Ritual chưa rút cho client', () => {
@@ -79,15 +123,17 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
     assert.equal(sanitized.hasCrossedSupplyLine, false);
     assert.equal(sanitized.cultRitualCount, 5);
     assert.equal(sanitized.cultRitualDeck, undefined);
+    assert.ok(sanitized.currentNode);
   });
 
   test('toJSON và fromJSON bảo toàn nguyên vẹn trạng thái bàn cờ', () => {
     const board = new MapBoard({
       roomId: 'ROOM_MAP_07',
       mapMode: 'LONG_JOURNEY',
-      shipPosition: 'NODE_R3',
+      shipPosition: 'L_R3_C2',
       hasCrossedSupplyLine: true,
-      visitedNodes: ['START', 'NODE_R1', 'NODE_R2', 'NODE_R3']
+      visitedNodes: ['START', 'L_R1_C1', 'L_R2_C1', 'L_R3_C2'],
+      lastMovement: { fromNodeId: 'L_R2_C1', toNodeId: 'L_R3_C2', cardColor: 'RED' }
     });
 
     const json = board.toJSON();
@@ -96,13 +142,14 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
     assert.equal(restored.id, board.id);
     assert.equal(restored.roomId, 'ROOM_MAP_07');
     assert.equal(restored.mapMode, 'LONG_JOURNEY');
-    assert.equal(restored.shipPosition, 'NODE_R3');
+    assert.equal(restored.shipPosition, 'L_R3_C2');
     assert.equal(restored.hasCrossedSupplyLine, true);
-    assert.deepEqual(restored.visitedNodes, ['START', 'NODE_R1', 'NODE_R2', 'NODE_R3']);
+    assert.deepEqual(restored.visitedNodes, ['START', 'L_R1_C1', 'L_R2_C1', 'L_R3_C2']);
+    assert.deepEqual(restored.lastMovement, board.lastMovement);
     assert.deepEqual(restored.cultRitualDeck, board.cultRitualDeck);
   });
 
-  test('Validation / Invariants: Throw lỗi khi thiếu roomId hoặc mapMode không hợp lệ', () => {
+  test('Validation / Invariants: Throw lỗi khi thiếu roomId, mapMode hoặc màu điều hướng không hợp lệ', () => {
     assert.throws(() => {
       new MapBoard({});
     }, /roomId là bắt buộc/);
@@ -110,5 +157,10 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
     assert.throws(() => {
       new MapBoard({ roomId: 'ROOM_ERR', mapMode: 'INVALID_MODE' });
     }, /mapMode không hợp lệ/);
+
+    const board = new MapBoard({ roomId: 'ROOM_ERR_DIR' });
+    assert.throws(() => {
+      board.moveByDirection('PURPLE');
+    }, /Màu điều hướng không hợp lệ/);
   });
 });
