@@ -597,6 +597,75 @@ export function setupSocket(server) {
       }
     });
 
+    // EXECUTE MAP ACTION (UC-013)
+    socket.on('execute_map_action', async ({ targetPlayerId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const actionResult = ExecutionService.executeMapAction(room, socket.sessionToken, targetPlayerId);
+        await RoomManager.saveSnapshot(room.id);
+
+        const { resultPayload, isGameOver, winnerFaction } = actionResult;
+
+        // Nếu là hành động bí mật (CABIN_SEARCH) -> Gửi kết quả riêng cho Captain
+        if (resultPayload.isPrivate) {
+          emitPrivate(io, room.id, room.captainId, 'CABIN_SEARCH_RESULT', {
+            targetId: resultPayload.targetId,
+            targetName: resultPayload.targetName,
+            result: resultPayload.privateResult
+          });
+        }
+
+        // Broadcast sự kiện Map Action được thực thi cho toàn phòng
+        io.to(room.id).emit('MAP_ACTION_EXECUTED', {
+          actionType: resultPayload.actionType,
+          targetId: resultPayload.targetId,
+          targetName: resultPayload.targetName,
+          publicMessage: resultPayload.publicMessage,
+          publicStatement: resultPayload.publicStatement || null
+        });
+
+        // Nếu kích hoạt End Game (Feed the Kraken trúng Cult Leader)
+        if (isGameOver) {
+          io.to(room.id).emit('GAME_OVER', {
+            winnerFaction,
+            winReason: resultPayload.winReason,
+            actionType: resultPayload.actionType
+          });
+        }
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, actionResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // CONFIRM MAP ACTION & ADVANCE (UC-013 Game Pace)
+    socket.on('confirm_map_action', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const advanceResult = ExecutionService.confirmMapActionAndAdvance(room, socket.sessionToken);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('MAP_ACTION_CONFIRMED', {
+          nextPhase: advanceResult.nextPhase,
+          cardAction: advanceResult.cardAction
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, advanceResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
     // CHECK MUTINY TIMEOUT (Auto-resolve offline voters when timer ends)
     socket.on('check_mutiny_timeout', async (callback) => {
       try {

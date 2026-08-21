@@ -21,8 +21,10 @@ class Player {
     // Default values
     this.connectionStatus = 'ONLINE'; // 'ONLINE' | 'OFFLINE' | 'RECONNECTING'
     this.factionRole = null; // 'SAILOR' | 'PIRATE' | 'CULT_LEADER' | 'CULTIST'
+    this.originalFactionRole = null; // Phe gốc trước khi bị thu nạp
     this.publicTitles = []; // e.g., 'CAPTAIN', 'LIEUTENANT', 'NAVIGATOR'
     this.speechRestricted = false; // Bị cắt lưỡi (Off with the tongue)
+    this.isConvertible = true; // Có thể bị thu nạp vào giáo phái hay không
     
     // Các trạng thái mở rộng khác theo rule
     this.status = 'ACTIVE'; // 'ACTIVE' | 'OFF_DUTY' | 'ELIMINATED'
@@ -40,6 +42,7 @@ class Player {
       connectionStatus: this.connectionStatus,
       publicTitles: this.publicTitles,
       speechRestricted: this.speechRestricted,
+      isConvertible: this.isConvertible,
       status: this.status,
       eliminationReason: this.eliminationReason,
       gunCount: this.gunCount
@@ -56,8 +59,10 @@ class Player {
       avatar: this.avatar,
       connectionStatus: this.connectionStatus,
       factionRole: this.factionRole,
+      originalFactionRole: this.originalFactionRole,
       publicTitles: this.publicTitles,
       speechRestricted: this.speechRestricted,
+      isConvertible: this.isConvertible,
       status: this.status,
       eliminationReason: this.eliminationReason,
       gunCount: this.gunCount
@@ -74,8 +79,10 @@ class Player {
     player.id = data.id;
     player.connectionStatus = data.connectionStatus || 'ONLINE';
     player.factionRole = data.factionRole;
+    player.originalFactionRole = data.originalFactionRole || null;
     player.publicTitles = data.publicTitles || [];
     player.speechRestricted = data.speechRestricted || false;
+    player.isConvertible = data.isConvertible !== undefined ? data.isConvertible : true;
     player.status = data.status || 'ACTIVE';
     player.eliminationReason = data.eliminationReason || null;
     player.gunCount = data.gunCount || 0;
