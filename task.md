@@ -103,16 +103,17 @@
 
 ## Phase 6: BR-004 - Bản Đồ & Sự Kiện Hành Quyết (Priority: P4)
 
-**Goal**: Tàu cập bến ô sự kiện, kích hoạt hiệu ứng thẻ và Cult Uprising.
+**Goal**: Tàu cập bến ô sự kiện, kích hoạt hành động ô bản đồ (Map Actions), hiệu ứng thẻ bài (Card Effects) và Nghi thức Tà giáo (Cult Uprising).
 
 ### Implementation
 - [ ] T025 [P] [BR-004] Tạo entity `MapBoard` trong `backend/src/models/`.
-- [ ] T026 [BR-004] Tích hợp file JSON cấu hình map (Quick/Long) vào `ExecutionService.js` (`backend/src/services/ExecutionService.js`).
-- [ ] T027 [BR-004] Xử lý sự kiện Map & Card Actions: Tra khảo (Search cabin), Chặt tay (Flogging), Lồng sắt, Cắt lưỡi, Drunk, Armed/Disarmed, Tiên cá (Mermaid - Captain chỉ định 1 người bí mật xem 3 lá discard ngẫu nhiên), Kính viễn vọng (Telescope - Captain chỉ định 1 người bí mật xem đỉnh draw pile và chọn giữ/vứt).
-- [ ] T028 [BR-004] Xử lý Cult Uprising: Captain lật mở bài Ritual, hệ thống ép nhắm mắt, Cult Leader nhặt giáo đồ, `emitPrivate` báo cho giáo đồ mới.
-- [ ] T029 [BR-004] Xây dựng UI Bản đồ và Hiệu ứng (`frontend/src/components/MapBoardUI.jsx`).
+- [ ] T026 [BR-004] [UC-012] Tích hợp file JSON cấu hình map (Quick/Long) vào `ExecutionService.js` (`backend/src/services/ExecutionService.js`) và xử lý logic điều hướng di chuyển tàu.
+- [ ] T027 [BR-004] [UC-013] Xử lý sự kiện Hành Động Ô Bản Đồ (Map Actions): Tra khảo (Search cabin), Chặt tay (Flogging), Cắt lưỡi (Off with the tongue), Cho Kraken ăn (Feed the Kraken), Tuyến tiếp tế súng (Supply line).
+- [ ] T028 [BR-004] [UC-014] Xử lý Hiệu Ứng Thẻ Bài (Card Effects): Say rượu (Drunk), Tiếp vũ khí (Armed), Tước khí (Disarmed), Tiếng hát tiên cá (Mermaid - Captain chỉ định 1 người bí mật xem 3 lá discard ngẫu nhiên), Kính viễn vọng (Telescope - Captain chỉ định 1 người bí mật xem đỉnh draw pile và chọn giữ/vứt).
+- [ ] T029 [BR-004] [UC-015] Xử lý Cult Uprising (Nghi thức Tà giáo): Captain lật mở bài Ritual, hệ thống ép nhắm mắt, Cult Leader nhặt giáo đồ, `emitPrivate` báo cho giáo đồ mới.
+- [ ] T030 [BR-004] Xây dựng UI Bản đồ và Hiệu ứng (`frontend/src/components/MapBoardUI.jsx`).
 
-**Checkpoint**: Gameplay gần như trọn vẹn, bao gồm kỹ năng và thu thập giáo đồ.
+**Checkpoint**: Gameplay gần như trọn vẹn, bao gồm kỹ năng, hiệu ứng ô/thẻ và thu thập giáo đồ.
 
 ---
 
@@ -121,11 +122,11 @@
 **Goal**: Luân chuyển thẻ Off-duty và check điều kiện thắng để End game.
 
 ### Implementation
-- [ ] T030 [P] [BR-005] Tạo entity `GameResult` trong `backend/src/models/`.
-- [ ] T031 [BR-005] Xử lý luồng hoán đổi Off-duty shift sau mỗi lần tàu di chuyển (`backend/src/services/OffDutyService.js`).
-- [ ] T032 [BR-005] Bổ sung ngầm `VictoryCheck` sau mỗi Mutiny hoặc Ship Movement: Check cán đích Sailor/Pirate/Cult, check Cult Leader chết/nhảy tàu.
-- [ ] T033 [BR-005] Xử lý luồng End Game: Broadcast Event `GAME_OVER`, freeze trạng thái, lưu vào Database vật lý.
-- [ ] T034 [BR-005] Xây dựng UI End Game, vinh danh và lật mở toàn bộ vai trò thật sự (`frontend/src/pages/EndGame.jsx`).
+- [ ] T031 [P] [BR-005] Tạo entity `GameResult` trong `backend/src/models/`.
+- [ ] T032 [BR-005] Xử lý luồng hoán đổi Off-duty shift sau mỗi lần tàu di chuyển (`backend/src/services/OffDutyService.js`).
+- [ ] T033 [BR-005] Bổ sung ngầm `VictoryCheck` sau mỗi Mutiny hoặc Ship Movement: Check cán đích Sailor/Pirate/Cult, check Cult Leader chết/nhảy tàu.
+- [ ] T034 [BR-005] Xử lý luồng End Game: Broadcast Event `GAME_OVER`, freeze trạng thái, lưu vào Database vật lý.
+- [ ] T035 [BR-005] Xây dựng UI End Game, vinh danh và lật mở toàn bộ vai trò thật sự (`frontend/src/pages/EndGame.jsx`).
 
 **Checkpoint**: Hệ thống Game hoàn thiện 100% Core Logic. Có thể chơi trọn vẹn từ đầu đến khi có phe thắng.
 
@@ -135,7 +136,7 @@
 
 **Purpose**: Hoàn thiện snapshot, testing và deploy.
 
-- [ ] T035 Snapshot Integration: Lắp ráp cơ chế Snapshot Room State xuống Redis sau mỗi Action để fault-tolerance.
-- [ ] T036 Thử nghiệm kịch bản ngắt kết nối mạng (Socket Disconnect) và reconnect để đảm bảo khôi phục UI tốt.
-- [ ] T037 Đánh bóng UI: Thêm Animation khi lật bài, khi súng nổ, âm thanh.
-- [ ] T038 Triển khai ứng dụng (Deploy frontend & backend).
+- [ ] T036 Snapshot Integration: Lắp ráp cơ chế Snapshot Room State xuống Redis sau mỗi Action để fault-tolerance.
+- [ ] T037 Thử nghiệm kịch bản ngắt kết nối mạng (Socket Disconnect) và reconnect để đảm bảo khôi phục UI tốt.
+- [ ] T038 Đánh bóng UI: Thêm Animation khi lật bài, khi súng nổ, âm thanh.
+- [ ] T047 Triển khai ứng dụng (Deploy frontend & backend).
