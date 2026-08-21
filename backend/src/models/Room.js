@@ -30,6 +30,7 @@ class Room {
     this.pendingCardAction = null;
     this.pendingMermaidInspection = null;
     this.pendingTelescopeInspection = null;
+    this.pendingCultRitual = null;
     this.phaseDeadline = null; // Timestamp kết thúc phase hiện tại
     this.createdAt = Date.now();
     this.lastActivity = Date.now();
@@ -152,6 +153,12 @@ class Room {
       pendingCardAction: this.pendingCardAction || null,
       myMermaidCards: (this.pendingMermaidInspection && requestingPlayer && this.pendingMermaidInspection.targetPlayerId === requestingPlayer.id) ? (this.pendingMermaidInspection.cards || []) : [],
       myTelescopeCard: (this.pendingTelescopeInspection && requestingPlayer && this.pendingTelescopeInspection.targetPlayerId === requestingPlayer.id) ? (this.pendingTelescopeInspection.card || null) : null,
+      pendingCultRitual: this.pendingCultRitual ? {
+        type: this.pendingCultRitual.type
+      } : null,
+      myCultInspection: (this.pendingCultRitual && this.pendingCultRitual.type === 'CULT_CABIN_SEARCH' && requestingPlayer?.factionRole === 'CULT_LEADER')
+        ? this.pendingCultRitual.inspectionData || null
+        : null,
       phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
@@ -193,6 +200,7 @@ class Room {
       pendingCardAction: this.pendingCardAction || null,
       pendingMermaidInspection: this.pendingMermaidInspection || null,
       pendingTelescopeInspection: this.pendingTelescopeInspection || null,
+      pendingCultRitual: this.pendingCultRitual || null,
       navigationHand: this.navigationHand || null,
       executedNavigationCard: this.executedNavigationCard || null,
       phaseDeadline: this.phaseDeadline,
@@ -223,6 +231,7 @@ class Room {
     room.pendingCardAction = data.pendingCardAction || null;
     room.pendingMermaidInspection = data.pendingMermaidInspection || null;
     room.pendingTelescopeInspection = data.pendingTelescopeInspection || null;
+    room.pendingCultRitual = data.pendingCultRitual || null;
     room.navigationHand = data.navigationHand || null;
     room.executedNavigationCard = data.executedNavigationCard || null;
     room.phaseDeadline = data.phaseDeadline || null;

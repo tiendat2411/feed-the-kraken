@@ -638,6 +638,251 @@ export class ExecutionService {
       room
     };
   }
+
+  /**
+   * Bắt đầu Nghi thức Tà giáo (Cult Uprising - UC-015)
+   * Rút 1 lá từ cultRitualDeck và chuyển sang phase CULT_UPRISING_BLIND
+   * @param {Object} room 
+   * @returns {Object}
+   */
+  static startCultUprising(room) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'CULT_UPRISING') {
+      throw new Error(`Không thể bắt đầu Nghi thức Tà giáo ở giai đoạn ${room.gamePhase}`);
+    }
+
+    // Đảm bảo MapBoard đã được khởi tạo
+    if (!room.mapBoard) {
+      room.mapBoard = new MapBoard({
+        roomId: room.id,
+        mapMode: room.mapType || 'QUICK_JOURNEY'
+      });
+    }
+
+    const ritualCard = room.mapBoard.drawCultRitualCard();
+    if (!ritualCard) {
+      room.gamePhase = 'ROUND_END';
+      room.pendingCultRitual = null;
+      room.touch();
+
+      return {
+        ritualCard: null,
+        isDeckEmpty: true,
+        nextPhase: 'ROUND_END',
+        publicMessage: 'Bộ bài Nghi thức Tà giáo đã hết! Nghi thức kết thúc.',
+        room
+      };
+    }
+
+    // Tìm Giáo chủ (Cult Leader)
+    const cultLeader = room.getPlayers().find(p => p.factionRole === 'CULT_LEADER' && p.status !== 'ELIMINATED');
+    if (!cultLeader) {
+      room.gamePhase = 'ROUND_END';
+      room.pendingCultRitual = null;
+      room.touch();
+
+      return {
+        ritualCard,
+        isLeaderEliminated: true,
+        nextPhase: 'ROUND_END',
+        publicMessage: `Lá bài Nghi thức ${ritualCard} được lật mở nhưng Giáo chủ đã bị loại! Nghi thức kết thúc.`,
+        room
+      };
+    }
+
+    // Chuẩn bị dữ liệu riêng tư nếu là CULT_CABIN_SEARCH
+    let inspectionData = null;
+    if (ritualCard === 'CULT_CABIN_SEARCH') {
+      const capt = room.getPlayer(room.captainId);
+      const lt = room.getPlayer(room.lieutenantId);
+      const nav = room.getPlayer(room.navigatorId);
+      inspectionData = {
+        captain: { id: capt?.id, name: capt?.nickname, role: capt?.factionRole },
+        lieutenant: { id: lt?.id, name: lt?.nickname, role: lt?.factionRole },
+        navigator: { id: nav?.id, name: nav?.nickname, role: nav?.factionRole }
+      };
+    }
+
+    room.pendingCultRitual = {
+      type: ritualCard,
+      cultLeaderId: cultLeader.id,
+      inspectionData
+    };
+
+    room.gamePhase = 'CULT_UPRISING_BLIND';
+    room.touch();
+
+    const ritualNames = {
+      GUNS_STASH: 'Phát súng Tà giáo (Guns Stash)',
+      CULT_CABIN_SEARCH: 'Thị kiến Ban điều hướng (Cult Cabin Search)',
+      CONVERSION: 'Thu nạp Giáo đồ (Conversion)'
+    };
+
+    return {
+      ritualCard,
+      ritualName: ritualNames[ritualCard] || ritualCard,
+      cultLeaderId: cultLeader.id,
+      inspectionData,
+      nextPhase: 'CULT_UPRISING_BLIND',
+      publicMessage: `Lá bài Nghi thức [${ritualNames[ritualCard] || ritualCard}] được lật mở! Toàn bộ thủy thủ đoàn phải nhắm mắt...`,
+      room
+    };
+  }
+
+  /**
+   * Giáo chủ thực thi phân phát 3 súng ẩn danh (AC-2 UC-015)
+   * @param {Object} room 
+   * @param {string} leaderToken 
+   * @param {Array<{playerId: string, count: number}>} allocations 
+   * @returns {Object}
+   */
+  static resolveCultGunsStash(room, leaderToken, allocations) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'CULT_UPRISING_BLIND') {
+      throw new Error(`Không thể phát súng ở giai đoạn ${room.gamePhase}`);
+    }
+
+    if (!room.pendingCultRitual || room.pendingCultRitual.type !== 'GUNS_STASH') {
+      throw new Error('Hiện không phải lượt phát súng của Nghi thức Tà giáo');
+    }
+
+    const leader = room.getPlayerByToken(leaderToken);
+    if (!leader || room.pendingCultRitual.cultLeaderId !== leader.id) {
+      throw new Error('Chỉ có Giáo chủ mới có quyền thực thi quyền năng này');
+    }
+
+    if (!Array.isArray(allocations) || allocations.length === 0) {
+      throw new Error('Danh sách phân phối súng không hợp lệ');
+    }
+
+    const totalAllocated = allocations.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+    if (totalAllocated !== 3) {
+      throw new Error(`Tổng số súng cấp phải đúng bằng 3 (hiện tại: ${totalAllocated})`);
+    }
+
+    allocations.forEach(({ playerId, count }) => {
+      const player = room.getPlayer(playerId);
+      if (player && player.status !== 'ELIMINATED' && count > 0) {
+        player.gunCount += Number(count);
+      }
+    });
+
+    room.pendingCultRitual = null;
+    room.gamePhase = 'ROUND_END';
+    room.touch();
+
+    return {
+      success: true,
+      nextPhase: 'ROUND_END',
+      publicMessage: 'Nghi thức Tà giáo kết thúc, trời đã sáng trở lại!',
+      room
+    };
+  }
+
+  /**
+   * Giáo chủ xác nhận đã xem xong thông tin phe của ban điều hướng (CULT_CABIN_SEARCH - UC-015)
+   * @param {Object} room 
+   * @param {string} leaderToken 
+   * @returns {Object}
+   */
+  static resolveCultCabinSearch(room, leaderToken) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'CULT_UPRISING_BLIND') {
+      throw new Error(`Không thể kết thúc Thị kiến ở giai đoạn ${room.gamePhase}`);
+    }
+
+    if (!room.pendingCultRitual || room.pendingCultRitual.type !== 'CULT_CABIN_SEARCH') {
+      throw new Error('Hiện không phải lượt Thị kiến của Nghi thức Tà giáo');
+    }
+
+    const leader = room.getPlayerByToken(leaderToken);
+    if (!leader || room.pendingCultRitual.cultLeaderId !== leader.id) {
+      throw new Error('Chỉ có Giáo chủ mới có quyền thực thi quyền năng này');
+    }
+
+    room.pendingCultRitual = null;
+    room.gamePhase = 'ROUND_END';
+    room.touch();
+
+    return {
+      success: true,
+      nextPhase: 'ROUND_END',
+      publicMessage: 'Giáo chủ đã hoàn tất Thị kiến, trời đã sáng trở lại!',
+      room
+    };
+  }
+
+  /**
+   * Giáo chủ thu nạp 1 người chơi thành Cultist (AC-3 UC-015)
+   * @param {Object} room 
+   * @param {string} leaderToken 
+   * @param {string} targetPlayerId 
+   * @returns {Object}
+   */
+  static resolveCultConversion(room, leaderToken, targetPlayerId) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'CULT_UPRISING_BLIND') {
+      throw new Error(`Không thể thu nạp giáo đồ ở giai đoạn ${room.gamePhase}`);
+    }
+
+    if (!room.pendingCultRitual || room.pendingCultRitual.type !== 'CONVERSION') {
+      throw new Error('Hiện không phải lượt Thu nạp của Nghi thức Tà giáo');
+    }
+
+    const leader = room.getPlayerByToken(leaderToken);
+    if (!leader || room.pendingCultRitual.cultLeaderId !== leader.id) {
+      throw new Error('Chỉ có Giáo chủ mới có quyền thực thi quyền năng này');
+    }
+
+    const targetPlayer = room.getPlayer(targetPlayerId);
+    if (!targetPlayer) {
+      throw new Error('Người chơi mục tiêu không tồn tại');
+    }
+
+    if (targetPlayer.status !== 'ACTIVE') {
+      throw new Error('Chỉ có thể thu nạp người chơi đang ở trạng thái ACTIVE');
+    }
+
+    if (!targetPlayer.isConvertible) {
+      throw new Error('Người chơi này đã được miễn nhiễm (từng bị Cabin Search hoặc Flogging)');
+    }
+
+    if (targetPlayer.id === leader.id) {
+      throw new Error('Giáo chủ không thể tự thu nạp chính mình');
+    }
+
+    // Thực hiện chuyển phe
+    targetPlayer.originalFactionRole = targetPlayer.originalFactionRole || targetPlayer.factionRole;
+    targetPlayer.factionRole = 'CULTIST';
+    targetPlayer.isConvertible = false; // Đã thu nạp thì không bị thu nạp lại
+
+    room.pendingCultRitual = null;
+    room.gamePhase = 'ROUND_END';
+    room.touch();
+
+    return {
+      success: true,
+      convertedPlayerId: targetPlayer.id,
+      convertedPlayerName: targetPlayer.nickname,
+      cultLeaderId: leader.id,
+      cultLeaderName: leader.nickname,
+      nextPhase: 'ROUND_END',
+      publicMessage: 'Nghi thức Thu Nạp kết thúc, trời đã sáng trở lại!',
+      room
+    };
+  }
 }
 
 export default ExecutionService;

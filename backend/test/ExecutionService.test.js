@@ -6,7 +6,7 @@ import MapBoard from '../src/models/MapBoard.js';
 import NavigationDeck from '../src/models/NavigationDeck.js';
 import { ExecutionService } from '../src/services/ExecutionService.js';
 
-describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', () => {
+describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC-015)', () => {
   function setupTestRoom(mapType = 'QUICK_JOURNEY') {
     const room = new Room({ id: 'EXEC01', hostId: 'p_host' });
     room.mapType = mapType;
@@ -32,6 +32,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', 
     room.navigatorId = p3.id;
 
     room.navigationDeck = new NavigationDeck({ roomId: room.id, mapType });
+    room.mapBoard = new MapBoard({ roomId: room.id, mapMode: mapType });
 
     return { room, p1, p2, p3, p4, p5 };
   }
@@ -253,7 +254,6 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', 
   describe('UC-014: Card Actions (Drunk, Armed, Disarmed, Mermaid, Telescope)', () => {
     test('DRUNK (AC-1): Chuyển Thuyền trưởng theo chiều kim đồng hồ, bỏ qua speechRestricted, cho phép OFF_DUTY', () => {
       const { room, p1, p2, p3 } = setupTestRoom();
-      // p1 là Captain hiện tại. p2 là người kế tiếp nhưng bị cut tongue. p3 là người tiếp theo (đang OFF_DUTY).
       p2.speechRestricted = true;
       p3.status = 'OFF_DUTY';
 
@@ -301,7 +301,6 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', 
 
     test('MERMAID (AC-2): Chuyển sang CARD_ACTION_TARGET_SELECTION và Thuyền trưởng chỉ định người nhận', () => {
       const { room, p1, p2 } = setupTestRoom();
-      // Đưa sẵn 3 lá vào discard pile
       room.navigationDeck.discard({ id: 'd1', direction: 'BLUE' });
       room.navigationDeck.discard({ id: 'd2', direction: 'RED' });
       room.navigationDeck.discard({ id: 'd3', direction: 'YELLOW' });
@@ -313,14 +312,12 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', 
       assert.equal(cardResult.requiresTargetSelection, true);
       assert.equal(room.gamePhase, 'CARD_ACTION_TARGET_SELECTION');
 
-      // Thuyền trưởng chỉ định p2
       const targetResult = ExecutionService.designateCardActionTarget(room, p1.sessionToken, p2.id);
       assert.equal(targetResult.actionType, 'MERMAID');
       assert.equal(targetResult.targetPlayerId, p2.id);
       assert.equal(targetResult.cards.length, 3);
       assert.equal(room.gamePhase, 'MERMAID_INSPECTION');
 
-      // p2 xác nhận đã nghe xong Tiếng hát Tiên cá
       const ackResult = ExecutionService.acknowledgeMermaidInspection(room, p2.sessionToken);
       assert.equal(ackResult.success, true);
       assert.equal(ackResult.nextPhase, 'ROUND_END');
@@ -335,7 +332,6 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', 
       const cardResult = ExecutionService.executeCardAction(room);
       assert.equal(cardResult.requiresTargetSelection, true);
 
-      // Thuyền trưởng chỉ định p2
       const targetResult = ExecutionService.designateCardActionTarget(room, p1.sessionToken, p2.id);
       assert.equal(targetResult.actionType, 'TELESCOPE');
       assert.equal(targetResult.targetPlayerId, p2.id);
@@ -346,7 +342,6 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', 
       const initialDiscardCount = room.navigationDeck.discardPile.length;
       const peekedCardId = targetResult.card.id;
 
-      // p2 chọn DISCARD (Vứt)
       const decisionResult = ExecutionService.resolveTelescopeDecision(room, p2.sessionToken, 'DISCARD');
       assert.equal(decisionResult.decision, 'DISCARD');
       assert.equal(decisionResult.nextPhase, 'ROUND_END');
@@ -368,6 +363,105 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', 
       assert.equal(decisionResult.decision, 'KEEP');
       assert.equal(room.navigationDeck.drawPile.length, initialDrawCount);
       assert.equal(decisionResult.nextPhase, 'ROUND_END');
+    });
+  });
+
+  describe('UC-015: Cult Uprising (Nghi thức Tà giáo)', () => {
+    test('startCultUprising: Rút 1 lá Nghi thức và chuyển sang CULT_UPRISING_BLIND (AC-1)', () => {
+      const { room, p4 } = setupTestRoom();
+      room.gamePhase = 'CULT_UPRISING';
+      room.mapBoard.cultRitualDeck = ['CULT_CABIN_SEARCH'];
+
+      const result = ExecutionService.startCultUprising(room);
+
+      assert.equal(result.ritualCard, 'CULT_CABIN_SEARCH');
+      assert.equal(result.nextPhase, 'CULT_UPRISING_BLIND');
+      assert.equal(room.gamePhase, 'CULT_UPRISING_BLIND');
+      assert.equal(result.cultLeaderId, p4.id);
+      assert.ok(result.inspectionData.captain);
+      assert.ok(result.inspectionData.lieutenant);
+      assert.ok(result.inspectionData.navigator);
+    });
+
+    test('resolveCultGunsStash (AC-2): Cult Leader phân phát đúng 3 súng và bảo toàn ẩn danh', () => {
+      const { room, p1, p3, p4 } = setupTestRoom();
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'GUNS_STASH', cultLeaderId: p4.id };
+
+      const initialP1Guns = p1.gunCount;
+      const initialP3Guns = p3.gunCount;
+
+      const result = ExecutionService.resolveCultGunsStash(room, p4.sessionToken, [
+        { playerId: p1.id, count: 2 },
+        { playerId: p3.id, count: 1 }
+      ]);
+
+      assert.equal(result.success, true);
+      assert.equal(result.nextPhase, 'ROUND_END');
+      assert.equal(p1.gunCount, initialP1Guns + 2);
+      assert.equal(p3.gunCount, initialP3Guns + 1);
+      assert.equal(room.pendingCultRitual, null);
+    });
+
+    test('resolveCultGunsStash: Throw lỗi khi tổng số súng khác 3', () => {
+      const { room, p1, p4 } = setupTestRoom();
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'GUNS_STASH', cultLeaderId: p4.id };
+
+      assert.throws(() => {
+        ExecutionService.resolveCultGunsStash(room, p4.sessionToken, [{ playerId: p1.id, count: 2 }]);
+      }, /Tổng số súng cấp phải đúng bằng 3/);
+    });
+
+    test('resolveCultConversion (AC-3): Thu nạp mục tiêu thành CULTIST, lưu cờ miễn nhiễm và chuyển giao ID Cult Leader', () => {
+      const { room, p2, p4 } = setupTestRoom(); // p2 là SAILOR
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'CONVERSION', cultLeaderId: p4.id };
+
+      assert.equal(p2.factionRole, 'SAILOR');
+      assert.equal(p2.isConvertible, true);
+
+      const result = ExecutionService.resolveCultConversion(room, p4.sessionToken, p2.id);
+
+      assert.equal(result.success, true);
+      assert.equal(result.convertedPlayerId, p2.id);
+      assert.equal(result.cultLeaderId, p4.id);
+      assert.equal(p2.factionRole, 'CULTIST');
+      assert.equal(p2.originalFactionRole, 'SAILOR');
+      assert.equal(p2.isConvertible, false); // Không thể thu nạp thêm lần nữa
+    });
+
+    test('resolveCultConversion: Throw lỗi khi thu nạp người đã có cờ miễn nhiễm (isConvertible == false)', () => {
+      const { room, p2, p4 } = setupTestRoom();
+      p2.isConvertible = false; // Từng bị Cabin Search
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'CONVERSION', cultLeaderId: p4.id };
+
+      assert.throws(() => {
+        ExecutionService.resolveCultConversion(room, p4.sessionToken, p2.id);
+      }, /Người chơi này đã được miễn nhiễm/);
+    });
+
+    test('resolveCultCabinSearch: Cult Leader hoàn tất thị kiến', () => {
+      const { room, p4 } = setupTestRoom();
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'CULT_CABIN_SEARCH', cultLeaderId: p4.id };
+
+      const result = ExecutionService.resolveCultCabinSearch(room, p4.sessionToken);
+      assert.equal(result.success, true);
+      assert.equal(result.nextPhase, 'ROUND_END');
+      assert.equal(room.pendingCultRitual, null);
+    });
+
+    test('startCultUprising: Tự động bỏ qua và chuyển sang ROUND_END khi bộ bài ritual đã cạn', () => {
+      const { room } = setupTestRoom();
+      room.gamePhase = 'CULT_UPRISING';
+      room.mapBoard.cultRitualDeck = [];
+
+      const result = ExecutionService.startCultUprising(room);
+      assert.equal(result.isDeckEmpty, true);
+      assert.equal(result.nextPhase, 'ROUND_END');
+      assert.equal(room.gamePhase, 'ROUND_END');
     });
   });
 
@@ -431,6 +525,16 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014)', 
       assert.throws(() => {
         ExecutionService.designateCardActionTarget(room, p1.sessionToken, p3.id);
       }, /Không thể chỉ định người chơi đã bị loại/);
+    });
+
+    test('Throw lỗi khi người không phải Cult Leader cố thu nạp giáo đồ', () => {
+      const { room, p1, p2, p4 } = setupTestRoom();
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'CONVERSION', cultLeaderId: p4.id };
+
+      assert.throws(() => {
+        ExecutionService.resolveCultConversion(room, p1.sessionToken, p2.id);
+      }, /Chỉ có Giáo chủ mới có quyền/);
     });
   });
 });

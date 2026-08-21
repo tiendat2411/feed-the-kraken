@@ -802,6 +802,118 @@ export function setupSocket(server) {
       }
     });
 
+    // START CULT UPRISING (UC-015)
+    socket.on('start_cult_uprising', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.startCultUprising(room);
+        await RoomManager.saveSnapshot(room.id);
+
+        if (result.ritualCard) {
+          // Công khai loại bài Nghi thức vừa lật mở (AC-1)
+          io.to(room.id).emit('CULT_RITUAL_REVEALED', {
+            card_action: result.ritualCard,
+            ritualName: result.ritualName
+          });
+
+          // Kích hoạt màn hình mù cho toàn phòng (Không chứa bất kỳ ID của Cult Leader nào - Anti-Sniffing AC-1)
+          io.to(room.id).emit('CULT_UPRISING_STARTED', {});
+
+          // Gửi riêng dữ liệu thị kiến ban điều hướng cho Cult Leader nếu là CULT_CABIN_SEARCH
+          if (result.inspectionData && result.cultLeaderId) {
+            emitPrivate(io, room.id, result.cultLeaderId, 'CULT_CABIN_SEARCH_DATA', {
+              inspectionData: result.inspectionData
+            });
+          }
+        } else {
+          io.to(room.id).emit('CULT_UPRISING_ENDED', {
+            publicMessage: result.publicMessage
+          });
+        }
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // RESOLVE CULT GUNS STASH (UC-015 AC-2)
+    socket.on('resolve_cult_guns_stash', async ({ allocations }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.resolveCultGunsStash(room, socket.sessionToken, allocations);
+        await RoomManager.saveSnapshot(room.id);
+
+        // Kết thúc màn hình mù và thông báo cập nhật súng ẩn danh
+        io.to(room.id).emit('CULT_UPRISING_ENDED', {
+          publicMessage: result.publicMessage
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // RESOLVE CULT CABIN SEARCH (UC-015)
+    socket.on('resolve_cult_cabin_search', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.resolveCultCabinSearch(room, socket.sessionToken);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('CULT_UPRISING_ENDED', {
+          publicMessage: result.publicMessage
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // RESOLVE CULT CONVERSION (UC-015 AC-3)
+    socket.on('resolve_cult_conversion', async ({ targetPlayerId }, callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.resolveCultConversion(room, socket.sessionToken, targetPlayerId);
+        await RoomManager.saveSnapshot(room.id);
+
+        // GỬI RIÊNG THÔNG BÁO CHO NẠN NHÂN VỪA ĐƯỢC THU NẠP (AC-3)
+        emitPrivate(io, room.id, result.convertedPlayerId, 'CULTIST_CONVERTED', {
+          message: 'Bạn đã được Giáo chủ thu nạp vào Hội Tà Giáo (Cultist)!',
+          cult_leader_id: result.cultLeaderId,
+          cult_leader_name: result.cultLeaderName
+        });
+
+        // Kết thúc màn hình mù cho toàn phòng
+        io.to(room.id).emit('CULT_UPRISING_ENDED', {
+          publicMessage: result.publicMessage
+        });
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
     // CHECK MUTINY TIMEOUT (Auto-resolve offline voters when timer ends)
     socket.on('check_mutiny_timeout', async (callback) => {
       try {
