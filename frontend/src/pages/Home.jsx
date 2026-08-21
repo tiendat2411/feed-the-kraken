@@ -17,7 +17,7 @@ const Home = () => {
     setError('');
     socket.emit('create_room', { playerName: nickname }, (response) => {
       if (response.success) {
-        navigate(`/game/${response.room.id}`);
+        navigate(`/game/${response.room.id}`, { state: { initialRoom: response.room } });
       } else {
         setError(response.error || 'Failed to create room');
       }
@@ -32,7 +32,7 @@ const Home = () => {
     setError('');
     socket.emit('join_room', { roomId: roomCode.toUpperCase(), playerName: nickname }, (response) => {
       if (response.success) {
-        navigate(`/game/${response.room.id}`);
+        navigate(`/game/${response.room.id}`, { state: { initialRoom: response.room } });
       } else {
         setError(response.error || 'Failed to join room');
       }

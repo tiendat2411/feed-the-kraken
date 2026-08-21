@@ -108,7 +108,7 @@
 ### Implementation
 - [ ] T025 [P] [BR-004] Tạo entity `MapBoard` trong `backend/src/models/`.
 - [ ] T026 [BR-004] Tích hợp file JSON cấu hình map (Quick/Long) vào `ExecutionService.js` (`backend/src/services/ExecutionService.js`).
-- [ ] T027 [BR-004] Xử lý sự kiện: Tra khảo (Search cabin), Chặt tay (Flogging), Lồng sắt, Cắt lưỡi.
+- [ ] T027 [BR-004] Xử lý sự kiện Map & Card Actions: Tra khảo (Search cabin), Chặt tay (Flogging), Lồng sắt, Cắt lưỡi, Drunk, Armed/Disarmed, Tiên cá (Mermaid - Captain chỉ định 1 người bí mật xem 3 lá discard ngẫu nhiên), Kính viễn vọng (Telescope - Captain chỉ định 1 người bí mật xem đỉnh draw pile và chọn giữ/vứt).
 - [ ] T028 [BR-004] Xử lý Cult Uprising: Captain lật mở bài Ritual, hệ thống ép nhắm mắt, Cult Leader nhặt giáo đồ, `emitPrivate` báo cho giáo đồ mới.
 - [ ] T029 [BR-004] Xây dựng UI Bản đồ và Hiệu ứng (`frontend/src/components/MapBoardUI.jsx`).
 

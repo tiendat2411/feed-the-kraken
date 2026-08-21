@@ -9,6 +9,7 @@ const NavigationPhase = ({
   currentUserId,
   myRole,
   privateCards = [],
+  onStartNavigation,
   onCaptainSelectCard,
   onLieutenantSelectCard,
   onNavigatorSelectCard,
@@ -31,12 +32,13 @@ const NavigationPhase = ({
   const isNavigator = me?.id === room?.navigatorId;
 
   const currentPhase = room?.gamePhase || 'NAVIGATION';
+  const activeCards = (privateCards && privateCards.length > 0) ? privateCards : (room?.myNavigationCards || []);
 
   // Reset selected card when phase changes or cards change
   useEffect(() => {
     setSelectedCardId(null);
     setShowOverboardConfirm(false);
-  }, [currentPhase, privateCards]);
+  }, [currentPhase, activeCards]);
 
   // Countdown timer for 60s
   useEffect(() => {
@@ -81,13 +83,13 @@ const NavigationPhase = ({
       case 'CULT_UPRISING':
         return { title: 'Khởi Nghĩa Tà Giáo 👁️', desc: 'Triệu hồi sức mạnh bóng tối! Tăng cường tín đồ và chuyển biến lòng trung thành.' };
       case 'ARMED':
-        return { title: 'Tiếp Vũ Khí 🔫', desc: 'Cung cấp thêm 1 súng đạn mới cho Thuyền phó đương nhiệm.' };
+        return { title: 'Tiếp Vũ Khí 🔫', desc: 'Cung cấp thêm 1 khẩu súng mới cho Hoa tiêu đương nhiệm.' };
       case 'DISARMED':
         return { title: 'Tước Khí 🚫', desc: 'Hoa tiêu bị tịch thu 1 khẩu súng vào kho vũ khí chung.' };
       case 'MERMAID':
-        return { title: 'Tiếng Hát Tiên Cá 🧜‍♀️', desc: 'Hoa tiêu được bí mật xem lại 3 lá bài bị hủy gần nhất.' };
+        return { title: 'Tiếng Hát Tiên Cá 🧜‍♀️', desc: 'Thuyền trưởng chỉ định 1 người chơi bí mật xem lại 3 lá bài bị hủy gần nhất.' };
       case 'TELESCOPE':
-        return { title: 'Kính Viễn Vọng 🔭', desc: 'Hoa tiêu được bí mật nhìn trộm lá bài trên cùng của bộ bài bốc.' };
+        return { title: 'Kính Viễn Vọng 🔭', desc: 'Thuyền trưởng chỉ định 1 người chơi bí mật nhìn lá bài trên đỉnh bộ bài bốc (chọn giữ lại hoặc hủy).' };
       case 'NONE':
       default:
         return { title: 'Thuận Buồm Xuôi Gió ⛵', desc: 'Con tàu di chuyển êm đềm theo hướng hải đồ, không có tác động phụ.' };
@@ -167,8 +169,8 @@ const NavigationPhase = ({
 
       {/* Main Action Area */}
       <div className="w-full max-w-5xl">
-        {/* VIEW 1: CAPTAIN DRAW PHASE */}
-        {currentPhase === 'NAVIGATION_CAPTAIN_DRAW' && (
+        {/* VIEW 1: CAPTAIN DRAW PHASE / INITIAL NAVIGATION */}
+        {(currentPhase === 'NAVIGATION' || currentPhase === 'NAVIGATION_CAPTAIN_DRAW') && (
           <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl border border-amber-500/40 p-6 md:p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full filter blur-3xl pointer-events-none" />
 
@@ -178,69 +180,88 @@ const NavigationPhase = ({
                   <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-2">
                     LƯỢT CỦA THUYỀN TRƯỞNG
                   </span>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">Hãy Chọn 1 Lá Bài Để Bỏ Vào Nhật Ký</h2>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">
+                    {activeCards.length > 0 ? 'Hãy Chọn 1 Lá Bài Để Bỏ Vào Nhật Ký' : 'Bắt Đầu Lượt Rút Hải Đồ Bí Mật'}
+                  </h2>
                   <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-                    Bạn vừa rút 2 hải đồ bí mật. Hãy nhấp chọn <span className="text-amber-300 font-semibold">1 lá bạn muốn giữ</span> để chuyển tiếp cho Hoa tiêu. Lá còn lại sẽ bị hủy úp kín.
+                    {activeCards.length > 0
+                      ? 'Bạn vừa rút 2 hải đồ bí mật. Hãy nhấp chọn 1 lá bạn muốn giữ để chuyển tiếp cho Hoa tiêu. Lá còn lại sẽ bị hủy úp kín.'
+                      : 'Nhấn nút bên dưới để rút 2 hải đồ đầu tiên từ đầu cọc bài bốc.'}
                   </p>
                 </div>
 
-                {/* Drawn cards list */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
-                  {privateCards.map((card, idx) => {
-                    const badge = getCardBadge(card.direction || card.color);
-                    const actionInfo = getActionDescription(card.action);
-                    const isSelected = selectedCardId === card.id;
+                {activeCards.length === 0 ? (
+                  <div className="flex justify-center py-6">
+                    <button
+                      id="btn-start-navigation-draw"
+                      onClick={() => onStartNavigation && onStartNavigation()}
+                      className="px-8 py-4 rounded-xl font-bold text-base bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 shadow-xl shadow-amber-500/30 transition-all duration-200 transform hover:scale-105 cursor-pointer flex items-center space-x-3"
+                    >
+                      <span className="text-2xl">🧭</span>
+                      <span>RÚT 2 HẢI ĐỒ BÍ MẬT</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    {/* Drawn cards list */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
+                      {activeCards.map((card, idx) => {
+                        const badge = getCardBadge(card.direction || card.color);
+                        const actionInfo = getActionDescription(card.action);
+                        const isSelected = selectedCardId === card.id;
 
-                    return (
-                      <div
-                        key={card.id || idx}
-                        id={`card-captain-${card.id || idx}`}
-                        onClick={() => setSelectedCardId(card.id)}
-                        className={`cursor-pointer rounded-2xl p-6 border-2 transition-all duration-300 transform bg-gradient-to-b ${getCardStyle(card.direction || card.color)} ${
-                          isSelected
-                            ? 'scale-105 ring-4 ring-amber-400/80 border-amber-300 shadow-2xl shadow-amber-500/40'
-                            : 'hover:scale-102 hover:border-slate-400 opacity-80 hover:opacity-100'
+                        return (
+                          <div
+                            key={card.id || idx}
+                            id={`card-captain-${card.id || idx}`}
+                            onClick={() => setSelectedCardId(card.id)}
+                            className={`cursor-pointer rounded-2xl p-6 border-2 transition-all duration-300 transform bg-gradient-to-b ${getCardStyle(card.direction || card.color)} ${
+                              isSelected
+                                ? 'scale-105 ring-4 ring-amber-400/80 border-amber-300 shadow-2xl shadow-amber-500/40'
+                                : 'hover:scale-102 hover:border-slate-400 opacity-80 hover:opacity-100'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-4">
+                              <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
+                                {badge.icon} {badge.label}
+                              </span>
+                              <span className="text-xs font-mono opacity-60">Thẻ #{idx + 1}</span>
+                            </div>
+
+                            <div className="my-6 text-center">
+                              <div className="text-5xl mb-3">{badge.icon}</div>
+                              <div className="text-xl font-bold text-white tracking-wide">{actionInfo.title}</div>
+                              <div className="text-xs text-slate-300 mt-2 leading-relaxed px-2">{actionInfo.desc}</div>
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
+                              <span className="text-slate-300">Trạng thái:</span>
+                              <span className={`font-semibold ${isSelected ? 'text-amber-300 font-bold' : 'text-slate-400'}`}>
+                                {isSelected ? '✓ SẼ GIỮ VÀO NHẬT KÝ' : 'Sẽ bị hủy'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex justify-center">
+                      <button
+                        id="btn-confirm-captain-card"
+                        disabled={!selectedCardId}
+                        onClick={() => selectedCardId && onCaptainSelectCard && onCaptainSelectCard(selectedCardId)}
+                        className={`px-8 py-3.5 rounded-xl font-bold text-base shadow-xl transition-all duration-200 flex items-center space-x-2 ${
+                          selectedCardId
+                            ? 'bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 cursor-pointer scale-100 hover:scale-105'
+                            : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
-                            {badge.icon} {badge.label}
-                          </span>
-                          <span className="text-xs font-mono opacity-60">Thẻ #{idx + 1}</span>
-                        </div>
-
-                        <div className="my-6 text-center">
-                          <div className="text-5xl mb-3">{badge.icon}</div>
-                          <div className="text-xl font-bold text-white tracking-wide">{actionInfo.title}</div>
-                          <div className="text-xs text-slate-300 mt-2 leading-relaxed px-2">{actionInfo.desc}</div>
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                          <span className="text-slate-300">Trạng thái:</span>
-                          <span className={`font-semibold ${isSelected ? 'text-amber-300' : 'text-slate-400'}`}>
-                            {isSelected ? '✓ SẼ GIỮ VÀO NHẬT KÝ' : 'Sẽ bị hủy'}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex justify-center">
-                  <button
-                    id="btn-confirm-captain-card"
-                    disabled={!selectedCardId}
-                    onClick={() => selectedCardId && onCaptainSelectCard && onCaptainSelectCard(selectedCardId)}
-                    className={`px-8 py-3.5 rounded-xl font-bold text-base shadow-xl transition-all duration-200 flex items-center space-x-2 ${
-                      selectedCardId
-                        ? 'bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 cursor-pointer scale-100 hover:scale-105'
-                        : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
-                    }`}
-                  >
-                    <span>📖</span>
-                    <span>XÁC NHẬN BỎ VÀO NHẬT KÝ</span>
-                  </button>
-                </div>
+                        <span>📖</span>
+                        <span>XÁC NHẬN BỎ VÀO NHẬT KÝ</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="py-12 text-center">
@@ -278,7 +299,7 @@ const NavigationPhase = ({
 
                 {/* Drawn cards list */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
-                  {privateCards.map((card, idx) => {
+                  {activeCards.map((card, idx) => {
                     const badge = getCardBadge(card.direction || card.color);
                     const actionInfo = getActionDescription(card.action);
                     const isSelected = selectedCardId === card.id;
@@ -370,7 +391,7 @@ const NavigationPhase = ({
 
                 {/* Logbook cards list */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
-                  {privateCards.map((card, idx) => {
+                  {activeCards.map((card, idx) => {
                     const badge = getCardBadge(card.direction || card.color);
                     const actionInfo = getActionDescription(card.action);
                     const isSelected = selectedCardId === card.id;

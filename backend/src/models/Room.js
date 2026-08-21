@@ -135,7 +135,9 @@ class Room {
       lastActivity: this.lastActivity,
       players: playersPublic,
       myRole: requestingPlayer ? requestingPlayer.factionRole : null,
-      myId: requestingPlayer ? requestingPlayer.id : null
+      myId: requestingPlayer ? requestingPlayer.id : null,
+      executedNavigationCard: this.executedNavigationCard || null,
+      myNavigationCards: (this.navigationHand && requestingPlayer && this.navigationHand.playerId === requestingPlayer.id) ? (this.navigationHand.cards || []) : []
     };
 
     // Nếu đang ở giai đoạn Pirate Gathering và người này là Pirate -> Cho thấy danh sách Pirate khác
@@ -163,6 +165,8 @@ class Room {
       nominatedNavigatorId: this.nominatedNavigatorId,
       mutinySession: this.mutinySession ? this.mutinySession.toJSON() : null,
       navigationDeck: this.navigationDeck ? this.navigationDeck.toJSON() : null,
+      navigationHand: this.navigationHand || null,
+      executedNavigationCard: this.executedNavigationCard || null,
       phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
@@ -185,6 +189,8 @@ class Room {
     room.nominatedNavigatorId = data.nominatedNavigatorId || null;
     room.mutinySession = data.mutinySession ? data.mutinySession : null;
     room.navigationDeck = data.navigationDeck ? NavigationDeck.fromJSON(data.navigationDeck) : null;
+    room.navigationHand = data.navigationHand || null;
+    room.executedNavigationCard = data.executedNavigationCard || null;
     room.phaseDeadline = data.phaseDeadline || null;
     room.createdAt = data.createdAt;
     room.lastActivity = data.lastActivity;

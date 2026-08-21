@@ -120,6 +120,41 @@ export function setupSocket(server) {
       }
     });
 
+    // GET ROOM STATE (Fetch current snapshot without F5 / reload)
+    socket.on('get_room_state', ({ roomId }, callback) => {
+      try {
+        let roomInstance = null;
+        if (roomId) {
+          roomInstance = RoomManager.getRoomInstance(roomId.toUpperCase());
+        }
+        if (!roomInstance) {
+          const found = RoomManager.getRoomByToken(socket.sessionToken);
+          if (found) roomInstance = found.room;
+        }
+
+        if (roomInstance) {
+          socket.join(roomInstance.id);
+          const sanitized = roomInstance.toSanitizedJSON(socket.sessionToken);
+          socket.emit('room_state', sanitized);
+
+          // Nếu đang trong lượt bốc bài và người này đang giữ bài trên tay -> gửi lại bài riêng tư
+          const mePlayer = roomInstance.getPlayerByToken(socket.sessionToken);
+          if (mePlayer && roomInstance.navigationHand && roomInstance.navigationHand.playerId === mePlayer.id) {
+            socket.emit('CARDS_DRAWN_SECRET', {
+              role: roomInstance.navigationHand.role,
+              cards: roomInstance.navigationHand.cards
+            });
+          }
+
+          if (typeof callback === 'function') callback({ success: true, room: sanitized });
+        } else {
+          if (typeof callback === 'function') callback({ success: false, error: 'Phòng không tồn tại hoặc đã bị giải tán' });
+        }
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
     // UPDATE AVATAR
     socket.on('update_avatar', ({ avatar }) => {
       const activeRoom = RoomManager.reconnectPlayer(socket.sessionToken, socket.id);

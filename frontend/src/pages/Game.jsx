@@ -1,31 +1,61 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSocket } from '../contexts/SocketContext';
 import Lobby from './Lobby';
 import RoleReveal from '../components/RoleReveal';
 import MutinyBoard from '../components/MutinyBoard';
 import NavigationPhase from '../components/NavigationPhase';
+import GameHeader from '../components/GameHeader';
 
 const Game = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const socket = useSocket();
-  const [room, setRoom] = useState(null);
-  const [myRole, setMyRole] = useState(null);
-  const [privateCards, setPrivateCards] = useState([]);
+
+  // Initialize room with state from navigation if available to eliminate loading screen delay
+  const [room, setRoom] = useState(location.state?.initialRoom || null);
+  const [myRole, setMyRole] = useState(location.state?.initialRoom?.myRole || null);
+  const [privateCards, setPrivateCards] = useState(location.state?.initialRoom?.myNavigationCards || []);
   const [error, setError] = useState('');
 
   // Extract currentUserId from sessionToken
   const currentUserId = localStorage.getItem('sessionToken');
 
+  const fetchRoomState = useCallback(() => {
+    if (!socket || !roomId) return;
+    socket.emit('get_room_state', { roomId }, (response) => {
+      if (response?.success && response?.room) {
+        setRoom(response.room);
+        if (response.room.myRole) {
+          setMyRole(response.room.myRole);
+        }
+        if (response.room.myNavigationCards && response.room.myNavigationCards.length > 0) {
+          setPrivateCards(response.room.myNavigationCards);
+        }
+      } else if (response?.error) {
+        setError(response.error);
+      }
+    });
+  }, [socket, roomId]);
+
   useEffect(() => {
     if (!socket) return;
+
+    // Fetch initial room state immediately
+    fetchRoomState();
+
+    // Re-fetch on connect or reconnect
+    socket.on('connect', fetchRoomState);
 
     // Listen for room updates
     socket.on('room_state', (updatedRoom) => {
       setRoom(updatedRoom);
       if (updatedRoom.myRole) {
         setMyRole(updatedRoom.myRole);
+      }
+      if (updatedRoom.myNavigationCards && updatedRoom.myNavigationCards.length > 0) {
+        setPrivateCards(updatedRoom.myNavigationCards);
       }
     });
 
@@ -62,6 +92,7 @@ const Game = () => {
     });
 
     return () => {
+      socket.off('connect', fetchRoomState);
       socket.off('room_state');
       socket.off('ROLE_ASSIGNED');
       socket.off('CARDS_DRAWN_SECRET');
@@ -71,7 +102,7 @@ const Game = () => {
       socket.off('ROOM_DISSOLVED');
       socket.off('PLAYER_KICKED');
     };
-  }, [socket, navigate]);
+  }, [socket, navigate, fetchRoomState]);
 
   const handleSelectAvatar = (avatar) => {
     if (socket) socket.emit('update_avatar', { avatar });
@@ -86,16 +117,18 @@ const Game = () => {
   };
 
   const handleLeaveRoom = () => {
-    if (socket) {
-      socket.emit('leave_room');
-      navigate('/');
+    if (socket && window.confirm('Bạn có chắc chắn muốn rời khỏi phòng không?')) {
+      socket.emit('leave_room', () => {
+        navigate('/');
+      });
     }
   };
 
   const handleDissolveRoom = () => {
-    if (socket && window.confirm('Bạn có chắc chắn muốn giải tán phòng không?')) {
-      socket.emit('dissolve_room');
-      navigate('/');
+    if (socket && window.confirm('Bạn có chắc chắn muốn giải tán phòng không? Tất cả người chơi sẽ bị đưa về trang chủ.')) {
+      socket.emit('dissolve_room', () => {
+        navigate('/');
+      });
     }
   };
 
@@ -125,6 +158,10 @@ const Game = () => {
     if (socket) socket.emit('cut_tongue', { targetPlayerId });
   };
 
+  const handleStartNavigation = () => {
+    if (socket) socket.emit('start_navigation');
+  };
+
   const handleCaptainSelectCard = (keptCardId) => {
     if (socket) socket.emit('captain_select_card', { keptCardId });
   };
@@ -146,13 +183,33 @@ const Game = () => {
   };
 
   if (error) {
-    return <div className="min-h-screen bg-slate-900 text-white p-8">{error}</div>;
+    return (
+      <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center space-y-4">
+        <div className="p-4 bg-red-500/20 border border-red-500/50 text-red-300 rounded-2xl text-center max-w-md">
+          {error}
+        </div>
+        <button
+          onClick={() => navigate('/')}
+          className="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition"
+        >
+          Quay lại Trang Chủ
+        </button>
+      </div>
+    );
   }
 
   if (!room) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white p-8 flex items-center justify-center">
-        <div className="text-xl animate-pulse">Connecting to room...</div>
+      <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center space-y-4">
+        <div className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent animate-pulse">
+          Connecting to room...
+        </div>
+        <button
+          onClick={fetchRoomState}
+          className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 rounded-lg transition"
+        >
+          Thử kết nối lại
+        </button>
       </div>
     );
   }
@@ -178,11 +235,21 @@ const Game = () => {
   // 2. Secret Role Reveal & Night Gathering Phase
   if (room.gamePhase === 'ROLE_REVEAL' || room.gamePhase === 'PIRATES_GATHERING') {
     return (
-      <RoleReveal 
-        room={room} 
-        myRole={myRole || room.myRole} 
-        currentUserId={effectiveUserId} 
-      />
+      <div className="min-h-screen flex flex-col">
+        <GameHeader
+          room={room}
+          currentUserId={effectiveUserId}
+          onLeaveRoom={handleLeaveRoom}
+          onDissolveRoom={handleDissolveRoom}
+        />
+        <div className="flex-1">
+          <RoleReveal 
+            room={room} 
+            myRole={myRole || room.myRole} 
+            currentUserId={effectiveUserId} 
+          />
+        </div>
+      </div>
     );
   }
 
@@ -198,32 +265,53 @@ const Game = () => {
 
   if (isNavigationPhase) {
     return (
-      <NavigationPhase
-        room={room}
-        currentUserId={effectiveUserId}
-        myRole={myRole || room.myRole}
-        privateCards={privateCards}
-        onCaptainSelectCard={handleCaptainSelectCard}
-        onLieutenantSelectCard={handleLieutenantSelectCard}
-        onNavigatorSelectCard={handleNavigatorSelectCard}
-        onNavigatorJumpOverboard={handleNavigatorJumpOverboard}
-        onAppointEmergencyNavigator={handleAppointEmergencyNavigator}
-      />
+      <div className="min-h-screen flex flex-col">
+        <GameHeader
+          room={room}
+          currentUserId={effectiveUserId}
+          onLeaveRoom={handleLeaveRoom}
+          onDissolveRoom={handleDissolveRoom}
+        />
+        <div className="flex-1">
+          <NavigationPhase
+            room={room}
+            currentUserId={effectiveUserId}
+            myRole={myRole || room.myRole}
+            privateCards={privateCards}
+            onStartNavigation={handleStartNavigation}
+            onCaptainSelectCard={handleCaptainSelectCard}
+            onLieutenantSelectCard={handleLieutenantSelectCard}
+            onNavigatorSelectCard={handleNavigatorSelectCard}
+            onNavigatorJumpOverboard={handleNavigatorJumpOverboard}
+            onAppointEmergencyNavigator={handleAppointEmergencyNavigator}
+          />
+        </div>
+      </div>
     );
   }
 
   // 4. Day Phase & Mutiny Voting (BR-002)
   return (
-    <MutinyBoard 
-      room={room}
-      currentUserId={effectiveUserId}
-      myRole={myRole || room.myRole}
-      onAppointTeam={handleAppointTeam}
-      onSubmitVote={handleSubmitVote}
-      onConfirmOutcome={handleConfirmOutcome}
-      onEliminateTieCandidate={handleEliminateTieCandidate}
-      onCutTongue={handleCutTongue}
-    />
+    <div className="min-h-screen flex flex-col">
+      <GameHeader
+        room={room}
+        currentUserId={effectiveUserId}
+        onLeaveRoom={handleLeaveRoom}
+        onDissolveRoom={handleDissolveRoom}
+      />
+      <div className="flex-1">
+        <MutinyBoard 
+          room={room}
+          currentUserId={effectiveUserId}
+          myRole={myRole || room.myRole}
+          onAppointTeam={handleAppointTeam}
+          onSubmitVote={handleSubmitVote}
+          onConfirmOutcome={handleConfirmOutcome}
+          onEliminateTieCandidate={handleEliminateTieCandidate}
+          onCutTongue={handleCutTongue}
+        />
+      </div>
+    </div>
   );
 };
 
