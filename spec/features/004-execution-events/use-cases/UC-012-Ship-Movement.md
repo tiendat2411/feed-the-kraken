@@ -25,7 +25,7 @@
    - 🟡 `YELLOW`: Đi theo cạnh Bắc `transitions.YELLOW` (hướng về Kraken's Nest).
    - 🔵 `BLUE`: Đi theo cạnh Đông Bắc `transitions.BLUE` (hướng về Bluewater Bay).
 3. Hệ thống cập nhật `ship_position` sang Node mới và thêm vào `visitedNodes`.
-4. Nếu đường nối có cờ `crossesSupplyLine == true`, hệ thống kích hoạt kiểm tra nạp súng đường tiếp tế (xem UC-013).
+4. Nếu Node mới có cờ `crossedSupplyLine == true`, hệ thống kích hoạt kiểm tra nạp súng đường tiếp tế (xem UC-013).
 5. Giao diện toàn phòng phát animation tàu buồm di chuyển mượt mà tới Node mới.
 6. Hệ thống quét kiểm tra điều kiện kết thúc game (End Game - Rule 3.6):
    - Nếu Node mới có `victoryZone == 'SAILOR_VICTORY'` (Bluewater Bay) -> Trò chơi kết thúc, phe Sailor thắng.

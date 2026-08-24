@@ -58,7 +58,7 @@ interface MapNode {
     YELLOW: string;        // Node ID khi đi theo lá bài Vàng
     BLUE: string;          // Node ID khi đi theo lá bài Xanh
   };
-  crossesSupplyLine?: boolean; // true nếu đường nối này cắt qua Tuyến tiếp tế (Map Long)
+  crossedSupplyLine?: boolean; // true nếu ô này nằm ngay sau Tuyến tiếp tế (Map Long)
 }
 ```
 
@@ -67,7 +67,7 @@ interface MapNode {
 ## 4. Danh mục Hành động Ô Bản Đồ (Map Actions)
 
 | Ký hiệu Icon | Mã Action | Tên tiếng Việt | Quyền thực hiện | Mô tả chi tiết luật game |
-| :---: | :--- | :--- | :---: | :--- |
+| :---: | :--- | :--- | :--- | :--- |
 | 🔍 | `CABIN_SEARCH` | Khám xét Cabin | Captain | Captain bí mật xem phe thật của 1 người (nếu là Cultist đã chuyển phe thì hiện Tentacle 🐙). Gán `is_convertible = false`. |
 | 🩸 / 🗡️ | `FLOGGING` | Đánh roi / Tra khảo | Captain | Hệ thống phân tích phe thật của mục tiêu và công khai cho cả phòng 1 câu *"Người này không phải là [Phe X]"*. Gán `is_convertible = false`. |
 | 🔒 / 🚫 | `OFF_WITH_THE_TONGUE` | Cắt lưỡi | Captain | Gán `speech_restricted = true`, khóa chat vĩnh viễn và tước quyền trở thành Captain của người bị chọn. |
@@ -78,12 +78,12 @@ interface MapNode {
 
 ## 5. Quy tắc Ranh giới Tiếp tế (Supply Line Boundary - Long Journey)
 
-- **Vị trí:** Vạch rào xích và 2 khẩu đại bác phân cách giữa tầng biển nông (Row 2-3) và tầng biển sâu (Row 4).
+- **Vị trí:** Vạch rào xích và 2 khẩu đại bác uốn cong phân cách giữa tầng biển nông (Row 2-3) và tầng biển sâu (Row 4 trở lên).
 - **Cơ chế kích hoạt:**
-  1. Khi tàu thực hiện di chuyển từ Node tầng dưới lên Node tầng trên có cờ `crossesSupplyLine: true`.
-  2. Kiểm tra cờ `hasCrossedSupplyLine`:
-     - Nếu `false`: Tự động nạp súng cho toàn bộ người chơi `status == ACTIVE` lên mức tối đa là 3 (`gun_count = Math.max(gun_count, 3)`). Bật cờ `hasCrossedSupplyLine = true`.
-     - Nếu `true`: Đã từng kích hoạt trước đó $\rightarrow$ Bỏ qua, không nạp thêm.
+  1. Khi con tàu di chuyển **VÀO** một ô đích có đánh dấu cờ `crossedSupplyLine: true`.
+  2. Kiểm tra cờ trạng thái hành trình `hasCrossedSupplyLine` của bàn cờ:
+     - Nếu `false`: Tàu vừa chính thức vượt qua Tuyến tiếp tế $\rightarrow$ Bật cờ `hasCrossedSupplyLine = true` (khóa vĩnh viễn), đồng thời tự động nạp súng cho toàn bộ người chơi `status == ACTIVE` lên mức tối đa là 3 (`gun_count = Math.max(gun_count, 3)`).
+     - Nếu `true`: Tàu đã từng vượt qua Tuyến tiếp tế từ các lượt đi trước đó $\rightarrow$ Bỏ qua, không nạp thêm đạn.
 
 ---
 

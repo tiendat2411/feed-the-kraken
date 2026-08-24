@@ -26,7 +26,7 @@
 - `ship_position` thay đổi sau mỗi lần Navigator chốt lá bài điều hướng ở phase Execution.
 - `visitedNodes` tự động append thêm node mới sau mỗi lần di chuyển.
 - `cult_ritual_deck` giảm dần (bị rút mất 1) mỗi lần có sự kiện CULT UPRISING. Nếu mảng này rỗng, sự kiện CULT UPRISING bị bỏ qua trong tương lai.
-- `has_crossed_supply_line` chỉ được bật từ `false` thành `true` một lần duy nhất khi tàu cắt qua đường nối tiếp tế.
+- `has_crossed_supply_line` chỉ được bật từ `false` thành `true` một lần duy nhất khi con tàu đi vào ô đích có cờ `crossedSupplyLine == true` lần đầu tiên.
 
 ## 4. Invariants (Ràng buộc bất biến / Domain Rules)
 - Luôn kiểm tra điều kiện kết thúc game ngay khi `ship_position` thay đổi (vào vùng Bluewater Bay, Crimson Cove, hoặc Kraken).

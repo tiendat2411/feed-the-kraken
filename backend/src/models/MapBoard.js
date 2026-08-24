@@ -106,7 +106,7 @@ export class MapBoard {
   }
 
   /**
-   * Kiểm tra xem lượt đi tiếp theo có cắt qua ranh giới tiếp tế (Supply Line) không
+   * Kiểm tra xem ô đích tiếp theo có nằm ngay sau ranh giới tiếp tế (Supply Line) không
    * @param {string} [colorDirection]
    * @returns {boolean}
    */
@@ -114,8 +114,10 @@ export class MapBoard {
     if (this.mapMode !== 'LONG_JOURNEY' || this.hasCrossedSupplyLine) {
       return false;
     }
-    const currentNode = this.getCurrentNode();
-    return Boolean(currentNode?.crossesSupplyLine);
+    const nextNodeId = colorDirection ? this.getNextNodeId(colorDirection) : null;
+    if (!nextNodeId) return false;
+    const nextNode = this.getNode(nextNodeId);
+    return Boolean(nextNode?.crossedSupplyLine);
   }
 
   /**
@@ -213,10 +215,13 @@ export class MapBoard {
       throw new Error(`Không tìm thấy đường đi tiếp theo từ ô ${this.shipPosition} với màu ${colorDirection}`);
     }
 
-    // Kiểm tra và xử lý đường tiếp tế nếu có
+    const nextNode = this.getNode(nextNodeId);
+
+    // Kiểm tra xem ô đích có nằm ngay sau Tuyến tiếp tế không (UC-013)
     let crossedSupplyLine = false;
-    if (this.willCrossSupplyLine(colorDirection)) {
-      crossedSupplyLine = this.crossSupplyLine();
+    if (this.mapMode === 'LONG_JOURNEY' && !this.hasCrossedSupplyLine && nextNode?.crossedSupplyLine) {
+      this.hasCrossedSupplyLine = true;
+      crossedSupplyLine = true;
     }
 
     this.moveShip(nextNodeId, colorDirection);

@@ -20,7 +20,7 @@
 
 ## Main Flow
 1. **Supply Line (Đường tiếp tế - Chỉ Map Long Journey):**
-   - Nếu tàu cắt qua ranh giới tiếp tế (`crossesSupplyLine == true`) và `hasCrossedSupplyLine == false`: Hệ thống tự động nạp súng cho tất cả người chơi có `status == ACTIVE` lên mức tối đa là 3 (`gun_count = Math.max(gun_count, 3)`). Sau đó bật cờ `hasCrossedSupplyLine = true`.
+   - Nếu tàu cập bến một ô có cờ `crossedSupplyLine == true` và `hasCrossedSupplyLine == false`: Hệ thống tự động nạp súng cho tất cả người chơi có `status == ACTIVE` lên mức tối đa là 3 (`gun_count = Math.max(gun_count, 3)`). Sau đó bật cờ `hasCrossedSupplyLine = true` (khóa vĩnh viễn).
 2. **Hành động Tương tác (4 loại ô đặc biệt):**
    - Nếu ô là (`CABIN_SEARCH`, `FLOGGING`, `OFF_WITH_THE_TONGUE`, `FEED_THE_KRAKEN`): Giao diện hiển thị Modal nổi bật yêu cầu Thuyền trưởng (Captain) chọn 1 mục tiêu hợp lệ trên tàu (Timeout 60s nếu Captain offline, hết giờ tự động random mục tiêu).
 3. **Thực thi logic tương ứng với từng loại hành động:**
