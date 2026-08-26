@@ -52,9 +52,9 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
   test('getNextNodeId tra cứu chính xác node tiếp theo theo màu bài điều hướng', () => {
     const board = new MapBoard({ roomId: 'ROOM_MAP_NAV', mapMode: 'QUICK_JOURNEY' });
 
-    assert.equal(board.getNextNodeId('RED'), 'Q_R1_C1');
-    assert.equal(board.getNextNodeId('YELLOW'), 'Q_R1_C2');
-    assert.equal(board.getNextNodeId('BLUE'), 'Q_R1_C3');
+    assert.equal(board.getNextNodeId('RED'), 'Q_R1_C2');
+    assert.equal(board.getNextNodeId('YELLOW'), 'Q_R2_C3');
+    assert.equal(board.getNextNodeId('BLUE'), 'Q_R1_C4');
   });
 
   test('moveByDirection cập nhật vị trí tàu, lưu vết lastMovement và lịch sử visitedNodes', () => {
@@ -62,12 +62,12 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
 
     const result = board.moveByDirection('BLUE');
     assert.equal(result.previousNode.id, 'START');
-    assert.equal(result.currentNode.id, 'Q_R1_C3');
-    assert.equal(board.shipPosition, 'Q_R1_C3');
-    assert.deepEqual(board.visitedNodes, ['START', 'Q_R1_C3']);
+    assert.equal(result.currentNode.id, 'Q_R1_C4');
+    assert.equal(board.shipPosition, 'Q_R1_C4');
+    assert.deepEqual(board.visitedNodes, ['START', 'Q_R1_C4']);
     assert.deepEqual(board.lastMovement, {
       fromNodeId: 'START',
-      toNodeId: 'Q_R1_C3',
+      toNodeId: 'Q_R1_C4',
       cardColor: 'BLUE'
     });
   });
@@ -76,17 +76,17 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
     const board = new MapBoard({
       roomId: 'ROOM_MAP_WIN',
       mapMode: 'QUICK_JOURNEY',
-      shipPosition: 'BLUEWATER_BAY'
+      shipPosition: 'Q_R7_C6'
     });
 
     assert.equal(board.isVictoryNode(), true);
     assert.equal(board.getVictoryFaction(), 'SAILOR');
 
-    board.shipPosition = 'CRIMSON_COVE';
+    board.shipPosition = 'Q_R7_C0';
     assert.equal(board.isVictoryNode(), true);
     assert.equal(board.getVictoryFaction(), 'PIRATE');
 
-    board.shipPosition = 'KRAKEN_NEST';
+    board.shipPosition = 'Q_R10_C3';
     assert.equal(board.isVictoryNode(), true);
     assert.equal(board.getVictoryFaction(), 'CULT');
 
@@ -99,7 +99,7 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
     const board = new MapBoard({
       roomId: 'ROOM_MAP_05',
       mapMode: 'LONG_JOURNEY',
-      shipPosition: 'L_R3_C2'
+      shipPosition: 'L_R5_C2'
     });
 
     assert.equal(board.hasCrossedSupplyLine, false);
@@ -108,7 +108,7 @@ describe('ENT-005: MapBoard Entity Domain Logic & Invariants', () => {
     const result = board.moveByDirection('YELLOW');
     assert.equal(result.crossedSupplyLine, true);
     assert.equal(board.hasCrossedSupplyLine, true);
-    assert.equal(board.shipPosition, 'L_R4_C2');
+    assert.equal(board.shipPosition, 'L_R7_C2');
 
     // Lần di chuyển tiếp theo không kích hoạt lại
     assert.equal(board.willCrossSupplyLine('YELLOW'), false);

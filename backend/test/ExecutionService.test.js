@@ -38,8 +38,13 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
   }
 
   describe('UC-012: Ship Movement & Phase Branching (AC-1)', () => {
-    test('Di chuyển tàu theo lá bài BLUE từ START sang Q_R1_C3 và chuyển sang EXECUTE_MAP_ACTION', () => {
+    test('Di chuyển tàu theo lá bài BLUE từ Q_R2_C1 sang Q_R3_C2 và chuyển sang EXECUTE_MAP_ACTION', () => {
       const { room } = setupTestRoom('QUICK_JOURNEY');
+      room.mapBoard = new MapBoard({
+        roomId: room.id,
+        mapMode: 'QUICK_JOURNEY',
+        shipPosition: 'Q_R2_C1'
+      });
       room.executedNavigationCard = {
         id: 'card_blue_1',
         color: 'BLUE',
@@ -50,18 +55,18 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
 
       assert.equal(result.isGameOver, false);
       assert.equal(result.cardColor, 'BLUE');
-      assert.equal(result.previousNode.id, 'START');
-      assert.equal(result.currentNode.id, 'Q_R1_C3');
-      assert.equal(room.mapBoard.shipPosition, 'Q_R1_C3');
-      assert.deepEqual(room.mapBoard.visitedNodes, ['START', 'Q_R1_C3']);
+      assert.equal(result.previousNode.id, 'Q_R2_C1');
+      assert.equal(result.currentNode.id, 'Q_R3_C2');
+      assert.equal(room.mapBoard.shipPosition, 'Q_R3_C2');
+      assert.deepEqual(room.mapBoard.visitedNodes, ['START', 'Q_R3_C2']);
 
       assert.equal(result.nextPhase, 'EXECUTE_MAP_ACTION');
       assert.equal(room.gamePhase, 'EXECUTE_MAP_ACTION');
       assert.equal(result.mapAction, 'CABIN_SEARCH');
       assert.deepEqual(result.pendingMapAction, {
         type: 'CABIN_SEARCH',
-        nodeId: 'Q_R1_C3',
-        nodeName: 'Vùng Biển Đông Nam'
+        nodeId: 'Q_R3_C2',
+        nodeName: 'Vùng Biển Đông Đảo'
       });
     });
 
@@ -70,7 +75,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       room.mapBoard = new MapBoard({
         roomId: room.id,
         mapMode: 'QUICK_JOURNEY',
-        shipPosition: 'Q_R1_C1'
+        shipPosition: 'Q_R1_C2'
       });
 
       room.executedNavigationCard = {
@@ -96,7 +101,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       room.mapBoard = new MapBoard({
         roomId: room.id,
         mapMode: 'QUICK_JOURNEY',
-        shipPosition: 'Q_R3_C2'
+        shipPosition: 'Q_R8_C3'
       });
 
       room.executedNavigationCard = {
@@ -112,7 +117,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       assert.equal(room.status, 'FINISHED');
       assert.equal(room.gamePhase, 'END_GAME');
       assert.equal(room.winnerFaction, 'CULT');
-      assert.equal(result.currentNode.id, 'KRAKEN_NEST');
+      assert.equal(result.currentNode.id, 'Q_R10_C3');
     });
 
     test('Tàu cập bến BLUEWATER_BAY kích hoạt chiến thắng tức thì cho phe SAILOR', () => {
@@ -120,7 +125,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       room.mapBoard = new MapBoard({
         roomId: room.id,
         mapMode: 'QUICK_JOURNEY',
-        shipPosition: 'Q_R3_C2'
+        shipPosition: 'Q_R5_C6'
       });
 
       room.executedNavigationCard = {
@@ -135,7 +140,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       assert.equal(result.winnerFaction, 'SAILOR');
       assert.equal(room.status, 'FINISHED');
       assert.equal(room.gamePhase, 'END_GAME');
-      assert.equal(result.currentNode.id, 'BLUEWATER_BAY');
+      assert.equal(result.currentNode.id, 'Q_R7_C6');
     });
 
     test('Tàu cập bến CRIMSON_COVE kích hoạt chiến thắng tức thì cho phe PIRATE', () => {
@@ -143,7 +148,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       room.mapBoard = new MapBoard({
         roomId: room.id,
         mapMode: 'QUICK_JOURNEY',
-        shipPosition: 'Q_R3_C2'
+        shipPosition: 'Q_R5_C0'
       });
 
       room.executedNavigationCard = {
@@ -158,7 +163,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       assert.equal(result.winnerFaction, 'PIRATE');
       assert.equal(room.status, 'FINISHED');
       assert.equal(room.gamePhase, 'END_GAME');
-      assert.equal(result.currentNode.id, 'CRIMSON_COVE');
+      assert.equal(result.currentNode.id, 'Q_R7_C0');
     });
   });
 
@@ -471,7 +476,7 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       room.mapBoard = new MapBoard({
         roomId: room.id,
         mapMode: 'LONG_JOURNEY',
-        shipPosition: 'L_R3_C2'
+        shipPosition: 'L_R5_C2'
       });
 
       assert.equal(p2.gunCount, 1);

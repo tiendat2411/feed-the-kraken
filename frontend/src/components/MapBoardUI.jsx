@@ -49,8 +49,8 @@ const MapBoardUI = ({
     }
   }, [room?.pendingCultRitual?.type, isCultLeader]);
 
-  // Pointy-topped hexagon path generator (R = 40)
-  const getHexPolygonPoints = (cx, cy, r = 42) => {
+  // Pointy-topped hexagon path generator (R = 38)
+  const getHexPolygonPoints = (cx, cy, r = 38) => {
     const points = [];
     for (let i = 0; i < 6; i++) {
       // Pointy-topped: angle starts at 30 deg (Math.PI / 6)
@@ -64,8 +64,8 @@ const MapBoardUI = ({
 
   // Convert map coordinates (percentages) to SVG space (1000x850)
   const getNodeSvgCoord = (node) => {
-    const svgX = (node.x / 100) * 920 + 40;
-    const svgY = (node.y / 100) * 740 + 60;
+    const svgX = (node.x / 100) * 880 + 60;
+    const svgY = (node.y / 100) * 720 + 60;
     return { x: svgX, y: svgY };
   };
 
@@ -197,11 +197,11 @@ const MapBoardUI = ({
             {/* Ocean Surface */}
             <rect width="1000" height="850" fill="url(#oceanGrad)" rx="24" />
 
-            {/* Draw Supply Line Boundary if Long Journey */}
+            {/* Draw Curved Supply Line Boundary if Long Journey */}
             {room?.mapType === 'LONG_JOURNEY' && (
               <g className="opacity-80">
-                <line x1="80" y1="460" x2="920" y2="460" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="8 8" />
-                <text x="500" y="450" fill="#f59e0b" fontSize="13" fontWeight="bold" textAnchor="middle" letterSpacing="3">
+                <path d="M 80 470 Q 500 310 920 470" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="8 8" />
+                <text x="500" y="340" fill="#f59e0b" fontSize="13" fontWeight="bold" textAnchor="middle" letterSpacing="3">
                   ⚔️ RANH GIỚI TUYẾN TIẾP TẾ (SUPPLY LINE) ⚔️
                 </text>
               </g>
