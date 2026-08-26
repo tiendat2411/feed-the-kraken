@@ -137,6 +137,6 @@
 **Purpose**: Hoàn thiện snapshot, testing và deploy.
 
 - [x] T036 Snapshot Integration: Lắp ráp cơ chế Snapshot Room State xuống Redis sau mỗi Action để fault-tolerance.
-- [ ] T037 Thử nghiệm kịch bản ngắt kết nối mạng (Socket Disconnect) và reconnect để đảm bảo khôi phục UI tốt.
+- [x] T037 Thử nghiệm kịch bản ngắt kết nối mạng (Socket Disconnect) và reconnect để đảm bảo khôi phục UI tốt.
 - [ ] T038 Đánh bóng UI: Thêm Animation khi lật bài, khi súng nổ, âm thanh.
 - [ ] T047 Triển khai ứng dụng (Deploy frontend & backend).
