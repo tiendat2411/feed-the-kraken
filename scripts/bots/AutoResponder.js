@@ -318,6 +318,22 @@ export class AutoResponder {
   }
 
   /**
+   * Xử lý tự động khi Bot là Thuyền trưởng và hoàn tất vòng chơi (ROUND_END) -> Bắt đầu vòng mới
+   * @param {BotClient} bot 
+   */
+  static async handleRoundEnd(bot) {
+    if (bot.currentRoomState?.captainId !== bot.id) return;
+    await this.delay(this.getRandomDelay(1500, 3000));
+    if (!bot.socket || !bot.socket.connected) return;
+
+    bot.socket.emit('advance_next_round', (res) => {
+      if (res?.success) {
+        console.log(`[Auto-Responder] [${bot.nickname}] (Captain) Đã chốt chuyển ca trực và bắt đầu vòng tiếp theo 🔄`);
+      }
+    });
+  }
+
+  /**
    * Điểm tiếp nhận sự kiện trung tâm (Central Dispatcher)
    * @param {BotClient} bot 
    * @param {string} eventName 
@@ -395,6 +411,13 @@ export class AutoResponder {
       case 'CULT_CONVERSION':
         if (bot.isCultLeader || bot.secretRole === 'CULT_LEADER') {
           await this.handleCultConversion(bot, payload);
+        }
+        break;
+
+      case 'ROUND_END':
+      case 'CARD_ACTION_EXECUTED':
+        if (bot.id && bot.currentRoomState?.captainId === bot.id && (payload?.nextPhase === 'ROUND_END' || bot.currentRoomState?.gamePhase === 'ROUND_END')) {
+          await this.handleRoundEnd(bot);
         }
         break;
 

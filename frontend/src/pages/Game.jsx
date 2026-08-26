@@ -229,6 +229,10 @@ const Game = () => {
     if (socket) socket.emit('resolve_cult_conversion', { targetPlayerId });
   };
 
+  const handleAdvanceNextRound = () => {
+    if (socket) socket.emit('advance_next_round');
+  };
+
   if (error) {
     return (
       <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center space-y-4">
@@ -364,6 +368,7 @@ const Game = () => {
             onResolveCultGuns={handleResolveCultGuns}
             onResolveCultCabinSearch={handleResolveCultCabinSearch}
             onResolveCultConversion={handleResolveCultConversion}
+            onAdvanceNextRound={handleAdvanceNextRound}
           />
         </div>
       </div>

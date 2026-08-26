@@ -123,7 +123,7 @@
 
 ### Implementation
 - [x] T031 [P] [BR-005] Tạo entity `GameResult` trong `backend/src/models/`.
-- [ ] T032 [BR-005] Xử lý luồng hoán đổi Off-duty shift sau mỗi lần tàu di chuyển (`backend/src/services/OffDutyService.js`).
+- [x] T032 [BR-005] Xử lý luồng hoán đổi Off-duty shift sau mỗi lần tàu di chuyển (`backend/src/services/OffDutyService.js`).
 - [ ] T033 [BR-005] Bổ sung ngầm `VictoryCheck` sau mỗi Mutiny hoặc Ship Movement: Check cán đích Sailor/Pirate/Cult, check Cult Leader chết/nhảy tàu.
 - [ ] T034 [BR-005] Xử lý luồng End Game: Broadcast Event `GAME_OVER`, freeze trạng thái, lưu vào Database vật lý.
 - [ ] T035 [BR-005] Xây dựng UI End Game, vinh danh và lật mở toàn bộ vai trò thật sự (`frontend/src/pages/EndGame.jsx`).

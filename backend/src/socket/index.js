@@ -3,6 +3,7 @@ import { RoomManager } from '../services/RoomManager.js';
 import { MutinyService } from '../services/MutinyService.js';
 import { NavigationService } from '../services/NavigationService.js';
 import { ExecutionService } from '../services/ExecutionService.js';
+import { OffDutyService } from '../services/OffDutyService.js';
 
 /**
  * Gửi event bí mật tới một player cụ thể (qua sessionToken hoặc playerId)
@@ -976,6 +977,34 @@ export function setupSocket(server) {
         broadcastRoomState(io, room);
 
         if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // ADVANCE NEXT ROUND (UC-016: Off-Duty Shift & Round Reset)
+    socket.on('advance_next_round', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room, player } = found;
+        if (room.captainId !== player.id && room.hostId !== player.id) {
+          throw new Error('Chỉ Thuyền trưởng (hoặc Chủ phòng) mới có quyền bắt đầu vòng chơi tiếp theo');
+        }
+
+        const shiftResult = OffDutyService.shiftOffDuty(room);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('OFF_DUTY_SHIFTED', {
+          newlyActivePlayerIds: shiftResult.newlyActivePlayerIds,
+          newlyOffDutyPlayerIds: shiftResult.newlyOffDutyPlayerIds,
+          nextPhase: 'APPOINT_TEAM'
+        });
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, shiftResult });
       } catch (err) {
         if (typeof callback === 'function') callback({ success: false, error: err.message });
       }

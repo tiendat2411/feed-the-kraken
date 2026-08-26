@@ -20,7 +20,8 @@ const MapBoardUI = ({
   onStartCultUprising,
   onResolveCultGuns,
   onResolveCultCabinSearch,
-  onResolveCultConversion
+  onResolveCultConversion,
+  onAdvanceNextRound
 }) => {
   const [selectedTargetId, setSelectedTargetId] = useState('');
   const [hoveredNode, setHoveredNode] = useState(null);
@@ -727,9 +728,19 @@ const MapBoardUI = ({
                 </div>
               )}
             </div>
-            <p className="text-xs text-slate-400 italic">
-              Vòng chơi đã kết thúc thành công. Đang sẵn sàng cho vòng tiếp theo!
-            </p>
+
+            {isCaptain ? (
+              <button
+                onClick={onAdvanceNextRound}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 font-black text-slate-950 shadow-lg shadow-amber-500/20 active:scale-98 transition transform"
+              >
+                BẮT ĐẦU VÒNG TIẾP THEO (CHUYỂN CA TRỰC) ➔
+              </button>
+            ) : (
+              <p className="text-xs text-slate-400 italic">
+                ⏳ Đang chờ Thuyền trưởng chốt chuyển ca trực và bắt đầu vòng mới...
+              </p>
+            )}
           </div>
         </div>
       )}
