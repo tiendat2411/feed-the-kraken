@@ -151,6 +151,7 @@ class Room {
           : this.lastMapActionResult
       ) : null,
       pendingCardAction: this.pendingCardAction || null,
+      lastCardActionResult: this.lastCardActionResult || null,
       myMermaidCards: (this.pendingMermaidInspection && requestingPlayer && this.pendingMermaidInspection.targetPlayerId === requestingPlayer.id) ? (this.pendingMermaidInspection.cards || []) : [],
       myTelescopeCard: (this.pendingTelescopeInspection && requestingPlayer && this.pendingTelescopeInspection.targetPlayerId === requestingPlayer.id) ? (this.pendingTelescopeInspection.card || null) : null,
       pendingCultRitual: this.pendingCultRitual ? {

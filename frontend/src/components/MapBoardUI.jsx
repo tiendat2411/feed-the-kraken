@@ -699,6 +699,40 @@ const MapBoardUI = ({
           )}
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 7: ROUND END SUMMARY MODAL (BR-004 -> BR-005) */}
+      {/* ========================================================================= */}
+      {gamePhase === 'ROUND_END' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-md p-6 rounded-3xl bg-slate-900 border border-amber-500/40 text-center space-y-4 shadow-2xl">
+            <div className="text-4xl animate-bounce">🏁 ⛵</div>
+            <h2 className="text-2xl font-black bg-gradient-to-r from-amber-400 to-yellow-200 bg-clip-text text-transparent">
+              HOÀN TẤT VÒNG ĐIỀU HƯỚNG
+            </h2>
+            <div className="p-4 rounded-2xl bg-slate-800/70 border border-slate-700 text-xs text-slate-300 space-y-2 text-left">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Vị trí hiện tại:</span>
+                <span className="font-bold text-amber-300">{currentNode?.name} ({currentNode?.id})</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Lá bài vừa đi:</span>
+                <span className="font-bold text-white">
+                  {room?.executedNavigationCard?.direction || room?.executedNavigationCard?.color}
+                </span>
+              </div>
+              {room?.lastCardActionResult?.publicMessage && (
+                <div className="pt-2 border-t border-slate-700 text-emerald-400 font-medium">
+                  📢 {room.lastCardActionResult.publicMessage}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 italic">
+              Vòng chơi đã kết thúc thành công. Đang sẵn sàng cho vòng tiếp theo!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

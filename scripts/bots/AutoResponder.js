@@ -214,13 +214,94 @@ export class AutoResponder {
   }
 
   /**
+   * Xử lý tự động khi Bot là Thuyền trưởng và cần thực thi Map Action
+   * @param {BotClient} bot 
+   */
+  static async handleMapAction(bot) {
+    if (bot.currentRoomState?.captainId !== bot.id) return;
+    const players = bot.currentRoomState?.players || [];
+    const candidates = players.filter(p => p.id !== bot.id && p.status !== 'ELIMINATED');
+    if (!candidates.length) return;
+
+    const target = candidates[Math.floor(Math.random() * candidates.length)];
+    await this.delay(this.getRandomDelay(1000, 2000));
+    if (!bot.socket || !bot.socket.connected) return;
+
+    bot.socket.emit('execute_map_action', { targetPlayerId: target.id }, (res) => {
+      if (res?.success) {
+        console.log(`[Auto-Responder] [${bot.nickname}] (Captain) Đã thực thi Map Action lên [${target.nickname}] ⚓`);
+        // Tự động xác nhận sau 1-2s
+        setTimeout(() => {
+          bot.socket.emit('confirm_map_action', (cRes) => {
+            if (cRes?.success) {
+              console.log(`[Auto-Responder] [${bot.nickname}] (Captain) Đã xác nhận Map Action ➡️`);
+            }
+          });
+        }, 1500);
+      }
+    });
+  }
+
+  /**
+   * Xử lý tự động khi Bot là Thuyền trưởng và cần chỉ định mục tiêu cho Card Action (Telescope / Mermaid)
+   * @param {BotClient} bot 
+   */
+  static async handleCardActionTargetSelection(bot) {
+    if (bot.currentRoomState?.captainId !== bot.id) return;
+    const players = bot.currentRoomState?.players || [];
+    const candidates = players.filter(p => p.id !== bot.id && p.status !== 'ELIMINATED');
+    if (!candidates.length) return;
+
+    const target = candidates[Math.floor(Math.random() * candidates.length)];
+    await this.delay(this.getRandomDelay(1000, 2200));
+    if (!bot.socket || !bot.socket.connected) return;
+
+    bot.socket.emit('designate_card_action_target', { targetPlayerId: target.id }, (res) => {
+      if (res?.success) {
+        console.log(`[Auto-Responder] [${bot.nickname}] (Captain) Đã chỉ định [${target.nickname}] cho Card Action 🔭🧜‍♀️`);
+      }
+    });
+  }
+
+  /**
+   * Xử lý tự động khi Bot nhận kết quả soi bài Kính viễn vọng
+   * @param {BotClient} bot 
+   */
+  static async handleTelescopeInspection(bot) {
+    await this.delay(this.getRandomDelay(1000, 2500));
+    if (!bot.socket || !bot.socket.connected) return;
+
+    const decision = Math.random() < 0.5 ? 'KEEP' : 'DISCARD';
+    bot.socket.emit('resolve_telescope_decision', { decision }, (res) => {
+      if (res?.success) {
+        console.log(`[Auto-Responder] [${bot.nickname}] Đã xử lý Telescope với quyết định: ${decision} 🔭`);
+      }
+    });
+  }
+
+  /**
+   * Xử lý tự động khi Bot nhận kết quả Tiếng hát Tiên cá
+   * @param {BotClient} bot 
+   */
+  static async handleMermaidInspection(bot) {
+    await this.delay(this.getRandomDelay(1200, 2500));
+    if (!bot.socket || !bot.socket.connected) return;
+
+    bot.socket.emit('acknowledge_mermaid', (res) => {
+      if (res?.success) {
+        console.log(`[Auto-Responder] [${bot.nickname}] Đã đóng kết quả xem Tiếng hát Tiên cá 🧜‍♀️`);
+      }
+    });
+  }
+
+  /**
    * Xử lý tự động khi Bot là Cult Leader thực hiện nghi thức nạp giáo đồ
    * @param {BotClient} bot 
    * @param {Object} payload 
    */
   static async handleCultConversion(bot, payload) {
     const players = bot.currentRoomState?.players || [];
-    const candidates = players.filter(p => p.id !== bot.id && !p.isCultist);
+    const candidates = players.filter(p => p.id !== bot.id && p.status === 'ACTIVE' && p.isConvertible !== false);
     if (!candidates.length) return;
 
     const target = candidates[Math.floor(Math.random() * candidates.length)];
@@ -229,9 +310,9 @@ export class AutoResponder {
 
     if (!bot.socket || !bot.socket.connected) return;
 
-    bot.socket.emit('cult_convert', { targetId: target.id }, (res) => {
+    bot.socket.emit('resolve_cult_conversion', { targetPlayerId: target.id }, (res) => {
       if (res?.success) {
-        console.log(`[Auto-Responder] [${bot.nickname}] (Cult Leader) Đã chọn nạp [${target.nickname}] vào Giáo phái`);
+        console.log(`[Auto-Responder] [${bot.nickname}] (Cult Leader) Đã chọn nạp [${target.nickname}] vào Giáo phái 🐙`);
       }
     });
   }
@@ -280,8 +361,39 @@ export class AutoResponder {
         await this.handleCardSelection(bot, payload);
         break;
 
+      case 'EXECUTE_MAP_ACTION':
+        if (bot.id && bot.currentRoomState?.captainId === bot.id) {
+          await this.handleMapAction(bot);
+        }
+        break;
+
+      case 'CARD_ACTION_TARGET_SELECTION_STARTED':
+      case 'CARD_ACTION_TARGET_SELECTION':
+        if (bot.id && bot.currentRoomState?.captainId === bot.id) {
+          await this.handleCardActionTargetSelection(bot);
+        }
+        break;
+
+      case 'TELESCOPE_INSPECTION':
+      case 'TELESCOPE_CARD_REVEALED':
+        await this.handleTelescopeInspection(bot);
+        break;
+
+      case 'MERMAID_INSPECTION':
+      case 'MERMAID_CARDS_REVEALED':
+        await this.handleMermaidInspection(bot);
+        break;
+
+      case 'CULT_UPRISING':
+        if (bot.id && bot.currentRoomState?.captainId === bot.id) {
+          await this.delay(1000);
+          bot.socket.emit('start_cult_uprising');
+        }
+        break;
+
       case 'REQUIRE_CULT_CONVERSION':
-        if (bot.secretRole === 'CULT_LEADER') {
+      case 'CULT_CONVERSION':
+        if (bot.isCultLeader || bot.secretRole === 'CULT_LEADER') {
           await this.handleCultConversion(bot, payload);
         }
         break;

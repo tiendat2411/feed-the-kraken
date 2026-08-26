@@ -510,6 +510,13 @@ export function setupSocket(server) {
 
         // Kích hoạt di chuyển tàu trên bản đồ lục giác (UC-012)
         const moveResult = ExecutionService.executeShipMovement(room);
+        let cardActionResult = null;
+
+        // Nếu ô này không có Map Action (NONE) mà chuyển thẳng sang EXECUTE_CARD_ACTION -> Tự động kích hoạt Card Action (UC-014)
+        if (!moveResult.isGameOver && moveResult.nextPhase === 'EXECUTE_CARD_ACTION') {
+          cardActionResult = ExecutionService.executeCardAction(room);
+        }
+
         await RoomManager.saveSnapshot(room.id);
 
         // Broadcast sự kiện tàu di chuyển
@@ -521,7 +528,7 @@ export function setupSocket(server) {
           crossedSupplyLine: moveResult.crossedSupplyLine,
           isGameOver: moveResult.isGameOver,
           winnerFaction: moveResult.winnerFaction,
-          nextPhase: moveResult.nextPhase
+          nextPhase: cardActionResult ? cardActionResult.nextPhase : moveResult.nextPhase
         });
 
         // Nếu cắt qua đường tiếp tế -> Broadcast thông báo nạp súng
@@ -540,9 +547,28 @@ export function setupSocket(server) {
           });
         }
 
+        // Nếu đã thực thi Card Action -> Broadcast sự kiện Card Action
+        if (cardActionResult) {
+          io.to(room.id).emit('CARD_ACTION_EXECUTED', {
+            actionType: cardActionResult.actionType,
+            publicMessage: cardActionResult.publicMessage,
+            nextPhase: cardActionResult.nextPhase,
+            requiresTargetSelection: cardActionResult.requiresTargetSelection || false,
+            captainId: cardActionResult.captainId || null,
+            newCaptainId: cardActionResult.newCaptainId || null
+          });
+
+          if (cardActionResult.requiresTargetSelection) {
+            io.to(room.id).emit('CARD_ACTION_TARGET_SELECTION_STARTED', {
+              action: cardActionResult.actionType,
+              captainId: cardActionResult.captainId
+            });
+          }
+        }
+
         broadcastRoomState(io, room);
 
-        if (typeof callback === 'function') callback({ success: true, execResult, moveResult });
+        if (typeof callback === 'function') callback({ success: true, execResult, moveResult, cardActionResult });
       } catch (err) {
         if (typeof callback === 'function') callback({ success: false, error: err.message });
       }
