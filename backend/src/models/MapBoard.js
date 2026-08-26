@@ -144,6 +144,14 @@ export class MapBoard {
   }
 
   /**
+   * Alias cho getVictoryFaction
+   * @returns {'PIRATE'|'CULT'|'SAILOR'|null}
+   */
+  checkVictory() {
+    return this.getVictoryFaction();
+  }
+
+  /**
    * Sinh bộ 5 lá bài Nghi thức Tà giáo (1 Guns Stash, 1 Cult Cabin Search, 3 Conversion)
    * @returns {Array<string>}
    */
