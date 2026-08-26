@@ -1,6 +1,8 @@
 import Player from './Player.js';
 import NavigationDeck from './NavigationDeck.js';
 import MapBoard from './MapBoard.js';
+import MutinySession from './MutinySession.js';
+import GameResult from './GameResult.js';
 
 class Room {
   /**
@@ -233,7 +235,7 @@ class Room {
     room.winnerFaction = data.winnerFaction || null;
     room.winReason = data.winReason || null;
     room.gameResult = data.gameResult || null;
-    room.mutinySession = data.mutinySession ? data.mutinySession : null;
+    room.mutinySession = data.mutinySession ? MutinySession.fromJSON(data.mutinySession) : null;
     room.navigationDeck = data.navigationDeck ? NavigationDeck.fromJSON(data.navigationDeck) : null;
     room.mapBoard = data.mapBoard ? MapBoard.fromJSON(data.mapBoard) : null;
     room.pendingMapAction = data.pendingMapAction || null;

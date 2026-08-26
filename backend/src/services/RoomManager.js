@@ -70,10 +70,21 @@ export class RoomManager {
   }
 
   /**
-   * Lấy instance Room gốc
+   * Lấy instance Room gốc đồng bộ
    */
   static getRoomInstance(roomId) {
     return rooms.get(roomId) || null;
+  }
+
+  /**
+   * Lấy instance Room gốc bất đồng bộ (Fallback từ Redis nếu chưa nạp vào RAM)
+   */
+  static async getRoomInstanceAsync(roomId) {
+    let room = rooms.get(roomId);
+    if (!room && redisClient.isOpen) {
+      room = await this.loadSnapshot(roomId);
+    }
+    return room || null;
   }
 
   /**
@@ -81,6 +92,13 @@ export class RoomManager {
    */
   static setRoomInstance(roomId, room) {
     rooms.set(roomId, room);
+  }
+
+  /**
+   * Dọn sạch toàn bộ rooms trong bộ nhớ (hỗ trợ test suite)
+   */
+  static clearAll() {
+    rooms.clear();
   }
 
   /**
@@ -302,16 +320,60 @@ export class RoomManager {
   }
 
   /**
-   * Lưu snapshot vào Redis
+   * Lưu snapshot vào Redis kèm TTL 24h
    */
   static async saveSnapshot(roomId) {
     const room = rooms.get(roomId);
     if (room && redisClient.isOpen) {
       try {
-        await redisClient.set(`room:${roomId}`, JSON.stringify(room.toJSON()));
+        await redisClient.set(`room:${roomId}`, JSON.stringify(room.toJSON()), {
+          EX: 86400 // 24 giờ TTL
+        });
       } catch (err) {
-        console.error('Failed to save snapshot to Redis:', err);
+        console.error(`[Redis Snapshot] Failed to save snapshot for room ${roomId}:`, err);
       }
+    }
+  }
+
+  /**
+   * Tải snapshot từ Redis và phục hồi lại vào RAM
+   */
+  static async loadSnapshot(roomId) {
+    if (!redisClient.isOpen) return null;
+    try {
+      const data = await redisClient.get(`room:${roomId}`);
+      if (!data) return null;
+
+      const parsed = JSON.parse(data);
+      const room = Room.fromJSON(parsed);
+      rooms.set(roomId, room);
+      return room;
+    } catch (err) {
+      console.error(`[Redis Snapshot] Failed to load snapshot for room ${roomId}:`, err);
+      return null;
+    }
+  }
+
+  /**
+   * Quét và phục hồi toàn bộ rooms từ Redis khi server khởi động (Bootstrap)
+   */
+  static async restoreAllRooms() {
+    if (!redisClient.isOpen) return 0;
+    try {
+      const keys = await redisClient.keys('room:*');
+      let restoredCount = 0;
+
+      for (const key of keys) {
+        const roomId = key.replace('room:', '');
+        const room = await this.loadSnapshot(roomId);
+        if (room) restoredCount++;
+      }
+
+      console.log(`[Redis Snapshot] Đã phục hồi thành công ${restoredCount} phòng từ Redis.`);
+      return restoredCount;
+    } catch (err) {
+      console.error('[Redis Snapshot] Lỗi khi phục hồi toàn bộ phòng từ Redis:', err);
+      return 0;
     }
   }
 
@@ -323,10 +385,10 @@ export class RoomManager {
       try {
         await redisClient.del(`room:${roomId}`);
       } catch (err) {
-        console.error('Failed to delete snapshot from Redis:', err);
+        console.error(`[Redis Snapshot] Failed to delete snapshot for room ${roomId}:`, err);
       }
     }
   }
 }
 
-
+export default RoomManager;
