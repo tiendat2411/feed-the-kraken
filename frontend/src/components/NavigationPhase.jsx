@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { SoundEngine } from '../utils/soundEffects';
 
 /**
  * NavigationPhase Component (BR-003)
@@ -33,6 +34,13 @@ const NavigationPhase = ({
 
   const currentPhase = room?.gamePhase || 'NAVIGATION';
   const activeCards = (privateCards && privateCards.length > 0) ? privateCards : (room?.myNavigationCards || []);
+
+  // Play flip sound when new active cards appear
+  useEffect(() => {
+    if (activeCards && activeCards.length > 0) {
+      SoundEngine.playCardFlip();
+    }
+  }, [activeCards.length, currentPhase]);
 
   // Reset selected card when phase changes or cards change
   useEffect(() => {

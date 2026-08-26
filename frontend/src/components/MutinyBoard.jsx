@@ -16,6 +16,7 @@ import {
   Check,
   UserCheck
 } from 'lucide-react';
+import { SoundEngine } from '../utils/soundEffects';
 
 const MutinyBoard = ({
   room,
@@ -55,6 +56,13 @@ const MutinyBoard = ({
 
     return () => clearInterval(interval);
   }, [room.phaseDeadline]);
+
+  // Play gunshot sound when MUTINY_REVEALED
+  useEffect(() => {
+    if (gamePhase === 'MUTINY_REVEALED') {
+      SoundEngine.playGunshot();
+    }
+  }, [gamePhase]);
 
   // Reset local vote state when phase changes
   useEffect(() => {
@@ -390,7 +398,7 @@ const MutinyBoard = ({
 
         {/* PHASE 3: MUTINY REVEALED & CAPTAIN CONFIRMATION */}
         {gamePhase === 'MUTINY_REVEALED' && (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 space-y-8 shadow-2xl">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 space-y-8 shadow-2xl animate-gun-shake">
             <div className="text-center space-y-3">
               <span className={`px-4 py-1 text-xs font-black rounded-full uppercase tracking-wider ${
                 session.isSuccess ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'

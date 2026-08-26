@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import quickJourneyConfig from '../config/maps/quick-journey.json';
 import longJourneyConfig from '../config/maps/long-journey.json';
+import { SoundEngine } from '../utils/soundEffects';
 
 /**
  * MapBoardUI Component (BR-004)
@@ -27,6 +28,7 @@ const MapBoardUI = ({
   const [hoveredNode, setHoveredNode] = useState(null);
   const [gunsAllocation, setGunsAllocation] = useState({});
   const [privateNotification, setPrivateNotification] = useState(null);
+  const lastShipPosRef = useRef(null);
 
   const players = room?.players || [];
   const me = players.find(p => p.id === currentUserId || p.sessionToken === currentUserId);
@@ -37,6 +39,21 @@ const MapBoardUI = ({
   const shipPositionId = room?.mapBoard?.shipPosition || 'START';
   const visitedNodes = room?.mapBoard?.visitedNodes || ['START'];
   const gamePhase = room?.gamePhase || 'EXECUTE_ACTIONS';
+
+  // Sound effect when ship sails to a new position
+  useEffect(() => {
+    if (shipPositionId && lastShipPosRef.current && lastShipPosRef.current !== shipPositionId) {
+      SoundEngine.playBell();
+    }
+    lastShipPosRef.current = shipPositionId;
+  }, [shipPositionId]);
+
+  // Sound effect on Cult Ritual or Feed the Kraken
+  useEffect(() => {
+    if (room?.pendingCultRitual || room?.pendingMapAction?.actionType === 'FEED_THE_KRAKEN') {
+      SoundEngine.playKrakenRoar();
+    }
+  }, [room?.pendingCultRitual, room?.pendingMapAction?.actionType]);
 
   // Khởi tạo phân bổ súng mặc định khi vào phase Guns Stash
   useEffect(() => {

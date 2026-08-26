@@ -1,5 +1,6 @@
-import React from 'react';
-import { LogOut, Trash2, Shield, Compass, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { LogOut, Trash2, Shield, Compass, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { SoundEngine } from '../utils/soundEffects';
 
 /**
  * GameHeader Component
@@ -16,6 +17,12 @@ const GameHeader = ({
 
   const myId = room.myId || currentUserId;
   const isHost = room.hostId === myId;
+  const [muted, setMuted] = useState(SoundEngine.isMuted());
+
+  const handleToggleSound = () => {
+    const nextState = SoundEngine.toggleMute();
+    setMuted(nextState);
+  };
 
   const getPhaseName = (phase) => {
     switch (phase) {
@@ -70,6 +77,20 @@ const GameHeader = ({
 
         {/* Right: Room Control Actions */}
         <div className="flex items-center space-x-2">
+          {/* Sound Toggle Button */}
+          <button
+            id="btn-sound-toggle-header"
+            onClick={handleToggleSound}
+            className={`p-2 rounded-xl text-xs font-bold transition-all hover:scale-105 cursor-pointer border ${
+              muted 
+                ? 'bg-slate-800/80 text-slate-400 border-slate-700' 
+                : 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950'
+            }`}
+            title={muted ? 'Bật âm thanh (Sound On)' : 'Tắt âm thanh (Mute Sound)'}
+          >
+            {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+          </button>
+
           {/* Host Dissolve Room Button */}
           {isHost && (
             <button

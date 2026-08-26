@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { SoundEngine } from '../utils/soundEffects';
 
 /**
  * EndGame Page / Component (BR-005 / UC-018)
@@ -13,6 +14,11 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
   const playersSnapshot = gameResult.playersSnapshot || room?.players || [];
   const terminalNode = gameResult.terminalNode || room?.mapBoard?.currentNode || null;
   const totalRounds = gameResult.totalRounds ?? 0;
+
+  // Play victory fanfare on mount
+  useEffect(() => {
+    SoundEngine.playVictoryFanfare(winningFaction);
+  }, [winningFaction]);
 
   // Cấu hình chủ đề theo phe thắng cuộc
   const factionThemes = {
