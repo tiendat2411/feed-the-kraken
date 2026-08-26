@@ -122,7 +122,7 @@
 **Goal**: Luân chuyển thẻ Off-duty và check điều kiện thắng để End game.
 
 ### Implementation
-- [ ] T031 [P] [BR-005] Tạo entity `GameResult` trong `backend/src/models/`.
+- [x] T031 [P] [BR-005] Tạo entity `GameResult` trong `backend/src/models/`.
 - [ ] T032 [BR-005] Xử lý luồng hoán đổi Off-duty shift sau mỗi lần tàu di chuyển (`backend/src/services/OffDutyService.js`).
 - [ ] T033 [BR-005] Bổ sung ngầm `VictoryCheck` sau mỗi Mutiny hoặc Ship Movement: Check cán đích Sailor/Pirate/Cult, check Cult Leader chết/nhảy tàu.
 - [ ] T034 [BR-005] Xử lý luồng End Game: Broadcast Event `GAME_OVER`, freeze trạng thái, lưu vào Database vật lý.
