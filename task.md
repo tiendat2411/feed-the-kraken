@@ -126,7 +126,7 @@
 - [x] T032 [BR-005] Xử lý luồng hoán đổi Off-duty shift sau mỗi lần tàu di chuyển (`backend/src/services/OffDutyService.js`).
 - [x] T033 [BR-005] Bổ sung ngầm `VictoryCheck` sau mỗi Mutiny hoặc Ship Movement: Check cán đích Sailor/Pirate/Cult, check Cult Leader chết/nhảy tàu.
 - [x] T034 [BR-005] Xử lý luồng End Game: Broadcast Event `GAME_OVER`, freeze trạng thái, lưu vào Database vật lý.
-- [ ] T035 [BR-005] Xây dựng UI End Game, vinh danh và lật mở toàn bộ vai trò thật sự (`frontend/src/pages/EndGame.jsx`).
+- [x] T035 [BR-005] Xây dựng UI End Game, vinh danh và lật mở toàn bộ vai trò thật sự (`frontend/src/pages/EndGame.jsx`).
 
 **Checkpoint**: Hệ thống Game hoàn thiện 100% Core Logic. Có thể chơi trọn vẹn từ đầu đến khi có phe thắng.
 

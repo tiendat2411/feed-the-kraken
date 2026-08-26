@@ -7,6 +7,7 @@ import MutinyBoard from '../components/MutinyBoard';
 import NavigationPhase from '../components/NavigationPhase';
 import MapBoardUI from '../components/MapBoardUI';
 import GameHeader from '../components/GameHeader';
+import EndGame from './EndGame';
 
 const Game = () => {
   const { roomId } = useParams();
@@ -90,6 +91,14 @@ const Game = () => {
       setConversionNotification(data);
     });
 
+    socket.on('GAME_OVER', () => {
+      fetchRoomState();
+    });
+
+    socket.on('RETURNED_TO_LOBBY', () => {
+      fetchRoomState();
+    });
+
     socket.on('ROOM_DISSOLVED', () => {
       alert('Phòng đã bị chủ phòng giải tán.');
       navigate('/');
@@ -109,6 +118,8 @@ const Game = () => {
       socket.off('NAVIGATION_CARD_EXECUTED');
       socket.off('NAVIGATOR_JUMPED_OVERBOARD');
       socket.off('CULTIST_CONVERTED');
+      socket.off('GAME_OVER');
+      socket.off('RETURNED_TO_LOBBY');
       socket.off('ROOM_DISSOLVED');
       socket.off('PLAYER_KICKED');
     };
@@ -233,6 +244,10 @@ const Game = () => {
     if (socket) socket.emit('advance_next_round');
   };
 
+  const handleReturnToLobby = () => {
+    if (socket) socket.emit('return_to_lobby');
+  };
+
   if (error) {
     return (
       <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center space-y-4">
@@ -266,6 +281,18 @@ const Game = () => {
   }
 
   const effectiveUserId = room.myId || currentUserId;
+
+  // 0. End Game Phase (BR-005 / UC-018)
+  if (room.status === 'FINISHED' || room.gamePhase === 'END_GAME') {
+    return (
+      <EndGame
+        room={room}
+        currentUserId={effectiveUserId}
+        onReturnToLobby={handleReturnToLobby}
+        onLeaveRoom={handleLeaveRoom}
+      />
+    );
+  }
 
   // Conversion Private Alert Overlay (UC-015 AC-3)
   const renderConversionToast = () => {
