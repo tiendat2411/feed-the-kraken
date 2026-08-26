@@ -1,4 +1,5 @@
 import MapBoard from '../models/MapBoard.js';
+import { EndGameService } from './EndGameService.js';
 
 /**
  * ExecutionService (BR-004 / UC-012, UC-013)
@@ -56,16 +57,13 @@ export class ExecutionService {
 
     // 3. Kiểm tra điều kiện Thắng cuộc (End Game - Rule 3.6 & AC-2 UC-012)
     if (victoryFaction) {
-      room.status = 'FINISHED';
-      room.gamePhase = 'END_GAME';
-      room.winnerFaction = victoryFaction;
-      room.winReason = `SHIP_REACHED_${victoryFaction}_DESTINATION`;
-      room.touch();
+      const endResult = EndGameService.endGame(room, victoryFaction, `SHIP_REACHED_${victoryFaction}_DESTINATION`);
 
       return {
         isGameOver: true,
         winnerFaction: victoryFaction,
         winReason: room.winReason,
+        gameResult: room.gameResult,
         previousNode,
         currentNode,
         cardColor,
@@ -224,15 +222,12 @@ export class ExecutionService {
 
         // KIỂM TRA ĐIỀU KIỆN THẮNG ĐẶC BIỆT: Hiến tế trúng Cult Leader
         if (targetPlayer.factionRole === 'CULT_LEADER') {
-          room.status = 'FINISHED';
-          room.gamePhase = 'END_GAME';
-          room.winnerFaction = 'CULT';
-          room.winReason = 'CULT_LEADER_SACRIFICED_TO_KRAKEN';
-          room.touch();
+          EndGameService.endGame(room, 'CULT', 'CULT_LEADER_SACRIFICED_TO_KRAKEN');
 
           resultPayload.isGameOver = true;
           resultPayload.winnerFaction = 'CULT';
           resultPayload.winReason = room.winReason;
+          resultPayload.gameResult = room.gameResult;
           resultPayload.publicMessage = `${targetPlayer.nickname} đã bị hiến tế cho thần Kraken! Thần Kraken trỗi dậy, phe Tà Giáo (Cult) giành CHIẾN THẮNG!`;
 
           room.lastMapActionResult = resultPayload;
@@ -241,6 +236,7 @@ export class ExecutionService {
             resultPayload,
             isGameOver: true,
             winnerFaction: 'CULT',
+            gameResult: room.gameResult,
             room
           };
         }

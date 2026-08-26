@@ -4,6 +4,7 @@ import { MutinyService } from '../services/MutinyService.js';
 import { NavigationService } from '../services/NavigationService.js';
 import { ExecutionService } from '../services/ExecutionService.js';
 import { OffDutyService } from '../services/OffDutyService.js';
+import { EndGameService } from '../services/EndGameService.js';
 
 /**
  * Gửi event bí mật tới một player cụ thể (qua sessionToken hoặc playerId)
@@ -543,8 +544,10 @@ export function setupSocket(server) {
         if (moveResult.isGameOver) {
           io.to(room.id).emit('GAME_OVER', {
             winnerFaction: moveResult.winnerFaction,
+            winningFaction: moveResult.winnerFaction,
             winReason: moveResult.winReason,
-            terminalNode: moveResult.currentNode
+            terminalNode: moveResult.currentNode,
+            gameResult: room.gameResult || moveResult.gameResult
           });
         }
 
@@ -658,8 +661,10 @@ export function setupSocket(server) {
         if (isGameOver) {
           io.to(room.id).emit('GAME_OVER', {
             winnerFaction,
+            winningFaction: winnerFaction,
             winReason: resultPayload.winReason,
-            actionType: resultPayload.actionType
+            actionType: resultPayload.actionType,
+            gameResult: room.gameResult || resultPayload.gameResult
           });
         }
 
@@ -1005,6 +1010,25 @@ export function setupSocket(server) {
         broadcastRoomState(io, room);
 
         if (typeof callback === 'function') callback({ success: true, shiftResult });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // RETURN TO LOBBY (UC-018: Host Resets Room to Lobby)
+    socket.on('return_to_lobby', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = EndGameService.returnToLobby(room, socket.sessionToken);
+        await RoomManager.saveSnapshot(room.id);
+
+        io.to(room.id).emit('RETURNED_TO_LOBBY');
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
       } catch (err) {
         if (typeof callback === 'function') callback({ success: false, error: err.message });
       }

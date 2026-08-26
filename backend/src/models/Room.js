@@ -167,7 +167,10 @@ class Room {
       myRole: requestingPlayer ? requestingPlayer.factionRole : null,
       myId: requestingPlayer ? requestingPlayer.id : null,
       executedNavigationCard: this.executedNavigationCard || null,
-      myNavigationCards: (this.navigationHand && requestingPlayer && this.navigationHand.playerId === requestingPlayer.id) ? (this.navigationHand.cards || []) : []
+      myNavigationCards: (this.navigationHand && requestingPlayer && this.navigationHand.playerId === requestingPlayer.id) ? (this.navigationHand.cards || []) : [],
+      winnerFaction: this.winnerFaction || null,
+      winReason: this.winReason || null,
+      gameResult: this.gameResult || null
     };
 
     // Nếu đang ở giai đoạn Pirate Gathering và người này là Pirate -> Cho thấy danh sách Pirate khác
@@ -204,6 +207,9 @@ class Room {
       pendingCultRitual: this.pendingCultRitual || null,
       navigationHand: this.navigationHand || null,
       executedNavigationCard: this.executedNavigationCard || null,
+      winnerFaction: this.winnerFaction || null,
+      winReason: this.winReason || null,
+      gameResult: this.gameResult || null,
       phaseDeadline: this.phaseDeadline,
       createdAt: this.createdAt,
       lastActivity: this.lastActivity,
@@ -224,6 +230,9 @@ class Room {
     room.navigatorId = data.navigatorId || null;
     room.nominatedLieutenantId = data.nominatedLieutenantId || null;
     room.nominatedNavigatorId = data.nominatedNavigatorId || null;
+    room.winnerFaction = data.winnerFaction || null;
+    room.winReason = data.winReason || null;
+    room.gameResult = data.gameResult || null;
     room.mutinySession = data.mutinySession ? data.mutinySession : null;
     room.navigationDeck = data.navigationDeck ? NavigationDeck.fromJSON(data.navigationDeck) : null;
     room.mapBoard = data.mapBoard ? MapBoard.fromJSON(data.mapBoard) : null;
