@@ -134,12 +134,11 @@
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-**Purpose**: Hoàn thiện snapshot, testing và deploy.
+**Purpose**: Hoàn thiện snapshot, testing và fault-tolerance.
 
 - [x] T036 Snapshot Integration: Lắp ráp cơ chế Snapshot Room State xuống Redis sau mỗi Action để fault-tolerance.
 - [x] T037 Thử nghiệm kịch bản ngắt kết nối mạng (Socket Disconnect) và reconnect để đảm bảo khôi phục UI tốt.
 - [x] T038 Đánh bóng UI: Thêm Animation khi lật bài, khi súng nổ, âm thanh.
-- [ ] T047 Triển khai ứng dụng (Deploy frontend & backend).
 
 ---
 
@@ -153,16 +152,16 @@
 
 **Purpose**: Thiết lập nền tảng Design Tokens + Tailwind Theme + Google Fonts + Shared UI Components — Mọi task sau phụ thuộc vào phase này.
 
-- [ ] T048 [P] [BR-007] Mở rộng `tailwind.config.js`: thêm toàn bộ bảng màu "Eldritch Parchment" (abyss, hull, parchment, verdigris, moss, seaweed, sailor, pirate, cult, gold, firelight, ember, blood, brine, bone), fontFamily 3 tầng (`Pirata One`, `Cinzel`, `Outfit`), override borderRadius (4px/2px/6px).
-- [ ] T049 [P] [BR-007] Cập nhật `index.html`: thêm Google Fonts preconnect + stylesheet link cho `Pirata One`, `Cinzel`, `Outfit`, meta SEO cơ bản.
-- [ ] T050 [BR-007] Overhaul `index.css`: CSS custom properties (`:root`) cho toàn bộ Design Tokens, body font `Outfit`/bg `#0A0A08`, cập nhật keyframes (`gunShake`, `eldritchPulse` màu mới, `shipBob`, thêm `candleFlicker`/`dustDrift`), thêm utility classes (`.panel-wood`, `.card-parchment`, `.firelight-glow`, `.eldritch-glow`, `.verdigris-glow`, `.aged-stain`, `.vignette-overlay`).
-- [ ] T051 [BR-007] Xóa toàn bộ `App.css` cũ (Vite boilerplate), thay bằng global styles "Eldritch Parchment".
-- [ ] T052 [P] [BR-007] Tạo `frontend/src/components/ui/PanelWood.jsx`: Panel gỗ mục phong hóa (nền hull-dark, texture pseudo-element, viền hull-light, bóng đổ sâu, vệt ố verdigris mờ, đinh sắt gỉ decorative).
-- [ ] T053 [P] [BR-007] Tạo `frontend/src/components/ui/CardParchment.jsx`: Card da dê cổ (gradient nâu, viền vàng gỉ, inner border, texture sần sùi, vết ố thời gian).
-- [ ] T054 [P] [BR-007] Tạo `frontend/src/components/ui/ButtonWood.jsx`: Nút gỗ embossed (hover firelight glow, active press-down, disabled mờ, font Outfit).
-- [ ] T055 [P] [BR-007] Tạo `frontend/src/components/ui/InputPlank.jsx`: Input thanh gỗ khắc chìm (nền hull, viền hull-light, focus viền verdigris glow, placeholder parchment-dim).
-- [ ] T056 [P] [BR-007] Tạo `frontend/src/components/ui/Vignette.jsx`: Lớp phủ vignette tối viền toàn cục (radial-gradient, pointer-events none, z-50).
-- [ ] T057 [P] [BR-007] Tạo `frontend/src/components/ui/DustParticles.jsx`: Hạt bụi/tro bay nhẹ qua ánh nến (CSS animation thuần, 5-8 particles, `prefers-reduced-motion` tắt).
+- [x] T048 [P] [BR-007] Mở rộng `tailwind.config.js`: thêm toàn bộ bảng màu "Eldritch Parchment" (abyss, hull, parchment, verdigris, moss, seaweed, sailor, pirate, cult, gold, firelight, ember, blood, brine, bone), fontFamily 3 tầng (`Pirata One`, `Cinzel`, `Outfit`), override borderRadius (4px/2px/6px).
+- [x] T049 [P] [BR-007] Cập nhật `index.html`: thêm Google Fonts preconnect + stylesheet link cho `Pirata One`, `Cinzel`, `Outfit`, meta SEO cơ bản.
+- [x] T050 [BR-007] Overhaul `index.css`: CSS custom properties (`:root`) cho toàn bộ Design Tokens, body font `Outfit`/bg `#0A0A08`, cập nhật keyframes (`gunShake`, `eldritchPulse` màu mới, `shipBob`, thêm `candleFlicker`/`dustDrift`), thêm utility classes (`.panel-wood`, `.card-parchment`, `.firelight-glow`, `.eldritch-glow`, `.verdigris-glow`, `.aged-stain`, `.vignette-overlay`).
+- [x] T051 [BR-007] Xóa toàn bộ `App.css` cũ (Vite boilerplate), thay bằng global styles "Eldritch Parchment".
+- [x] T052 [P] [BR-007] Tạo `frontend/src/components/ui/PanelWood.jsx`: Panel gỗ mục phong hóa (nền hull-dark, texture pseudo-element, viền hull-light, bóng đổ sâu, vệt ố verdigris mờ, đinh sắt gỉ decorative).
+- [x] T053 [P] [BR-007] Tạo `frontend/src/components/ui/CardParchment.jsx`: Card da dê cổ (gradient nâu, viền vàng gỉ, inner border, texture sần sùi, vết ố thời gian).
+- [x] T054 [P] [BR-007] Tạo `frontend/src/components/ui/ButtonWood.jsx`: Nút gỗ embossed (hover firelight glow, active press-down, disabled mờ, font Outfit).
+- [x] T055 [P] [BR-007] Tạo `frontend/src/components/ui/InputPlank.jsx`: Input thanh gỗ khắc chìm (nền hull, viền hull-light, focus viền verdigris glow, placeholder parchment-dim).
+- [x] T056 [P] [BR-007] Tạo `frontend/src/components/ui/Vignette.jsx`: Lớp phủ vignette tối viền toàn cục (radial-gradient, pointer-events none, z-50).
+- [x] T057 [P] [BR-007] Tạo `frontend/src/components/ui/DustParticles.jsx`: Hạt bụi/tro bay nhẹ qua ánh nến (CSS animation thuần, 5-8 particles, `prefers-reduced-motion` tắt).
 
 **Checkpoint**: Tailwind theme + CSS Design System + 6 shared UI components sẵn sàng. Mở dev server thấy nền đen kịt, font gothic, KHÔNG còn style Vite cũ.
 
@@ -189,3 +188,11 @@
 - [ ] T067 [BR-007] Verification & Polish: Kiểm tra nhất quán Design System trên mọi màn hình, responsive 375px-1920px+ zero overflow, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast. Chạy `npm run build` xác nhận không lỗi.
 
 **Checkpoint**: Toàn bộ Frontend mang phong cách "Eldritch Parchment" nhất quán. Game có thể chơi trọn vẹn với giao diện mới từ Home → EndGame.
+
+---
+
+## Phase 10: Final Deployment & Release 🚀
+
+**Purpose**: Triển khai toàn bộ ứng dụng (Backend + Frontend giao diện mới) lên môi trường Production.
+
+- [ ] T047 Triển khai ứng dụng (Deploy frontend & backend lên hosting / cloud).

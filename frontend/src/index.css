@@ -2,15 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #111827;
-  color: #f3f4f6;
-  overflow-x: hidden;
+:root {
+  /* Core Foundation Tokens */
+  --abyss: #0A0A08;
+  --hull-dark: #1A1510;
+  --hull: #2A2118;
+  --hull-light: #3D3228;
+  
+  --parchment: #D4C5A0;
+  --parchment-dim: #9B8E72;
+  --parchment-bright: #F0E6CC;
+  
+  /* Verdigris & Moss */
+  --verdigris: #4A7A6A;
+  --verdigris-glow: #6BA89A;
+  --moss: #3A5A3A;
+  --moss-dim: #2A3D2A;
+  --seaweed: #5A8A5A;
+  
+  /* Factions */
+  --sailor: #4A7A8C;
+  --sailor-glow: #6BA3B8;
+  --pirate: #A83B2A;
+  --pirate-glow: #D14B35;
+  --cult: #6B3FA0;
+  --cult-glow: #9B6DD7;
+  
+  /* Accents & Utilities */
+  --gold: #C9A84C;
+  --gold-dim: #8B7535;
+  --gold-bright: #E5C158;
+  --firelight: #E8A63E;
+  --firelight-glow: #FFBA49;
+  --ember: #D4622A;
+  --blood: #8B1A1A;
+  --brine: #2A4A4A;
+  --bone: #C8BFA8;
 }
 
-/* 3D Card Flip Effects */
+body {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--abyss);
+  color: var(--parchment);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar for Gothic Vibe */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--abyss);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--hull-light);
+  border: 1px solid var(--hull);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dim);
+}
+
+/* ==========================================================================
+   3D Card Flip Utilities
+   ========================================================================== */
 .perspective-1000 {
   perspective: 1000px;
 }
@@ -28,46 +87,237 @@ body {
   transform: rotateY(180deg);
 }
 
-/* Gunshot Screen Shake & Muzzle Flash */
+/* ==========================================================================
+   Surfaces & Texture Styling ("Eldritch Parchment")
+   ========================================================================== */
+
+/* Wood Plank Panel Style */
+.panel-wood {
+  background-color: var(--hull-dark);
+  border: 1px solid var(--hull-light);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(212, 197, 160, 0.07),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.45),
+    0 6px 20px rgba(0, 0, 0, 0.7);
+  position: relative;
+}
+
+/* Subtle weathered overlay on wood */
+.panel-wood::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(201, 168, 76, 0.04) 0%, transparent 70%),
+              linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0.2) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Aged Parchment Card Style */
+.card-parchment {
+  background: linear-gradient(160deg, #3D3228 0%, #2A2118 45%, #1A1510 100%);
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.4),
+    inset 0 0 50px rgba(0, 0, 0, 0.2),
+    0 4px 14px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.card-parchment::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Aged Stain Effect (Centuries-old sea stains) */
+.aged-stain {
+  background-image:
+    radial-gradient(ellipse at 15% 85%, rgba(74, 122, 106, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(155, 142, 114, 0.05) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 60%, rgba(139, 117, 53, 0.04) 0%, transparent 45%);
+}
+
+/* Verdigris Patina Text & Accents */
+.verdigris-patina {
+  background: linear-gradient(135deg, var(--gold-dim) 20%, var(--verdigris) 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Antique Nail Head Decoration */
+.nail-head {
+  position: relative;
+}
+.nail-head::before,
+.nail-head::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #5A4A3A 30%, #2A2118 80%);
+  box-shadow: inset 0 -1px 1px rgba(0,0,0,0.6), 0 1px 1px rgba(212,197,160,0.15);
+  pointer-events: none;
+}
+.nail-head::before { top: 6px; left: 6px; }
+.nail-head::after { top: 6px; right: 6px; }
+
+/* ==========================================================================
+   Atmospheric Glows & Lighting
+   ========================================================================== */
+
+.firelight-glow {
+  box-shadow:
+    0 0 16px rgba(232, 166, 62, 0.22),
+    0 0 40px rgba(232, 166, 62, 0.08);
+}
+
+.eldritch-glow {
+  box-shadow:
+    0 0 20px rgba(107, 63, 160, 0.3),
+    0 0 50px rgba(107, 63, 160, 0.12);
+  animation: eldritchPulse 3s ease-in-out infinite;
+}
+
+.verdigris-glow {
+  box-shadow:
+    0 0 12px rgba(74, 122, 106, 0.25),
+    0 0 30px rgba(74, 122, 106, 0.08);
+}
+
+/* Global Vignette Overlay */
+.vignette-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 45%,
+    rgba(10, 10, 8, 0.45) 75%,
+    rgba(10, 10, 8, 0.88) 100%
+  );
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* ==========================================================================
+   Animations & Motion Choreography
+   ========================================================================== */
+
+/* Gunshot Screen Shake */
 @keyframes gunShake {
   0% { transform: translate(0, 0) rotate(0deg); }
-  20% { transform: translate(-4px, 3px) rotate(-1deg); }
-  40% { transform: translate(4px, -2px) rotate(1deg); }
-  60% { transform: translate(-3px, -2px) rotate(-0.5deg); }
-  80% { transform: translate(2px, 1px) rotate(0.5deg); }
+  15% { transform: translate(-5px, 3px) rotate(-1.5deg); }
+  35% { transform: translate(4px, -3px) rotate(1.2deg); }
+  55% { transform: translate(-3px, -2px) rotate(-0.8deg); }
+  75% { transform: translate(2px, 1px) rotate(0.4deg); }
   100% { transform: translate(0, 0) rotate(0deg); }
 }
 
 .animate-gun-shake {
-  animation: gunShake 0.4s ease-out;
+  animation: gunShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
+/* Gunshot Muzzle Flash */
 @keyframes muzzleFlash {
-  0% { opacity: 0; transform: scale(0.8); }
-  20% { opacity: 1; transform: scale(1.3); filter: drop-shadow(0 0 20px #f59e0b); }
-  100% { opacity: 0; transform: scale(1.6); filter: drop-shadow(0 0 40px #ef4444); }
+  0% { opacity: 0; transform: scale(0.85); filter: drop-shadow(0 0 0px #E8A63E); }
+  25% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 25px #E8A63E); }
+  100% { opacity: 0; transform: scale(1.5); filter: drop-shadow(0 0 40px #A83B2A); }
 }
 
 .animate-muzzle-flash {
   animation: muzzleFlash 0.5s ease-out forwards;
 }
 
-/* Ship Bobbing / Ocean Waves */
+/* Ship Bobbing (Slow, heavy ocean wave movement) */
 @keyframes shipBob {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-4px) rotate(1.5deg); }
+  35% { transform: translateY(-4px) rotate(1.2deg); }
+  70% { transform: translateY(2px) rotate(-0.8deg); }
 }
 
 .animate-ship-bob {
-  animation: shipBob 3s ease-in-out infinite;
+  animation: shipBob 3.6s ease-in-out infinite;
 }
 
-/* Eldritch Kraken Tentacle Pulse */
+/* Eldritch Kraken Pulse */
 @keyframes eldritchPulse {
-  0%, 100% { box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); border-color: rgba(168, 85, 247, 0.5); }
-  50% { box-shadow: 0 0 60px rgba(236, 72, 153, 0.7); border-color: rgba(236, 72, 153, 0.8); }
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(107, 63, 160, 0.25);
+    border-color: rgba(107, 63, 160, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 32px rgba(155, 109, 215, 0.45);
+    border-color: rgba(155, 109, 215, 0.7);
+  }
 }
 
 .animate-eldritch-pulse {
-  animation: eldritchPulse 2.5s ease-in-out infinite;
+  animation: eldritchPulse 3s ease-in-out infinite;
+}
+
+/* Candle Flame Flicker */
+@keyframes candleFlicker {
+  0%, 100% { opacity: 0.95; transform: scale(1); filter: drop-shadow(0 0 8px rgba(232, 166, 62, 0.6)); }
+  25% { opacity: 0.85; transform: scale(0.97) rotate(-1deg); filter: drop-shadow(0 0 5px rgba(232, 166, 62, 0.4)); }
+  50% { opacity: 1.0; transform: scale(1.03) rotate(0.5deg); filter: drop-shadow(0 0 12px rgba(232, 166, 62, 0.8)); }
+  75% { opacity: 0.9; transform: scale(0.99) rotate(-0.5deg); filter: drop-shadow(0 0 7px rgba(232, 166, 62, 0.5)); }
+}
+
+.animate-candle-flicker {
+  animation: candleFlicker 2.4s ease-in-out infinite;
+}
+
+/* Floating Dust Particles */
+@keyframes dustFloat {
+  0% { transform: translate(0, 0) scale(0.8); opacity: 0; }
+  20% { opacity: 0.4; }
+  80% { opacity: 0.3; }
+  100% { transform: translate(30px, -120px) scale(1.2); opacity: 0; }
+}
+
+.animate-dust {
+  animation: dustFloat 9s linear infinite;
+}
+
+/* Smooth Fade In Up */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================================================
+   Accessibility: Reduced Motion Override
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-gun-shake,
+  .animate-ship-bob,
+  .animate-eldritch-pulse,
+  .animate-candle-flicker,
+  .animate-dust {
+    animation: none !important;
+  }
 }
