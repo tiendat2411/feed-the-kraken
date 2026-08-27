@@ -1,4 +1,4 @@
-# UC-023: Bản đồ Hải trình Cổ điển, Sảnh chờ & Vinh danh Kết thúc (Vintage Chart, Lobby & EndGame)
+# UC-023: Hải Đồ Da Dê Cổ, Sảnh Gỗ Phong Hóa & Vinh Danh Kết Thúc
 
 ## Metadata
 - **ID:** UC-023
@@ -12,39 +12,46 @@
 Người chơi (Player), Host phòng, Thuyền trưởng (Captain).
 
 ## Trigger
-Người chơi xem bản đồ hải trình, ở sảnh chờ Lobby hoặc khi ván đấu kết thúc.
+Người chơi xem MapBoard, ở sảnh Lobby, hoặc khi ván đấu kết thúc.
 
 ## Preconditions
-Ứng dụng đang hiển thị các màn hình: MapBoard, Lobby, hoặc EndGame.
+Ứng dụng đang hiển thị MapBoard, Lobby, hoặc EndGame.
 
 ## Main Flow
-1. **Bản đồ Hải trình Cổ điển (Vintage MapBoard):**
-   - Bản đồ được dựng trên nền giấy da dê cổ xưa với la bàn cổ (Compass Rose) và 3 vùng biển đích (Sailor, Pirate, Cult).
-   - Con tàu buồm (Flagship) có hoạt cảnh dập dềnh trên sóng nước tại tọa độ hiện tại.
-   - Khi tàu di chuyển, tàu lướt êm ái trên đường vẽ hải trình.
-   - Bấm vào bất kỳ ô nào sẽ hiển thị popover chú thích ý nghĩa sự kiện (Tra khảo, Cắt lưỡi, Say rượu, Cho Kraken ăn...).
-2. **Sảnh chờ Nâng cấp (Thematic Lobby):**
-   - Bàn tròn thủy thủ đoàn hiển thị các vị trí người chơi trang trọng, có huy hiệu Host, trạng thái kết nối Online/Offline.
-   - Bộ chọn Avatar phong phú theo phong cách hải tặc/thủy thủ.
-   - Bộ chọn Map (Quick Journey / Long Journey) có hình minh họa preview trực quan.
-3. **Màn hình Vinh danh Kết thúc (End Game Ceremony):**
-   - Banner chiến thắng hoành tráng theo phe thắng cuộc (Hải quân, Hải tặc, Tà giáo).
-   - Lật mở toàn bộ vai trò bí mật của mọi người chơi trong phòng.
-   - Nút quay lại sảnh chờ và rời phòng trang nhã.
+1. **Hải Đồ Da Dê Cổ (Vintage MapBoard):**
+   - Nền giấy da dê ố vàng (`--parchment-dim`) với vệt ố nâu, mép rách/cháy, viền rêu xanh mờ ở góc (`--moss-dim`).
+   - La bàn cổ (Compass Rose SVG) ở góc.
+   - 3 vùng đích: Sailor Cove (xanh rêu `--verdigris`), Crimson Cove (đỏ lửa `--pirate`), Kraken Sanctuary (tím `--cult`).
+   - Đường vẽ mực lông vũ, nét run rẩy không hoàn hảo.
+   - Con tàu buồm gỗ tối dập dềnh (`shipBob 3s ease-in-out infinite`).
+   - Bấm ô → popover chú thích sự kiện (nền `--hull`, viền `--gold-dim`, font `Outfit`).
+2. **Sảnh Gỗ Phong Hóa (Thematic Lobby):**
+   - Nền sàn gỗ ván thuyền phong hóa (`--hull-dark` + texture wood-grain).
+   - Thẻ gỗ mục đóng đinh gỉ cho mỗi người chơi — avatar, tên, crown host vàng đồng gỉ, chấm verdigris online.
+   - Sổ da thuộc captain's journal bên phải — Room code, Map selection (cuộn giấy hải đồ Quick/Long), avatar grid.
+   - START VOYAGE = nút bánh lái tàu gỗ tối, phát sáng firelight khi hover.
+3. **Vinh Danh Kết Thúc (EndGame Ceremony):**
+   - Banner chiến thắng hoành tráng theo phe:
+     - Sailor Win: Cờ xanh tung bay, ánh bình minh ấm.
+     - Pirate Win: Jolly Roger cháy rực lửa đỏ, khói lan tỏa.
+     - Cult Win: Xúc tu Kraken trồi lên, nuốt chửng tàu, hào quang tím bùng nổ.
+   - Lật mở toàn bộ vai trò bí mật trên bàn gỗ mục — hiệu ứng card flip đồng loạt.
+   - Nút quay lại / rời phòng trên thanh gỗ dưới cùng.
 
 ## Acceptance Criteria (Tầng 4)
-### AC-1: Trực quan hóa Bản đồ Hải trình
-- **Given** người chơi mở bản đồ hải trình,
-- **When** quan sát hải trình và bấm vào các ô sự kiện,
-- **Then** bản đồ hiển thị rõ mạng lưới đường đi, con tàu buồm dập dềnh tại ô hiện tại và popover giải thích sự kiện xuất hiện rõ ràng.
+### AC-1: Hải Đồ Da Dê Cổ
+- **Given** mở MapBoard,
+- **When** quan sát hải trình và bấm ô,
+- **Then** bản đồ da dê ố + rêu xanh mờ, 3 vùng đích màu đặc trưng, tàu buồm gỗ dập dềnh, popover giải thích rõ ràng.
 
-### AC-2: Sảnh chờ và Vinh danh Kết thúc Trận đấu
-- **Given** người chơi ở sảnh Lobby hoặc màn hình kết thúc EndGame,
+### AC-2: Sảnh Gỗ & Vinh Danh Kết Thúc
+- **Given** ở Lobby hoặc EndGame,
 - **When** quan sát giao diện,
-- **Then** Lobby hiển thị thủy thủ đoàn trang nhã, và EndGame hiển thị banner chiến thắng ấn tượng cùng toàn bộ danh tính thật của người chơi.
+- **Then** Lobby: thẻ gỗ mục đinh gỉ + sổ da thuộc + bánh lái phát sáng. EndGame: banner phe thắng hoành tráng + lật vai đồng loạt trên bàn gỗ.
 
 ## Dependencies
 - **Upstream UC:** UC-021, UC-022
 
 ## History
-- v1 (2026-08-27, AI): initial đặc tả use case UC-023.
+- v1 (2026-08-27, AI): initial.
+- v2 (2026-08-27, AI): Cập nhật hoàn toàn theo "Eldritch Parchment" v1.1 — hải đồ da dê, gỗ phong hóa, verdigris, loại bỏ tham chiếu cũ.

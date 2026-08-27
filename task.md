@@ -140,3 +140,52 @@
 - [x] T037 Thử nghiệm kịch bản ngắt kết nối mạng (Socket Disconnect) và reconnect để đảm bảo khôi phục UI tốt.
 - [x] T038 Đánh bóng UI: Thêm Animation khi lật bài, khi súng nổ, âm thanh.
 - [ ] T047 Triển khai ứng dụng (Deploy frontend & backend).
+
+---
+
+## Phase 9: BR-007 - Frontend UI Revamp "Eldritch Parchment" (Priority: P6) 🎨
+
+**Goal**: Triển khai toàn diện art style **"Eldritch Parchment"** (Don't Starve Together × Lovecraftian Sea Horror × Gothic Sketchbook) lên frontend. Bảng màu nâu ấm + xanh lá rêu verdigris, font gothic 3 tầng, texture gỗ mục/da dê cổ, vignette tối viền, ánh sáng firelight. **Chỉ thay đổi tầng Presentation — KHÔNG đụng Game Logic/WebSocket/Backend.**
+
+**Spec**: `spec/features/007-frontend-ui-revamp/spec.md` | **Art Guide**: `spec/features/007-frontend-ui-revamp/art-direction-guide.md`
+
+### Phase 9.1: Design System Foundation & Shared Components (UC-021 / FR-001, FR-002, FR-012, FR-013)
+
+**Purpose**: Thiết lập nền tảng Design Tokens + Tailwind Theme + Google Fonts + Shared UI Components — Mọi task sau phụ thuộc vào phase này.
+
+- [ ] T048 [P] [BR-007] Mở rộng `tailwind.config.js`: thêm toàn bộ bảng màu "Eldritch Parchment" (abyss, hull, parchment, verdigris, moss, seaweed, sailor, pirate, cult, gold, firelight, ember, blood, brine, bone), fontFamily 3 tầng (`Pirata One`, `Cinzel`, `Outfit`), override borderRadius (4px/2px/6px).
+- [ ] T049 [P] [BR-007] Cập nhật `index.html`: thêm Google Fonts preconnect + stylesheet link cho `Pirata One`, `Cinzel`, `Outfit`, meta SEO cơ bản.
+- [ ] T050 [BR-007] Overhaul `index.css`: CSS custom properties (`:root`) cho toàn bộ Design Tokens, body font `Outfit`/bg `#0A0A08`, cập nhật keyframes (`gunShake`, `eldritchPulse` màu mới, `shipBob`, thêm `candleFlicker`/`dustDrift`), thêm utility classes (`.panel-wood`, `.card-parchment`, `.firelight-glow`, `.eldritch-glow`, `.verdigris-glow`, `.aged-stain`, `.vignette-overlay`).
+- [ ] T051 [BR-007] Xóa toàn bộ `App.css` cũ (Vite boilerplate), thay bằng global styles "Eldritch Parchment".
+- [ ] T052 [P] [BR-007] Tạo `frontend/src/components/ui/PanelWood.jsx`: Panel gỗ mục phong hóa (nền hull-dark, texture pseudo-element, viền hull-light, bóng đổ sâu, vệt ố verdigris mờ, đinh sắt gỉ decorative).
+- [ ] T053 [P] [BR-007] Tạo `frontend/src/components/ui/CardParchment.jsx`: Card da dê cổ (gradient nâu, viền vàng gỉ, inner border, texture sần sùi, vết ố thời gian).
+- [ ] T054 [P] [BR-007] Tạo `frontend/src/components/ui/ButtonWood.jsx`: Nút gỗ embossed (hover firelight glow, active press-down, disabled mờ, font Outfit).
+- [ ] T055 [P] [BR-007] Tạo `frontend/src/components/ui/InputPlank.jsx`: Input thanh gỗ khắc chìm (nền hull, viền hull-light, focus viền verdigris glow, placeholder parchment-dim).
+- [ ] T056 [P] [BR-007] Tạo `frontend/src/components/ui/Vignette.jsx`: Lớp phủ vignette tối viền toàn cục (radial-gradient, pointer-events none, z-50).
+- [ ] T057 [P] [BR-007] Tạo `frontend/src/components/ui/DustParticles.jsx`: Hạt bụi/tro bay nhẹ qua ánh nến (CSS animation thuần, 5-8 particles, `prefers-reduced-motion` tắt).
+
+**Checkpoint**: Tailwind theme + CSS Design System + 6 shared UI components sẵn sàng. Mở dev server thấy nền đen kịt, font gothic, KHÔNG còn style Vite cũ.
+
+### Phase 9.2: Pages Revamp — Home, Lobby & Game HUD (UC-021, UC-023 / FR-003, FR-009, US2, US6)
+
+**Purpose**: Áp dụng "Eldritch Parchment" lên 3 trang chính: Home (First impression), Lobby (Chờ đợi), Game HUD (Trong trận).
+
+- [ ] T058 [BR-007] Revamp `Home.jsx`: Nền abyss + Vignette + DustParticles, panel trung tâm PanelWood chứa CardParchment (form Nickname/RoomCode bằng InputPlank), title "Feed the Kraken" Pirata One vàng đồng + tentacle ẩn hiện, buttons ButtonWood. **Loại bỏ hoàn toàn**: glassmorphism, gradient blue-indigo, rounded-3xl, system-ui font.
+- [ ] T059 [BR-007] Revamp `Lobby.jsx`: Nền sàn gỗ phong hóa + vignette, crew list = grid PanelWood nhỏ (thẻ gỗ mục đinh gỉ, avatar, crown vàng gỉ, chấm verdigris online), settings = CardParchment sổ da thuộc (Room code Cinzel, cuộn giấy hải đồ Quick/Long, avatar grid), START VOYAGE = ButtonWood lớn kiểu bánh lái.
+- [ ] T060 [BR-007] Revamp `GameHeader.jsx`: Thanh gỗ sẫm phong hóa cố định (nền hull-dark + texture, viền dưới hull-light), Room code Cinzel, Round counter, Cult Track tím eldritch-pulse, nút Role/Map/Settings. Mobile co gọn responsive.
+- [ ] T061 [BR-007] Revamp `Game.jsx`: Bọc Vignette + DustParticles, Main Stage nền abyss, Crew Dock = thanh thẻ gỗ mục ngang (desktop) / drawer trượt (mobile).
+
+**Checkpoint**: Home → Lobby → Game HUD đều mang phong cách "Eldritch Parchment" nhất quán. Responsive 375px → 1920px+.
+
+### Phase 9.3: Game Components Revamp — Cards, Mutiny, Navigation, Map & EndGame (UC-022, UC-023 / FR-004—FR-008, FR-010, FR-011, US3, US4, US5)
+
+**Purpose**: Nâng cấp toàn bộ component game: thẻ bài, bỏ phiếu, lái tàu, bản đồ, kết thúc.
+
+- [ ] T062 [BR-007] Revamp `RoleReveal.jsx`: Thẻ tarot cổ (mặt sau da dê tối + xúc tu Kraken vàng + viền vàng gỉ; mặt trước biểu tượng phe + tên Cinzel + điều kiện thắng trên card-parchment), 3D flip 600ms + ánh lửa hắt. Night overlay: đen kịt + mắt Kraken tím eldritch-pulse + đếm ngược ember vòng tròn.
+- [ ] T063 [BR-007] Revamp `MutinyBoard.jsx`: Bàn gỗ mục texture, đồng tiền vàng cổ / flintlock SVG, rương gỗ bản lề gỉ cho khay cược, screen shake gunShake khi công bố, xếp hạng súng + vương miện vàng đồng gỉ trao tay.
+- [ ] T064 [BR-007] Revamp `NavigationPhase.jsx`: Bàn gỗ mục, 3 thẻ bài da dê cổ mực phai (Blue sailor, Red pirate, Yellow cult kiểu bột màu), chọn = viền vàng + firelight glow, loại = mờ + trượt. Giữ nguyên logic Captain/Lieutenant/Navigator.
+- [ ] T065 [BR-007] Revamp `MapBoardUI.jsx`: Nền hải đồ da dê cổ (gradient parchment-dim, vệt ố, mép rêu moss-dim), đường mực lông vũ SVG nét run, ô sự kiện biểu tượng SVG + popover (nền hull, viền gold-dim), tàu buồm gỗ tối shipBob, 3 vùng đích màu đặc trưng (Sailor Cove verdigris, Crimson Cove pirate, Kraken Sanctuary cult).
+- [ ] T066 [BR-007] Revamp `EndGame.jsx`: Banner phe thắng hoành tráng (Sailor = bình minh ấm, Pirate = lửa đỏ Jolly Roger, Cult = xúc tu tím bùng nổ), lật mở đồng loạt vai trò trên bàn gỗ mục (card flip), nút quay lại/rời phòng ButtonWood.
+- [ ] T067 [BR-007] Verification & Polish: Kiểm tra nhất quán Design System trên mọi màn hình, responsive 375px-1920px+ zero overflow, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast. Chạy `npm run build` xác nhận không lỗi.
+
+**Checkpoint**: Toàn bộ Frontend mang phong cách "Eldritch Parchment" nhất quán. Game có thể chơi trọn vẹn với giao diện mới từ Home → EndGame.

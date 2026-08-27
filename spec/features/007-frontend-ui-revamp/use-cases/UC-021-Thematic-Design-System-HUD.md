@@ -1,4 +1,4 @@
-# UC-021: Ngôn ngữ Thiết kế Chủ đề & Thanh Chỉ huy HUD (Thematic Design System & Command HUD)
+# UC-021: Ngôn ngữ Thiết kế "Eldritch Parchment" & Thanh Chỉ huy HUD Gỗ Phong Hóa
 
 ## Metadata
 - **ID:** UC-021
@@ -12,56 +12,58 @@
 Người chơi (Player), Chủ phòng (Host), Khán giả quan sát.
 
 ## Trigger
-Người chơi truy cập vào trang web hoặc đang tham gia trong một phòng chơi bất kỳ.
+Người chơi truy cập vào trang web hoặc đang tham gia trong một phòng chơi.
 
 ## Preconditions
-Ứng dụng frontend đã tải thành công các tài nguyên CSS, Fonts và kết nối Socket.
+Frontend đã tải thành công CSS, Google Fonts (`Pirata One`, `Cinzel`, `Outfit`) và kết nối Socket.
 
 ## Main Flow
-1. Hệ thống nạp bảng màu (Design Tokens), hệ thống font chữ Google Fonts (`Cinzel`, `Pirata One`, `Outfit`), và áp dụng giao diện nền đại dương sâu thẳm.
-2. Khi người chơi ở trong phòng game (Game View), hệ thống render thanh điều khiển Game Header HUD cố định tại đỉnh trang:
-   - Hiển thị Mã phòng (kèm nút copy nhanh).
-   - Hiển thị Tên phòng / Vòng chơi hiện tại / Cột mốc Nghi thức Tà giáo.
-   - Hiển thị Huy hiệu vai trò cá nhân (nút bật xem lại Thẻ vai trò).
-   - Hiển thị Nút mở nhanh Bản đồ toàn cảnh và Nút Cài đặt / Rời phòng.
-3. Khu vực sân khấu chính (Main Stage) tự động căn giữa và hiển thị linh kiện tương ứng với phase hiện tại của game.
-4. Khu vực Thủy thủ đoàn (Crew Deck) hiển thị trực quan các thẻ thành viên gồm: Tên, Avatar, Huy hiệu chức danh (Captain/Lieutenant/Navigator/Off-duty), Số súng công khai và Trạng thái kết nối.
+1. Hệ thống nạp Design Tokens "Eldritch Parchment": bảng màu nâu ấm + xanh rêu verdigris, font gothic 3 tầng, texture gỗ mục/da dê cổ, vignette tối viền toàn cục.
+2. Toàn bộ body nền đại dương đen kịt (`--abyss`), mọi panel có texture gỗ phong hóa (`.panel-wood`), mọi card có chất liệu da dê cổ (`.card-parchment`).
+3. Khi người chơi ở trong Game View, render thanh HUD Header gỗ sẫm phong hóa cố định tại đỉnh:
+   - Mã phòng khắc vào gỗ (font `Cinzel`, kèm nút copy).
+   - Round counter / Phase hiện tại.
+   - Cult Track tím ẩn hiện (eldritch-pulse khi có tiến triển).
+   - Huy hiệu vai trò cá nhân (nút bật xem Thẻ vai trò).
+   - Nút mở bản đồ + Cài đặt / Rời phòng.
+4. Main Stage tự động căn giữa, hiển thị component phase hiện tại.
+5. Crew Dock hiển thị thẻ gỗ mục từng thuyền viên: Tên, Avatar, Chức danh (Captain/Lieutenant/Navigator/Off-duty), Số súng, Trạng thái kết nối (chấm verdigris thay xanh neon).
 
 ## Alternative Flows
-- **2a. Chế độ Màn hình nhỏ (Mobile/Tablet View):** Thanh HUD tự động co gọn các thông tin ít quan trọng, danh sách Thủy thủ đoàn chuyển sang dạng thanh cuộn ngang hoặc thanh trượt bên hông (Drawer) để tối ưu không gian cho sân khấu chính.
+- **3a. Mobile/Tablet View:** HUD co gọn, Crew Dock chuyển thanh cuộn ngang hoặc Drawer trượt.
 
 ## Exceptions
-- **E1. Mạng chậm khiến font chưa tải kịp (Font loading latency):** Hệ thống lập tức sử dụng hệ thống font dự phòng chuẩn (Web-safe serif/sans-serif) và chuyển đổi mượt mà khi font tải xong mà không làm giật bố cục (FOUT prevention).
+- **E1. Font loading latency:** Sử dụng fallback `Georgia`/`serif` cho Display/Heading, `sans-serif` cho Body. Chuyển đổi mượt khi font tải xong (FOUT prevention).
 
 ## Postconditions
-Giao diện hiển thị nhất quán, sắc nét, cung cấp đầy đủ thông tin trạng thái ván chơi và đảm bảo mọi nút điều hướng dễ thao tác.
+Giao diện nhất quán phong cách "Eldritch Parchment", sắc nét, đầy đủ thông tin trạng thái.
 
-## State Synchronization (Đồng bộ trạng thái)
-- **Emit Event:** N/A (Chỉ xử lý đồng bộ giao diện người dùng dựa trên event `room_state`).
+## State Synchronization
+- **Emit Event:** N/A (Chỉ render dựa trên `room_state`).
 - **To:** Client hiện tại.
-- **Payload:** State của phòng chơi.
 
 ## Edge Cases & Network Resilience
-- **Trường hợp F5 / Tải lại trang:** Thanh HUD và sân khấu chính khôi phục vị trí ngay lập tức dựa trên dữ liệu state nhận từ server.
-- **Thay đổi kích thước cửa sổ trình duyệt (Window Resize):** Layout tự động tính toán lại kích thước hiển thị mà không bị vỡ bố cục.
+- **F5 / Tải lại trang:** HUD và Main Stage khôi phục tức thì từ server state.
+- **Window Resize:** Layout tự động recalculate không vỡ bố cục.
 
 ## Acceptance Criteria (Tầng 4)
-### AC-1: Thiết lập Typography & Theme Tokens
-- **Given** người chơi mở bất kỳ trang nào của web,
-- **When** trang web hiển thị,
-- **Then** các tiêu đề sử dụng font nghệ thuật phong cách cổ điển, nội dung sử dụng font sans-serif dễ đọc, màu nền chủ đạo là sắc đại dương sâu và các panel có hiệu ứng glassmorphism mạ viền sáng.
+### AC-1: Typography & Theme Tokens "Eldritch Parchment"
+- **Given** người chơi mở bất kỳ trang nào,
+- **When** trang hiển thị,
+- **Then** tiêu đề dùng `Pirata One`/`Cinzel` gothic, nội dung dùng `Outfit`, nền `--abyss` + vignette, panel có texture gỗ mục phong hóa, KHÔNG glassmorphism, KHÔNG neon.
 
-### AC-2: Cố định và Hiển thị đầy đủ thông tin trên HUD
-- **Given** người chơi đang trong một ván game ở bất kỳ phase nào,
-- **When** người chơi cuộn trang hoặc thao tác,
-- **Then** thanh Header HUD luôn cố định ở trên cùng, hiển thị đúng Round, Game Phase, nút xem Role bí mật và trạng thái kết nối của phòng.
+### AC-2: HUD Gỗ Phong Hóa Cố Định
+- **Given** ván game đang chạy bất kỳ phase,
+- **When** người chơi cuộn trang/thao tác,
+- **Then** thanh HUD gỗ sẫm cố định, hiển thị Round, Phase (font `Cinzel`), Cult Track tím, nút Role — tất cả trên nền gỗ mục có texture.
 
 ## Dependencies
 - **Upstream UC:** N/A
 - **Downstream UC:** UC-022, UC-023
 
 ## Notes
-- Toàn bộ thiết kế phải tối ưu hiệu năng CSS, không dùng các thư viện đồ họa nặng gây tụt FPS trên điện thoại di động.
+- Tối ưu CSS, ưu tiên CSS thuần cho texture (gradients, blend-modes) thay vì asset hình ảnh nặng.
 
 ## History
-- v1 (2026-08-27, AI): initial đặc tả use case UC-021.
+- v1 (2026-08-27, AI): initial.
+- v2 (2026-08-27, AI): Cập nhật hoàn toàn theo "Eldritch Parchment" v1.1 — gỗ phong hóa, font gothic, verdigris, loại bỏ glassmorphism.
