@@ -1,8 +1,8 @@
 <!--
 Sync Impact Report:
-- Version change: 1.2.0 → 1.2.1
-- Added sections: Architecture & Networking Standards (under Technical Constraints)
-- Modified principles: Uncompromising Game Logic updated to include game-mechanics link and clarification rule. Added Time-out & Game Pace Logic to Technical Constraints.
+- Version change: 1.2.1 → 1.3.0
+- Added sections: N/A
+- Modified principles: Principle I updated to Quality-Driven & Advanced Engineering, allowing advanced coding techniques, modern design patterns, and sophisticated tech solutions to achieve optimal user experience and project requirements.
 - Removed sections: N/A
 - Templates requiring updates: 
   - ✅ .specify/templates/plan-template.md (already generic)
@@ -14,8 +14,8 @@ Sync Impact Report:
 
 ## Core Principles
 
-### I. Pragmatic & Lightweight Code Quality
-Mã nguồn MUST sạch sẽ, dễ đọc và có tính modular cao. Chúng ta MUST tránh over-engineering và các kiến trúc enterprise phức tạp (như microservices) không cần thiết cho một dự án cá nhân. Sự đơn giản và tính thực dụng được ưu tiên hàng đầu so với các abstract design patterns.
+### I. Quality-Driven & Advanced Engineering
+Mã nguồn MUST sạch sẽ, dễ đọc và có tính modular cao. Dự án hoàn toàn cho phép áp dụng các kỹ thuật lập trình nâng cao, design patterns hiện đại, hiệu ứng thị giác chuyên sâu và các giải pháp công nghệ tinh vi khi cần thiết, với mục tiêu hàng đầu là hoàn thành xuất sắc các yêu cầu của dự án và mang lại trải nghiệm đỉnh cao cho người dùng.
 
 ### II. Uncompromising Game Logic (Source of Truth)
 Ứng dụng MUST tuân thủ tuyệt đối các quy tắc, cơ chế hidden roles, và lore của "Feed the Kraken" (tham khảo tài liệu chi tiết tại [game-mechanics-v1.md](file:///d:/PersonaPropjects/Feed%20The%20Kurumeo/feed-the-kraken/document/game-mechanics-v1.md)). Core game logic MUST đóng vai trò là "source of truth" tuyệt đối và MUST được tách biệt hoàn toàn (decoupled) khỏi User Interface (UI). Nếu có bất kỳ vấn đề hoặc logic nghiệp vụ nào chưa rõ ràng, AI/Developer MUST hỏi trực tiếp người dùng để được giải đáp, tuyệt đối không tự suy diễn.
@@ -58,4 +58,4 @@ Hiến pháp này có hiệu lực cao nhất, thay thế mọi thực thi và t
 - Các sửa đổi đối với các nguyên tắc này yêu cầu tăng phiên bản của constitution (version bump).
 - Tất cả Pull Requests, tài liệu thiết kế và triển khai tính năng MUST xác minh tính tuân thủ với các nguyên tắc "Uncompromising Game Logic", "Focused Testing Standards", và "Documentation & Language Standards".
 
-**Version**: 1.2.1 | **Ratified**: 2026-08-11 | **Last Amended**: 2026-08-14
+**Version**: 1.3.0 | **Ratified**: 2026-08-11 | **Last Amended**: 2026-08-27
