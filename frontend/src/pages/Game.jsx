@@ -8,6 +8,11 @@ import NavigationPhase from '../components/NavigationPhase';
 import MapBoardUI from '../components/MapBoardUI';
 import GameHeader from '../components/GameHeader';
 import EndGame from './EndGame';
+import Vignette from '../components/ui/Vignette';
+import DustParticles from '../components/ui/DustParticles';
+import PanelWood from '../components/ui/PanelWood';
+import CardParchment from '../components/ui/CardParchment';
+import ButtonWood from '../components/ui/ButtonWood';
 
 const Game = () => {
   const { roomId } = useParams();
@@ -20,7 +25,6 @@ const Game = () => {
   const [myRole, setMyRole] = useState(location.state?.initialRoom?.myRole || null);
   const [privateCards, setPrivateCards] = useState(location.state?.initialRoom?.myNavigationCards || []);
   const [error, setError] = useState('');
-  const [showMapModal, setShowMapModal] = useState(false);
   const [conversionNotification, setConversionNotification] = useState(null);
 
   // Extract currentUserId from sessionToken
@@ -100,12 +104,12 @@ const Game = () => {
     });
 
     socket.on('ROOM_DISSOLVED', () => {
-      alert('Phòng đã bị chủ phòng giải tán.');
+      alert('The voyage was dissolved by the Captain.');
       navigate('/');
     });
 
     socket.on('PLAYER_KICKED', () => {
-      alert('Bạn đã bị chủ phòng kick.');
+      alert('You have been cast overboard by the Captain.');
       navigate('/');
     });
 
@@ -138,7 +142,7 @@ const Game = () => {
   };
 
   const handleLeaveRoom = () => {
-    if (socket && window.confirm('Bạn có chắc chắn muốn rời khỏi phòng không?')) {
+    if (socket && window.confirm('Are you sure you want to disembark and return to harbor?')) {
       socket.emit('leave_room', () => {
         navigate('/');
       });
@@ -146,7 +150,7 @@ const Game = () => {
   };
 
   const handleDissolveRoom = () => {
-    if (socket && window.confirm('Bạn có chắc chắn muốn giải tán phòng không? Tất cả người chơi sẽ bị đưa về trang chủ.')) {
+    if (socket && window.confirm('Are you sure you want to dissolve this voyage? All sailors will return to harbor.')) {
       socket.emit('dissolve_room', () => {
         navigate('/');
       });
@@ -154,7 +158,7 @@ const Game = () => {
   };
 
   const handleKickPlayer = (playerId) => {
-    if (socket && window.confirm('Bạn có chắc chắn muốn kick người chơi này không?')) {
+    if (socket && window.confirm('Cast this sailor overboard?')) {
       socket.emit('kick_player', { targetId: playerId });
     }
   };
@@ -248,41 +252,51 @@ const Game = () => {
     if (socket) socket.emit('return_to_lobby');
   };
 
+  // Error Screen (Aged Blood / Parchment Warning)
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center space-y-4">
-        <div className="p-4 bg-red-500/20 border border-red-500/50 text-red-300 rounded-2xl text-center max-w-md">
-          {error}
-        </div>
-        <button
-          onClick={() => navigate('/')}
-          className="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition"
-        >
-          Quay lại Trang Chủ
-        </button>
-      </div>
+      <main className="min-h-[100dvh] bg-abyss text-parchment p-8 flex flex-col items-center justify-center relative">
+        <Vignette mode="global" intensity="heavy" />
+        <PanelWood glow="none" className="max-w-md w-full text-center space-y-4 border-blood/60 relative z-20">
+          <div className="text-3xl select-none">⚠️</div>
+          <h2 className="font-heading text-lg font-bold text-parchment-bright uppercase tracking-wider">
+            Voyage Interrupted
+          </h2>
+          <p className="text-sm text-parchment-dim bg-blood/10 border border-blood/40 p-3 rounded">
+            {error}
+          </p>
+          <ButtonWood variant="secondary" onClick={() => navigate('/')} fullWidth={true}>
+            Return to Harbor
+          </ButtonWood>
+        </PanelWood>
+      </main>
     );
   }
 
+  // Loading Screen (Candlelight in the Abyss)
   if (!room) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white p-8 flex flex-col items-center justify-center space-y-4">
-        <div className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent animate-pulse">
-          Connecting to room...
+      <main className="min-h-[100dvh] bg-abyss text-parchment p-8 flex flex-col items-center justify-center relative">
+        <Vignette mode="global" intensity="default" />
+        <DustParticles count={5} />
+        <div className="relative z-20 text-center space-y-4 animate-fade-in-up">
+          <div className="w-2 h-6 mx-auto bg-gradient-to-t from-firelight via-gold to-white rounded-full animate-candle-flicker" />
+          <h2 className="font-heading text-base md:text-lg font-bold text-gold tracking-widest uppercase animate-pulse">
+            Reaching Vessel in the Fog...
+          </h2>
+          <ButtonWood variant="secondary" size="sm" onClick={fetchRoomState}>
+            Retry Connection
+          </ButtonWood>
         </div>
-        <button
-          onClick={fetchRoomState}
-          className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 rounded-lg transition"
-        >
-          Thử kết nối lại
-        </button>
-      </div>
+      </main>
     );
   }
 
   const effectiveUserId = room.myId || currentUserId;
 
+  // ==========================================================================
   // 0. End Game Phase (BR-005 / UC-018)
+  // ==========================================================================
   if (room.status === 'FINISHED' || room.gamePhase === 'END_GAME') {
     return (
       <EndGame
@@ -294,34 +308,42 @@ const Game = () => {
     );
   }
 
-  // Conversion Private Alert Overlay (UC-015 AC-3)
+  // ==========================================================================
+  // Secret Cult Conversion Overlay Toast (UC-015 AC-3)
+  // ==========================================================================
   const renderConversionToast = () => {
     if (!conversionNotification) return null;
     return (
-      <div className="fixed top-6 right-6 z-50 max-w-md p-5 rounded-3xl bg-purple-950 border border-purple-400 shadow-[0_0_50px_rgba(168,85,247,0.5)] text-white space-y-3 animate-bounce">
+      <div className="fixed top-14 right-4 sm:right-6 z-50 max-w-md p-4 sm:p-5 rounded bg-hull-dark border-2 border-cult shadow-eldritch text-parchment space-y-3 animate-fade-in-up">
         <div className="flex items-center space-x-3">
-          <span className="text-3xl">🐙</span>
+          <span className="text-3xl select-none animate-eldritch-pulse">🐙</span>
           <div>
-            <h4 className="font-black text-purple-300 text-sm">THU NẠP TÀ GIÁO BÍ MẬT</h4>
-            <p className="text-xs text-purple-200">
+            <h4 className="font-heading font-black text-cult-glow text-sm uppercase tracking-wider">
+              Secret Cult Conversion
+            </h4>
+            <p className="text-xs text-parchment font-body mt-0.5">
               {conversionNotification.message}
             </p>
           </div>
         </div>
-        <div className="p-2 rounded-xl bg-purple-900/60 text-xs border border-purple-500/40 text-amber-300">
-          Giáo chủ của bạn: <span className="font-black">{conversionNotification.cult_leader_name}</span>
+        <div className="p-2 bg-abyss/80 rounded border border-cult/40 text-xs text-gold font-heading tracking-wide">
+          Your Cult Leader: <span className="font-bold text-parchment-bright">{conversionNotification.cult_leader_name}</span>
         </div>
-        <button
+        <ButtonWood
+          variant="cult"
+          size="sm"
+          fullWidth={true}
           onClick={() => setConversionNotification(null)}
-          className="w-full py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 font-bold text-xs"
         >
-          ĐÃ HIỂU
-        </button>
+          I Obey the Kraken
+        </ButtonWood>
       </div>
     );
   };
 
+  // ==========================================================================
   // 1. Lobby Phase
+  // ==========================================================================
   if (room.status === 'LOBBY') {
     return (
       <Lobby 
@@ -337,10 +359,14 @@ const Game = () => {
     );
   }
 
+  // ==========================================================================
   // 2. Secret Role Reveal & Night Gathering Phase
+  // ==========================================================================
   if (room.gamePhase === 'ROLE_REVEAL' || room.gamePhase === 'PIRATES_GATHERING') {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-[100dvh] bg-abyss flex flex-col relative overflow-x-hidden">
+        <Vignette mode="global" intensity="heavy" />
+        <DustParticles count={6} />
         {renderConversionToast()}
         <GameHeader
           room={room}
@@ -348,7 +374,7 @@ const Game = () => {
           onLeaveRoom={handleLeaveRoom}
           onDissolveRoom={handleDissolveRoom}
         />
-        <div className="flex-1">
+        <div className="flex-1 relative z-10 flex flex-col justify-center">
           <RoleReveal 
             room={room} 
             myRole={myRole || room.myRole} 
@@ -359,7 +385,9 @@ const Game = () => {
     );
   }
 
+  // ==========================================================================
   // 3. Execution & Map Actions Phase (BR-004)
+  // ==========================================================================
   const isExecutionPhase = [
     'EXECUTE_MAP_ACTION',
     'EXECUTE_CARD_ACTION',
@@ -373,7 +401,9 @@ const Game = () => {
 
   if (isExecutionPhase) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-[100dvh] bg-abyss flex flex-col relative overflow-x-hidden">
+        <Vignette mode="global" intensity="default" />
+        <DustParticles count={6} />
         {renderConversionToast()}
         <GameHeader
           room={room}
@@ -381,7 +411,7 @@ const Game = () => {
           onLeaveRoom={handleLeaveRoom}
           onDissolveRoom={handleDissolveRoom}
         />
-        <div className="flex-1">
+        <div className="flex-1 relative z-10">
           <MapBoardUI
             room={room}
             currentUserId={effectiveUserId}
@@ -402,7 +432,9 @@ const Game = () => {
     );
   }
 
+  // ==========================================================================
   // 4. Navigation & Card Drawing Phase (BR-003)
+  // ==========================================================================
   const isNavigationPhase = [
     'NAVIGATION',
     'NAVIGATION_CAPTAIN_DRAW',
@@ -414,7 +446,9 @@ const Game = () => {
 
   if (isNavigationPhase) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-[100dvh] bg-abyss flex flex-col relative overflow-x-hidden">
+        <Vignette mode="global" intensity="default" />
+        <DustParticles count={6} />
         {renderConversionToast()}
         <GameHeader
           room={room}
@@ -422,7 +456,7 @@ const Game = () => {
           onLeaveRoom={handleLeaveRoom}
           onDissolveRoom={handleDissolveRoom}
         />
-        <div className="flex-1">
+        <div className="flex-1 relative z-10">
           <NavigationPhase
             room={room}
             currentUserId={effectiveUserId}
@@ -440,9 +474,13 @@ const Game = () => {
     );
   }
 
+  // ==========================================================================
   // 5. Day Phase & Mutiny Voting (BR-002)
+  // ==========================================================================
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-[100dvh] bg-abyss flex flex-col relative overflow-x-hidden">
+      <Vignette mode="global" intensity="default" />
+      <DustParticles count={6} />
       {renderConversionToast()}
       <GameHeader
         room={room}
@@ -450,16 +488,16 @@ const Game = () => {
         onLeaveRoom={handleLeaveRoom}
         onDissolveRoom={handleDissolveRoom}
       />
-      <div className="flex-1">
+      <div className="flex-1 relative z-10">
         <MutinyBoard 
-          room={room}
-          currentUserId={effectiveUserId}
-          myRole={myRole || room.myRole}
-          onAppointTeam={handleAppointTeam}
-          onSubmitVote={handleSubmitVote}
-          onConfirmOutcome={handleConfirmOutcome}
-          onEliminateTieCandidate={handleEliminateTieCandidate}
-          onCutTongue={handleCutTongue}
+          room={room} 
+          currentUserId={effectiveUserId} 
+          myRole={myRole || room.myRole} 
+          onAppointTeam={handleAppointTeam} 
+          onSubmitVote={handleSubmitVote} 
+          onConfirmOutcome={handleConfirmOutcome} 
+          onEliminateTieCandidate={handleEliminateTieCandidate} 
+          onCutTongue={handleCutTongue} 
         />
       </div>
     </div>
