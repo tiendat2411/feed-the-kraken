@@ -64,8 +64,10 @@ export default {
 
       fontFamily: {
         display: ['"Pirata One"', 'Georgia', 'serif'],
-        heading: ['"Cinzel"', '"Times New Roman"', 'serif'],
-        body: ['"Outfit"', 'sans-serif'],
+        heading: ['"Pirata One"', 'Georgia', 'serif'],
+        body: ['"Pirata One"', 'Georgia', 'serif'],
+        sans: ['"Pirata One"', 'Georgia', 'serif'],
+        serif: ['"Pirata One"', 'Georgia', 'serif'],
       },
 
       borderRadius: {

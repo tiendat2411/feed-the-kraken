@@ -41,10 +41,10 @@
   --brine: #2A4A4A;
   --bone: #C8BFA8;
 
-  /* Typography */
+  /* Typography — Đồng bộ 100% font Pirata One */
   --font-display: 'Pirata One', Georgia, serif;
-  --font-heading: 'Cinzel', 'Times New Roman', serif;
-  --font-body: 'Outfit', sans-serif;
+  --font-heading: 'Pirata One', Georgia, serif;
+  --font-body: 'Pirata One', Georgia, serif;
 }
 
 body {
