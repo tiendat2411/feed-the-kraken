@@ -153,10 +153,10 @@
 
 **Purpose**: Thiết lập nền tảng Design Tokens + Tailwind Theme + Google Fonts + Shared UI Components — Mọi task sau phụ thuộc vào phase này.
 
-- [ ] T048 [P] [BR-007] Mở rộng `tailwind.config.js`: thêm toàn bộ bảng màu "Eldritch Parchment" (abyss, hull, parchment, verdigris, moss, seaweed, sailor, pirate, cult, gold, firelight, ember, blood, brine, bone), fontFamily 3 tầng (`Pirata One`, `Cinzel`, `Outfit`), override borderRadius (4px/2px/6px).
-- [ ] T049 [P] [BR-007] Cập nhật `index.html`: thêm Google Fonts preconnect + stylesheet link cho `Pirata One`, `Cinzel`, `Outfit`, meta SEO cơ bản.
-- [ ] T050 [BR-007] Overhaul `index.css`: CSS custom properties (`:root`) cho toàn bộ Design Tokens, body font `Outfit`/bg `#0A0A08`, cập nhật keyframes (`gunShake`, `eldritchPulse` màu mới, `shipBob`, thêm `candleFlicker`/`dustDrift`), thêm utility classes (`.panel-wood`, `.card-parchment`, `.firelight-glow`, `.eldritch-glow`, `.verdigris-glow`, `.aged-stain`, `.vignette-overlay`).
-- [ ] T051 [BR-007] Xóa toàn bộ `App.css` cũ (Vite boilerplate), thay bằng global styles "Eldritch Parchment".
+- [x] T048 [P] [BR-007] Mở rộng `tailwind.config.js`: thêm toàn bộ bảng màu "Eldritch Parchment" (abyss, hull, parchment, verdigris, moss, seaweed, sailor, pirate, cult, gold, firelight, ember, blood, brine, bone), fontFamily 3 tầng (`Pirata One`, `Cinzel`, `Outfit`), override borderRadius (4px/2px/6px).
+- [x] T049 [P] [BR-007] Cập nhật `index.html`: thêm Google Fonts preconnect + stylesheet link cho `Pirata One`, `Cinzel`, `Outfit`, meta SEO cơ bản.
+- [x] T050 [BR-007] Overhaul `index.css`: CSS custom properties (`:root`) cho toàn bộ Design Tokens, body font `Outfit`/bg `#0A0A08`, cập nhật keyframes (`gunShake`, `eldritchPulse` màu mới, `shipBob`, thêm `candleFlicker`/`dustDrift`), thêm utility classes (`.panel-wood`, `.card-parchment`, `.firelight-glow`, `.eldritch-glow`, `.verdigris-glow`, `.aged-stain`, `.vignette-overlay`).
+- [x] T051 [BR-007] Xóa toàn bộ `App.css` cũ (Vite boilerplate), thay bằng global styles "Eldritch Parchment".
 - [ ] T052 [P] [BR-007] Tạo `frontend/src/components/ui/PanelWood.jsx`: Panel gỗ mục phong hóa (nền hull-dark, texture pseudo-element, viền hull-light, bóng đổ sâu, vệt ố verdigris mờ, đinh sắt gỉ decorative).
 - [ ] T053 [P] [BR-007] Tạo `frontend/src/components/ui/CardParchment.jsx`: Card da dê cổ (gradient nâu, viền vàng gỉ, inner border, texture sần sùi, vết ố thời gian).
 - [ ] T054 [P] [BR-007] Tạo `frontend/src/components/ui/ButtonWood.jsx`: Nút gỗ embossed (hover firelight glow, active press-down, disabled mờ, font Outfit).
