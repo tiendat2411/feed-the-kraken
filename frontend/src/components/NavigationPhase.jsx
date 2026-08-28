@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { SoundEngine } from '../utils/soundEffects';
+import { Compass, Anchor, Skull, Flame, Award, BookOpen, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import PanelWood from './ui/PanelWood';
+import CardParchment from './ui/CardParchment';
+import ButtonWood from './ui/ButtonWood';
 
 /**
  * NavigationPhase Component (BR-003)
- * Giao diện bốc bài, chọn bài vào Logbook, điều hướng tàu và xử lý Nhảy tàu.
+ * Eldritch Parchment Navigation Command Deck:
+ * Captain Draw (2 keep 1) -> Lieutenant Draw (2 keep 1) -> Navigator Decision (2 choose 1 / Jump Overboard).
  */
 const NavigationPhase = ({
   room,
@@ -57,54 +62,39 @@ const NavigationPhase = ({
     return () => clearInterval(interval);
   }, [currentPhase]);
 
-  // Card background styling
-  const getCardStyle = (direction) => {
-    switch (direction) {
-      case 'BLUE':
-        return 'from-cyan-900/90 via-blue-950/90 to-slate-900 border-cyan-400/60 shadow-cyan-900/50 text-cyan-200';
-      case 'RED':
-        return 'from-red-950/90 via-rose-950/90 to-slate-900 border-red-500/60 shadow-red-950/50 text-red-200';
-      case 'YELLOW':
-        return 'from-amber-950/90 via-yellow-950/90 to-purple-950/90 border-amber-400/60 shadow-amber-900/50 text-amber-200';
-      default:
-        return 'from-slate-800 via-slate-900 to-slate-950 border-slate-600 text-slate-300';
-    }
-  };
-
   const getCardBadge = (direction) => {
     switch (direction) {
       case 'BLUE':
-        return { label: 'SAILOR (THỦY THỦ)', bg: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40', icon: '⚓' };
+        return { label: 'SAILOR COURSE', bg: 'bg-sailor/20 text-sailor-glow border-sailor/50', icon: '⚓', faction: 'sailor' };
       case 'RED':
-        return { label: 'PIRATE (HẢI TẶC)', bg: 'bg-red-500/20 text-red-300 border-red-500/40', icon: '⚔️' };
+        return { label: 'PIRATE COURSE', bg: 'bg-pirate/20 text-pirate-glow border-pirate/50', icon: '⚔️', faction: 'pirate' };
       case 'YELLOW':
-        return { label: 'CULT (TÀ GIÁO)', bg: 'bg-amber-500/20 text-amber-300 border-amber-500/40', icon: '🐙' };
+        return { label: 'CULT COURSE', bg: 'bg-cult/20 text-cult-glow border-cult/50', icon: '🐙', faction: 'cult' };
       default:
-        return { label: 'UNKNOWN', bg: 'bg-slate-700 text-slate-300', icon: '❓' };
+        return { label: 'UNKNOWN COURSE', bg: 'bg-hull text-parchment-dim border-hull-light', icon: '❓', faction: 'none' };
     }
   };
 
   const getActionDescription = (action) => {
     switch (action) {
       case 'DRUNK':
-        return { title: 'Say Xỉn 🍺', desc: 'Thuyền trưởng say rượu! Quyền Thuyền trưởng sẽ chuyển sang người kế tiếp bên trái.' };
+        return { title: 'Intoxicated (Say Xỉn) 🍺', desc: 'The Captain is drunk! Command passes to the next sailor on the left.' };
       case 'CULT_UPRISING':
-        return { title: 'Khởi Nghĩa Tà Giáo 👁️', desc: 'Triệu hồi sức mạnh bóng tối! Tăng cường tín đồ và chuyển biến lòng trung thành.' };
+        return { title: 'Cult Uprising (Nổi Dậy Tà Giáo) 👁️', desc: 'Dark tentacles surge! The Cult Leader gains influence and conducts rituals.' };
       case 'ARMED':
-        return { title: 'Tiếp Vũ Khí 🔫', desc: 'Cung cấp thêm 1 khẩu súng mới cho Hoa tiêu đương nhiệm.' };
+        return { title: 'Armed (Tiếp Vũ Khí) 🔫', desc: 'The current Navigator receives 1 additional flintlock pistol into their stash.' };
       case 'DISARMED':
-        return { title: 'Tước Khí 🚫', desc: 'Hoa tiêu bị tịch thu 1 khẩu súng vào kho vũ khí chung.' };
+        return { title: 'Disarmed (Tước Khí) 🚫', desc: 'The Navigator is stripped of 1 gun into the ship armory.' };
       case 'MERMAID':
-        return { title: 'Tiếng Hát Tiên Cá 🧜‍♀️', desc: 'Thuyền trưởng chỉ định 1 người chơi bí mật xem lại 3 lá bài bị hủy gần nhất.' };
+        return { title: 'Mermaid Song (Tiếng Hát Tiên Cá) 🧜‍♀️', desc: 'The Captain designates 1 sailor to inspect the last 3 discarded cards.' };
       case 'TELESCOPE':
-        return { title: 'Kính Viễn Vọng 🔭', desc: 'Thuyền trưởng chỉ định 1 người chơi bí mật nhìn lá bài trên đỉnh bộ bài bốc (chọn giữ lại hoặc hủy).' };
+        return { title: 'Spyglass (Kính Viễn Vọng) 🔭', desc: 'The Captain designates 1 sailor to secretly inspect the top card of the draw pile.' };
       case 'NONE':
       default:
-        return { title: 'Thuận Buồm Xuôi Gió ⛵', desc: 'Con tàu di chuyển êm đềm theo hướng hải đồ, không có tác động phụ.' };
+        return { title: 'Fair Winds (Thuận Buồm Xuôi Gió) ⛵', desc: 'The vessel glides smoothly along the plotted sea course.' };
     }
   };
 
-  // Eligible emergency navigator candidates
   const eligibleEmergencyCandidates = players.filter(p =>
     p.id !== room?.captainId &&
     p.id !== room?.lieutenantId &&
@@ -112,510 +102,541 @@ const NavigationPhase = ({
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100 p-4 md:p-8 flex flex-col items-center">
-      {/* Top Header bar */}
-      <div className="w-full max-w-5xl bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-700/60 p-4 md:p-6 mb-6 shadow-2xl shadow-black/60">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700/50 pb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-2xl shadow-inner">
+    <div className="w-full max-w-5xl mx-auto p-3 sm:p-6 space-y-6 select-none animate-fade-in-up">
+      
+      {/* ====================================================================
+          Top Navigation Shelf: Deck Counters & Officers Status
+          ==================================================================== */}
+      <PanelWood glow="firelight" nails={true} className="p-4 sm:p-5 space-y-4">
+        
+        {/* Header Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hull-light pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded bg-abyss border border-gold-dim flex items-center justify-center text-xl shadow-inner shrink-0">
               🧭
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-200 to-amber-300">
-                GIAI ĐOẠN ĐIỀU HƯỚNG TÀU
-              </h1>
-              <p className="text-xs text-slate-400">Phòng: <span className="font-mono text-cyan-300 font-semibold">{room?.id}</span> | Chế độ: <span className="text-amber-300 font-medium">{room?.mapType}</span></p>
+              <h2 className="font-heading text-lg sm:text-xl font-bold text-parchment-bright uppercase tracking-wider">
+                Vessel Navigation Deck
+              </h2>
+              <p className="text-[11px] text-parchment-dim font-heading">
+                Voyage: <span className="text-gold font-bold">{room?.id}</span> | Chart: <span className="text-parchment-bright">{room?.mapType}</span>
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-xs">
-              <span className="text-slate-400">Chồng bài bốc:</span>
-              <span className="font-bold text-cyan-400">{room?.navigationDeck?.drawPileCount ?? 19} 🎴</span>
+          {/* Deck Counters & Timer */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <div className="bg-abyss px-2.5 py-1 rounded border border-hull-light text-xs font-heading">
+              <span className="text-parchment-dim text-[10px] uppercase mr-1.5">Draw:</span>
+              <span className="font-bold text-gold-bright">{room?.navigationDeck?.drawPileCount ?? 19} 🎴</span>
             </div>
-            <div className="flex items-center space-x-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-xs">
-              <span className="text-slate-400">Đã hủy:</span>
-              <span className="font-bold text-red-400">{room?.navigationDeck?.discardPileCount ?? 0} 🗑️</span>
+            <div className="bg-abyss px-2.5 py-1 rounded border border-hull-light text-xs font-heading">
+              <span className="text-parchment-dim text-[10px] uppercase mr-1.5">Discard:</span>
+              <span className="font-bold text-pirate-glow">{room?.navigationDeck?.discardPileCount ?? 0} 🗑️</span>
             </div>
-            <div className="flex items-center space-x-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-xs">
-              <span className="text-slate-400">Nhật ký:</span>
-              <span className="font-bold text-amber-400">{room?.navigationDeck?.logbookCount ?? 0}/2 📖</span>
+            <div className="bg-abyss px-2.5 py-1 rounded border border-hull-light text-xs font-heading">
+              <span className="text-parchment-dim text-[10px] uppercase mr-1.5">Logbook:</span>
+              <span className="font-bold text-verdigris-glow">{room?.navigationDeck?.logbookCount ?? 0}/2 📖</span>
             </div>
-            <div className={`px-3 py-1.5 rounded-lg border font-mono font-bold text-sm ${timeLeft <= 10 ? 'bg-red-500/20 text-red-400 border-red-500/50 animate-pulse' : 'bg-slate-800 text-cyan-300 border-cyan-500/30'}`}>
+            <div className={`px-2.5 py-1 rounded border font-mono font-bold text-xs ${
+              timeLeft <= 10 ? 'bg-blood/20 text-blood border-blood animate-pulse' : 'bg-hull border-gold-dim text-gold'
+            }`}>
               ⏱️ {timeLeft}s
             </div>
           </div>
         </div>
 
-        {/* Current Officers Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-          <div className={`p-3 rounded-xl border flex items-center space-x-3 ${isCaptain ? 'bg-amber-950/40 border-amber-500/60 ring-2 ring-amber-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
-            <span className="text-2xl">👑</span>
-            <div className="overflow-hidden">
-              <div className="text-xs text-amber-400/90 font-bold uppercase tracking-wider">Thuyền Trưởng {isCaptain && '(BẠN)'}</div>
-              <div className="text-sm font-semibold truncate text-white">{captain?.nickname || 'Chưa chỉ định'}</div>
+        {/* Officers Nameplates */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Captain */}
+          <div className={`p-2.5 rounded border flex items-center gap-2.5 ${
+            isCaptain ? 'bg-hull border-gold shadow-firelight' : 'bg-abyss/80 border-hull-light'
+          }`}>
+            <span className="text-xl">👑</span>
+            <div className="min-w-0">
+              <div className="font-heading text-[10px] uppercase font-bold text-gold tracking-wider truncate">
+                Captain {isCaptain && '(You)'}
+              </div>
+              <div className="font-heading font-bold text-xs text-parchment-bright truncate">
+                {captain?.nickname || 'Unassigned'}
+              </div>
             </div>
           </div>
 
-          <div className={`p-3 rounded-xl border flex items-center space-x-3 ${isLieutenant ? 'bg-sky-950/40 border-sky-500/60 ring-2 ring-sky-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
-            <span className="text-2xl">⚔️</span>
-            <div className="overflow-hidden">
-              <div className="text-xs text-sky-400/90 font-bold uppercase tracking-wider">Thuyền Phó {isLieutenant && '(BẠN)'}</div>
-              <div className="text-sm font-semibold truncate text-white">{lieutenant?.nickname || 'Chưa chỉ định'}</div>
+          {/* Lieutenant */}
+          <div className={`p-2.5 rounded border flex items-center gap-2.5 ${
+            isLieutenant ? 'bg-hull border-sailor shadow-[0_0_10px_rgba(74,122,140,0.4)]' : 'bg-abyss/80 border-hull-light'
+          }`}>
+            <span className="text-xl">🎖️</span>
+            <div className="min-w-0">
+              <div className="font-heading text-[10px] uppercase font-bold text-sailor-glow tracking-wider truncate">
+                Lieutenant {isLieutenant && '(You)'}
+              </div>
+              <div className="font-heading font-bold text-xs text-parchment-bright truncate">
+                {lieutenant?.nickname || 'Unassigned'}
+              </div>
             </div>
           </div>
 
-          <div className={`p-3 rounded-xl border flex items-center space-x-3 ${isNavigator ? 'bg-emerald-950/40 border-emerald-500/60 ring-2 ring-emerald-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
-            <span className="text-2xl">🧭</span>
-            <div className="overflow-hidden">
-              <div className="text-xs text-emerald-400/90 font-bold uppercase tracking-wider">Hoa Tiêu {isNavigator && '(BẠN)'}</div>
-              <div className="text-sm font-semibold truncate text-white">{navigator?.nickname || 'Chưa chỉ định'}</div>
+          {/* Navigator */}
+          <div className={`p-2.5 rounded border flex items-center gap-2.5 ${
+            isNavigator ? 'bg-hull border-verdigris shadow-[0_0_10px_rgba(74,122,106,0.4)]' : 'bg-abyss/80 border-hull-light'
+          }`}>
+            <span className="text-xl">🧭</span>
+            <div className="min-w-0">
+              <div className="font-heading text-[10px] uppercase font-bold text-verdigris-glow tracking-wider truncate">
+                Navigator {isNavigator && '(You)'}
+              </div>
+              <div className="font-heading font-bold text-xs text-parchment-bright truncate">
+                {navigator?.nickname || 'Unassigned'}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Action Area */}
-      <div className="w-full max-w-5xl">
-        {/* VIEW 1: CAPTAIN DRAW PHASE / INITIAL NAVIGATION */}
-        {(currentPhase === 'NAVIGATION' || currentPhase === 'NAVIGATION_CAPTAIN_DRAW') && (
-          <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl border border-amber-500/40 p-6 md:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full filter blur-3xl pointer-events-none" />
+      </PanelWood>
 
-            {isCaptain ? (
-              <div>
-                <div className="text-center mb-8">
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-2">
-                    LƯỢT CỦA THUYỀN TRƯỞNG
-                  </span>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">
-                    {activeCards.length > 0 ? 'Hãy Chọn 1 Lá Bài Để Bỏ Vào Nhật Ký' : 'Bắt Đầu Lượt Rút Hải Đồ Bí Mật'}
-                  </h2>
-                  <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-                    {activeCards.length > 0
-                      ? 'Bạn vừa rút 2 hải đồ bí mật. Hãy nhấp chọn 1 lá bạn muốn giữ để chuyển tiếp cho Hoa tiêu. Lá còn lại sẽ bị hủy úp kín.'
-                      : 'Nhấn nút bên dưới để rút 2 hải đồ đầu tiên từ đầu cọc bài bốc.'}
-                  </p>
+      {/* ====================================================================
+          Main Dynamic Navigation Stage
+          ==================================================================== */}
+
+      {/* --------------------------------------------------------------------
+          VIEW 1: CAPTAIN DRAW PHASE / INITIAL NAVIGATION
+          -------------------------------------------------------------------- */}
+      {(currentPhase === 'NAVIGATION' || currentPhase === 'NAVIGATION_CAPTAIN_DRAW') && (
+        <CardParchment stains={true} className="p-6 md:p-8 space-y-6">
+          {isCaptain ? (
+            <div className="space-y-6">
+              <div className="text-center max-w-xl mx-auto space-y-1.5">
+                <span className="inline-block px-3 py-0.5 bg-hull border border-gold-dim text-gold-bright text-[10px] font-heading font-bold rounded uppercase tracking-widest">
+                  Captain's Helm Turn
+                </span>
+                <h3 className="font-heading text-xl sm:text-2xl font-black text-parchment-bright uppercase">
+                  {activeCards.length > 0 ? 'Select 1 Navigation Card for the Logbook' : 'Draw Secret Sea Chart Cards'}
+                </h3>
+                <p className="text-xs sm:text-sm text-parchment-dim leading-relaxed">
+                  {activeCards.length > 0
+                    ? 'You drew 2 secret cards. Click 1 card to deposit into the Logbook. The unchosen card is discarded facedown.'
+                    : 'Click the button below to draw 2 cards from the top of the Navigation Deck.'}
+                </p>
+              </div>
+
+              {activeCards.length === 0 ? (
+                <div className="flex justify-center py-6">
+                  <ButtonWood
+                    variant="gold"
+                    size="xl"
+                    onClick={() => onStartNavigation && onStartNavigation()}
+                    icon={<Compass size={22} />}
+                  >
+                    DRAW 2 NAVIGATION CARDS
+                  </ButtonWood>
                 </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                    {activeCards.map((card, idx) => {
+                      const badge = getCardBadge(card.direction || card.color);
+                      const actionInfo = getActionDescription(card.action);
+                      const isSelected = selectedCardId === card.id;
 
-                {activeCards.length === 0 ? (
-                  <div className="flex justify-center py-6">
-                    <button
-                      id="btn-start-navigation-draw"
-                      onClick={() => onStartNavigation && onStartNavigation()}
-                      className="px-8 py-4 rounded-xl font-bold text-base bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 shadow-xl shadow-amber-500/30 transition-all duration-200 transform hover:scale-105 cursor-pointer flex items-center space-x-3"
-                    >
-                      <span className="text-2xl">🧭</span>
-                      <span>RÚT 2 HẢI ĐỒ BÍ MẬT</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    {/* Drawn cards list */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
-                      {activeCards.map((card, idx) => {
-                        const badge = getCardBadge(card.direction || card.color);
-                        const actionInfo = getActionDescription(card.action);
-                        const isSelected = selectedCardId === card.id;
-
-                        return (
-                          <div
-                            key={card.id || idx}
-                            id={`card-captain-${card.id || idx}`}
-                            onClick={() => setSelectedCardId(card.id)}
-                            className={`cursor-pointer rounded-2xl p-6 border-2 transition-all duration-300 transform bg-gradient-to-b ${getCardStyle(card.direction || card.color)} ${
-                              isSelected
-                                ? 'scale-105 ring-4 ring-amber-400/80 border-amber-300 shadow-2xl shadow-amber-500/40'
-                                : 'hover:scale-102 hover:border-slate-400 opacity-80 hover:opacity-100'
-                            }`}
+                      return (
+                        <div
+                          key={card.id || idx}
+                          id={`card-captain-${card.id || idx}`}
+                          onClick={() => setSelectedCardId(card.id)}
+                          className={`cursor-pointer transition-all duration-300 transform ${
+                            isSelected ? 'scale-105' : 'hover:scale-102 opacity-85 hover:opacity-100'
+                          }`}
+                        >
+                          <CardParchment
+                            active={isSelected}
+                            faction={badge.faction}
+                            className="p-5 text-center space-y-4"
                           >
-                            <div className="flex items-center justify-between mb-4">
-                              <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
+                            <div className="flex items-center justify-between">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-heading font-bold border ${badge.bg}`}>
                                 {badge.icon} {badge.label}
                               </span>
-                              <span className="text-xs font-mono opacity-60">Thẻ #{idx + 1}</span>
+                              <span className="font-mono text-[10px] text-parchment-dim">Card #{idx + 1}</span>
                             </div>
 
-                            <div className="my-6 text-center">
-                              <div className="text-5xl mb-3">{badge.icon}</div>
-                              <div className="text-xl font-bold text-white tracking-wide">{actionInfo.title}</div>
-                              <div className="text-xs text-slate-300 mt-2 leading-relaxed px-2">{actionInfo.desc}</div>
+                            <div className="py-3">
+                              <div className="text-4xl mb-2">{badge.icon}</div>
+                              <div className="font-heading font-bold text-base text-parchment-bright">{actionInfo.title}</div>
+                              <p className="text-xs text-parchment-dim font-body mt-1 leading-relaxed">{actionInfo.desc}</p>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                              <span className="text-slate-300">Trạng thái:</span>
-                              <span className={`font-semibold ${isSelected ? 'text-amber-300 font-bold' : 'text-slate-400'}`}>
-                                {isSelected ? '✓ SẼ GIỮ VÀO NHẬT KÝ' : 'Sẽ bị hủy'}
+                            <div className="pt-2 border-t border-gold-dim/20 text-xs font-heading font-bold">
+                              <span className={isSelected ? 'text-gold-bright' : 'text-parchment-dim/60'}>
+                                {isSelected ? '✓ WILL DEPOSIT IN LOGBOOK' : 'Will be discarded'}
                               </span>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex justify-center">
-                      <button
-                        id="btn-confirm-captain-card"
-                        disabled={!selectedCardId}
-                        onClick={() => selectedCardId && onCaptainSelectCard && onCaptainSelectCard(selectedCardId)}
-                        className={`px-8 py-3.5 rounded-xl font-bold text-base shadow-xl transition-all duration-200 flex items-center space-x-2 ${
-                          selectedCardId
-                            ? 'bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 cursor-pointer scale-100 hover:scale-105'
-                            : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
-                        }`}
-                      >
-                        <span>📖</span>
-                        <span>XÁC NHẬN BỎ VÀO NHẬT KÝ</span>
-                      </button>
-                    </div>
+                          </CardParchment>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="py-12 text-center">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-4xl animate-bounce">
-                  👑
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Thuyền Trưởng Đang Xem Xét Hải Đồ</h3>
-                <p className="text-sm text-slate-400 max-w-md mx-auto">
-                  Thuyền trưởng <span className="text-amber-300 font-semibold">{captain?.nickname}</span> đang bí mật rút 2 thẻ hải đồ và chọn 1 lá để chuyển vào Nhật Ký Hành Trình.
-                </p>
-                <div className="mt-6 flex justify-center space-x-2">
-                  <div className="w-3 h-3 bg-amber-400 rounded-full animate-ping" />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* VIEW 2: LIEUTENANT DRAW PHASE */}
-        {currentPhase === 'NAVIGATION_LIEUTENANT_DRAW' && (
-          <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl border border-sky-500/40 p-6 md:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full filter blur-3xl pointer-events-none" />
-
-            {isLieutenant ? (
-              <div>
-                <div className="text-center mb-8">
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/40 mb-2">
-                    LƯỢT CỦA THUYỀN PHÓ
-                  </span>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">Hãy Chọn 1 Lá Bài Tiếp Theo Vào Nhật Ký</h2>
-                  <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-                    Thuyền trưởng đã bỏ 1 lá vào Nhật Ký. Bây giờ đến lượt bạn rút 2 lá mới và <span className="text-sky-300 font-semibold">chọn 1 lá để giữ</span>. 2 lá trong Nhật Ký sẽ được xáo ngẫu nhiên trước khi chuyển cho Hoa tiêu.
-                  </p>
-                </div>
-
-                {/* Drawn cards list */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
-                  {activeCards.map((card, idx) => {
-                    const badge = getCardBadge(card.direction || card.color);
-                    const actionInfo = getActionDescription(card.action);
-                    const isSelected = selectedCardId === card.id;
-
-                    return (
-                      <div
-                        key={card.id || idx}
-                        id={`card-lieutenant-${card.id || idx}`}
-                        onClick={() => setSelectedCardId(card.id)}
-                        className={`cursor-pointer rounded-2xl p-6 border-2 transition-all duration-300 transform bg-gradient-to-b ${getCardStyle(card.direction || card.color)} ${
-                          isSelected
-                            ? 'scale-105 ring-4 ring-sky-400/80 border-sky-300 shadow-2xl shadow-sky-500/40'
-                            : 'hover:scale-102 hover:border-slate-400 opacity-80 hover:opacity-100'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
-                            {badge.icon} {badge.label}
-                          </span>
-                          <span className="text-xs font-mono opacity-60">Thẻ #{idx + 1}</span>
-                        </div>
-
-                        <div className="my-6 text-center">
-                          <div className="text-5xl mb-3">{badge.icon}</div>
-                          <div className="text-xl font-bold text-white tracking-wide">{actionInfo.title}</div>
-                          <div className="text-xs text-slate-300 mt-2 leading-relaxed px-2">{actionInfo.desc}</div>
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                          <span className="text-slate-300">Trạng thái:</span>
-                          <span className={`font-semibold ${isSelected ? 'text-sky-300' : 'text-slate-400'}`}>
-                            {isSelected ? '✓ SẼ GIỮ VÀO NHẬT KÝ' : 'Sẽ bị hủy'}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex justify-center">
-                  <button
-                    id="btn-confirm-lieutenant-card"
-                    disabled={!selectedCardId}
-                    onClick={() => selectedCardId && onLieutenantSelectCard && onLieutenantSelectCard(selectedCardId)}
-                    className={`px-8 py-3.5 rounded-xl font-bold text-base shadow-xl transition-all duration-200 flex items-center space-x-2 ${
-                      selectedCardId
-                        ? 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white cursor-pointer scale-100 hover:scale-105'
-                        : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
-                    }`}
-                  >
-                    <span>📖</span>
-                    <span>XÁC NHẬN BỎ VÀO NHẬT KÝ</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="py-12 text-center">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-4xl animate-bounce">
-                  ⚔️
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Thuyền Phó Đang Xem Xét Hải Đồ</h3>
-                <p className="text-sm text-slate-400 max-w-md mx-auto">
-                  Thuyền phó <span className="text-sky-300 font-semibold">{lieutenant?.nickname}</span> đang chọn 1 lá bài tiếp theo để hoàn thành 2 lá trong Hộp Nhật Ký Hành Trình.
-                </p>
-                <div className="mt-6 flex justify-center space-x-2">
-                  <div className="w-3 h-3 bg-sky-400 rounded-full animate-ping" />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* VIEW 3: NAVIGATOR DECISION PHASE */}
-        {currentPhase === 'NAVIGATION_NAVIGATOR_DECISION' && (
-          <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl border border-emerald-500/40 p-6 md:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full filter blur-3xl pointer-events-none" />
-
-            {isNavigator ? (
-              <div>
-                <div className="text-center mb-8">
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 mb-2">
-                    QUYẾT ĐỊNH CỦA HOA TIÊU
-                  </span>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">Chọn 1 Hải Đồ Để Con Tàu Di Chuyển</h2>
-                  <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-                    Dưới đây là 2 lá bài được gửi từ Thuyền trưởng và Thuyền phó (đã được Server xáo trộn ngẫu nhiên). Bạn có quyền chọn 1 lá để thực thi, hoặc chọn <span className="text-red-400 font-semibold">Tự Nhảy Tàu</span> nếu phản đối.
-                  </p>
-                </div>
-
-                {/* Logbook cards list */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
-                  {activeCards.map((card, idx) => {
-                    const badge = getCardBadge(card.direction || card.color);
-                    const actionInfo = getActionDescription(card.action);
-                    const isSelected = selectedCardId === card.id;
-
-                    return (
-                      <div
-                        key={card.id || idx}
-                        id={`card-navigator-${card.id || idx}`}
-                        onClick={() => setSelectedCardId(card.id)}
-                        className={`cursor-pointer rounded-2xl p-6 border-2 transition-all duration-300 transform bg-gradient-to-b ${getCardStyle(card.direction || card.color)} ${
-                          isSelected
-                            ? 'scale-105 ring-4 ring-emerald-400/80 border-emerald-300 shadow-2xl shadow-emerald-500/40'
-                            : 'hover:scale-102 hover:border-slate-400 opacity-80 hover:opacity-100'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
-                            {badge.icon} {badge.label}
-                          </span>
-                          <span className="text-xs font-mono opacity-60">Lá trong Nhật Ký #{idx + 1}</span>
-                        </div>
-
-                        <div className="my-6 text-center">
-                          <div className="text-5xl mb-3">{badge.icon}</div>
-                          <div className="text-xl font-bold text-white tracking-wide">{actionInfo.title}</div>
-                          <div className="text-xs text-slate-300 mt-2 leading-relaxed px-2">{actionInfo.desc}</div>
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                          <span className="text-slate-300">Hướng đi:</span>
-                          <span className={`font-semibold ${isSelected ? 'text-emerald-300 font-bold' : 'text-slate-400'}`}>
-                            {isSelected ? '✓ CHỌN ĐIỀU HƯỚNG' : 'Bỏ qua'}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button
-                    id="btn-confirm-navigator-card"
-                    disabled={!selectedCardId}
-                    onClick={() => selectedCardId && onNavigatorSelectCard && onNavigatorSelectCard(selectedCardId)}
-                    className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-base shadow-xl transition-all duration-200 flex items-center justify-center space-x-2 ${
-                      selectedCardId
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 cursor-pointer scale-100 hover:scale-105'
-                        : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
-                    }`}
-                  >
-                    <span>🧭</span>
-                    <span>CHỐT ĐIỀU HƯỚNG TÀU</span>
-                  </button>
-
-                  <button
-                    id="btn-jump-overboard"
-                    onClick={() => setShowOverboardConfirm(true)}
-                    className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-sm bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-500/50 shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer hover:border-red-400"
-                  >
-                    <span>🌊</span>
-                    <span>TỰ NHẢY TÀU (JUMP OVERBOARD)</span>
-                  </button>
-                </div>
-
-                {/* Overboard Confirmation Modal */}
-                {showOverboardConfirm && (
-                  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-slate-900 border border-red-500/60 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl text-center">
-                      <div className="text-5xl mb-4">🌊 🦈</div>
-                      <h3 className="text-xl font-extrabold text-red-400 mb-2">BẠN CÓ CHẮC CHẮN MUỐN NHẢY TÀU?</h3>
-                      <p className="text-sm text-slate-300 mb-6 leading-relaxed">
-                        Hành động này sẽ <span className="text-red-400 font-bold">LOẠI BẠN HOÀN TOÀN KHỎI VÁN ĐẤU (ELIMINATED)</span> và bạn sẽ mất toàn bộ súng. Cả 2 lá bài trong Nhật ký sẽ bị hủy bí mật.
-                      </p>
-                      <div className="flex space-x-3 justify-center">
-                        <button
-                          id="btn-cancel-overboard"
-                          onClick={() => setShowOverboardConfirm(false)}
-                          className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors"
-                        >
-                          Hủy bỏ
-                        </button>
-                        <button
-                          id="btn-confirm-overboard"
-                          onClick={() => onNavigatorJumpOverboard && onNavigatorJumpOverboard()}
-                          className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm shadow-lg shadow-red-900/50 transition-colors"
-                        >
-                          XÁC NHẬN NHẢY TÀU
-                        </button>
-                      </div>
-                    </div>
+                  <div className="flex justify-center">
+                    <ButtonWood
+                      variant="gold"
+                      size="lg"
+                      disabled={!selectedCardId}
+                      onClick={() => selectedCardId && onCaptainSelectCard && onCaptainSelectCard(selectedCardId)}
+                      icon={<BookOpen size={18} />}
+                    >
+                      CONFIRM & DEPOSIT IN LOGBOOK
+                    </ButtonWood>
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="py-12 text-center">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-4xl animate-bounce">
-                  🧭
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Hoa Tiêu Đang Định Đoạt Hướng Đi</h3>
-                <p className="text-sm text-slate-400 max-w-md mx-auto">
-                  Hoa tiêu <span className="text-emerald-300 font-semibold">{navigator?.nickname}</span> đang mở Hộp Nhật Ký và lựa chọn hướng điều hướng cho con tàu.
-                </p>
-                <div className="mt-6 flex justify-center space-x-2">
-                  <div className="w-3 h-3 bg-emerald-400 rounded-full animate-ping" />
-                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-12 text-center space-y-3">
+              <div className="w-16 h-16 mx-auto rounded-full bg-abyss border border-gold-dim flex items-center justify-center text-3xl animate-bounce">
+                👑
               </div>
-            )}
-          </div>
-        )}
-
-        {/* VIEW 4: EMERGENCY NAVIGATOR SELECTION */}
-        {currentPhase === 'EMERGENCY_NAVIGATOR_SELECTION' && (
-          <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl border border-rose-500/60 p-6 md:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full filter blur-3xl pointer-events-none" />
-
-            <div className="text-center mb-8">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40 mb-2 animate-pulse">
-                🚨 TÌNH HUỐNG KHẨN CẤP
-              </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white">Hoa Tiêu Đã Tự Nhảy Tàu!</h2>
-              <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-                Hoa tiêu trước đó đã nhảy xuống biển và bị loại khỏi trò chơi. Thuyền trưởng cần bổ nhiệm ngay một <span className="text-rose-300 font-semibold">Hoa Tiêu Khẩn Cấp</span> mới để tiếp tục hành trình.
+              <h3 className="font-heading text-lg font-bold text-parchment-bright uppercase tracking-wider">
+                Captain is Plotting the Sea Course
+              </h3>
+              <p className="text-xs text-parchment-dim max-w-md mx-auto">
+                Captain <strong className="text-gold-bright">{captain?.nickname}</strong> is secretly drawing 2 cards and selecting 1 to seal into the Logbook.
               </p>
             </div>
+          )}
+        </CardParchment>
+      )}
 
-            {isCaptain ? (
-              <div className="max-w-xl mx-auto">
-                <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Chọn 1 Thủy Thủ Làm Hoa Tiêu Khẩn Cấp:</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                  {eligibleEmergencyCandidates.map(cand => {
-                    const isSelected = selectedEmergencyCandidateId === cand.id;
-                    const isOffDuty = cand.status === 'OFF_DUTY';
-
-                    return (
-                      <div
-                        key={cand.id}
-                        id={`candidate-emergency-${cand.id}`}
-                        onClick={() => setSelectedEmergencyCandidateId(cand.id)}
-                        className={`cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center space-x-3 ${
-                          isSelected
-                            ? 'bg-rose-950/60 border-rose-400 ring-2 ring-rose-400/40 text-white'
-                            : 'bg-slate-800/60 border-slate-700/80 hover:border-slate-500 text-slate-300'
-                        }`}
-                      >
-                        <span className="text-3xl">{cand.avatar || '🧑‍✈️'}</span>
-                        <div className="overflow-hidden flex-1">
-                          <div className="font-bold truncate">{cand.nickname}</div>
-                          <div className="text-xs text-slate-400 flex items-center space-x-2">
-                            <span>Súng: {cand.gunCount} 🔫</span>
-                            {isOffDuty && <span className="text-amber-400 font-medium">(Nghỉ phép)</span>}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex justify-center">
-                  <button
-                    id="btn-confirm-emergency-navigator"
-                    disabled={!selectedEmergencyCandidateId}
-                    onClick={() => selectedEmergencyCandidateId && onAppointEmergencyNavigator && onAppointEmergencyNavigator(selectedEmergencyCandidateId)}
-                    className={`px-8 py-3.5 rounded-xl font-bold text-base shadow-xl transition-all duration-200 flex items-center space-x-2 ${
-                      selectedEmergencyCandidateId
-                        ? 'bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 hover:to-red-500 text-white cursor-pointer scale-100 hover:scale-105'
-                        : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
-                    }`}
-                  >
-                    <span>🚨</span>
-                    <span>BỔ NHIỆM HOA TIÊU KHẨN CẤP</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="py-8 text-center">
-                <div className="text-4xl mb-3">👑</div>
-                <h4 className="text-lg font-bold text-white mb-1">Đang Chờ Thuyền Trưởng Bổ Nhiệm</h4>
-                <p className="text-sm text-slate-400">
-                  Thuyền trưởng <span className="text-amber-300 font-semibold">{captain?.nickname}</span> đang chọn một Hoa tiêu mới từ các thành viên còn lại trên tàu.
+      {/* --------------------------------------------------------------------
+          VIEW 2: LIEUTENANT DRAW PHASE
+          -------------------------------------------------------------------- */}
+      {currentPhase === 'NAVIGATION_LIEUTENANT_DRAW' && (
+        <CardParchment stains={true} className="p-6 md:p-8 space-y-6">
+          {isLieutenant ? (
+            <div className="space-y-6">
+              <div className="text-center max-w-xl mx-auto space-y-1.5">
+                <span className="inline-block px-3 py-0.5 bg-sailor/20 border border-sailor/40 text-sailor-glow text-[10px] font-heading font-bold rounded uppercase tracking-widest">
+                  Lieutenant's Turn
+                </span>
+                <h3 className="font-heading text-xl sm:text-2xl font-black text-parchment-bright uppercase">
+                  Select 1 Additional Card for the Logbook
+                </h3>
+                <p className="text-xs sm:text-sm text-parchment-dim leading-relaxed">
+                  The Captain has sealed 1 card. You drew 2 new cards: <span className="text-sailor-glow font-bold">choose 1 to deposit</span>. Both cards in the Logbook will be shuffled before being handed to the Navigator.
                 </p>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* VIEW 5: EXECUTE ACTIONS PHASE */}
-        {currentPhase === 'EXECUTE_ACTIONS' && room?.executedNavigationCard && (
-          <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl border border-indigo-500/40 p-6 md:p-8 shadow-2xl text-center">
-            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 mb-3">
-              KẾT QUẢ ĐIỀU HƯỚNG
-            </span>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-6">Con Tàu Đang Rẽ Sóng Tiến Về Phía Trước!</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                {activeCards.map((card, idx) => {
+                  const badge = getCardBadge(card.direction || card.color);
+                  const actionInfo = getActionDescription(card.action);
+                  const isSelected = selectedCardId === card.id;
 
-            <div className="max-w-md mx-auto mb-6">
-              {(() => {
-                const card = room.executedNavigationCard;
-                const badge = getCardBadge(card.direction || card.color);
-                const actionInfo = getActionDescription(card.action);
+                  return (
+                    <div
+                      key={card.id || idx}
+                      id={`card-lieutenant-${card.id || idx}`}
+                      onClick={() => setSelectedCardId(card.id)}
+                      className={`cursor-pointer transition-all duration-300 transform ${
+                        isSelected ? 'scale-105' : 'hover:scale-102 opacity-85 hover:opacity-100'
+                      }`}
+                    >
+                      <CardParchment
+                        active={isSelected}
+                        faction={badge.faction}
+                        className="p-5 text-center space-y-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-heading font-bold border ${badge.bg}`}>
+                            {badge.icon} {badge.label}
+                          </span>
+                          <span className="font-mono text-[10px] text-parchment-dim">Card #{idx + 1}</span>
+                        </div>
 
-                return (
-                  <div className={`rounded-2xl p-6 border-2 bg-gradient-to-b ${getCardStyle(card.direction || card.color)} shadow-2xl`}>
-                    <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
-                      {badge.icon} {badge.label}
-                    </span>
-                    <div className="my-6">
-                      <div className="text-6xl mb-3 animate-pulse">{badge.icon}</div>
-                      <div className="text-2xl font-bold text-white">{actionInfo.title}</div>
-                      <div className="text-xs text-slate-200 mt-2">{actionInfo.desc}</div>
+                        <div className="py-3">
+                          <div className="text-4xl mb-2">{badge.icon}</div>
+                          <div className="font-heading font-bold text-base text-parchment-bright">{actionInfo.title}</div>
+                          <p className="text-xs text-parchment-dim font-body mt-1 leading-relaxed">{actionInfo.desc}</p>
+                        </div>
+
+                        <div className="pt-2 border-t border-gold-dim/20 text-xs font-heading font-bold">
+                          <span className={isSelected ? 'text-sailor-glow' : 'text-parchment-dim/60'}>
+                            {isSelected ? '✓ WILL DEPOSIT IN LOGBOOK' : 'Will be discarded'}
+                          </span>
+                        </div>
+                      </CardParchment>
                     </div>
-                  </div>
-                );
-              })()}
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-center">
+                <ButtonWood
+                  variant="primary"
+                  size="lg"
+                  disabled={!selectedCardId}
+                  onClick={() => selectedCardId && onLieutenantSelectCard && onLieutenantSelectCard(selectedCardId)}
+                  icon={<BookOpen size={18} />}
+                >
+                  CONFIRM & SEAL LOGBOOK
+                </ButtonWood>
+              </div>
             </div>
+          ) : (
+            <div className="py-12 text-center space-y-3">
+              <div className="w-16 h-16 mx-auto rounded-full bg-abyss border border-sailor/50 flex items-center justify-center text-3xl animate-bounce">
+                🎖️
+              </div>
+              <h3 className="font-heading text-lg font-bold text-parchment-bright uppercase tracking-wider">
+                Lieutenant is Adding to the Logbook
+              </h3>
+              <p className="text-xs text-parchment-dim max-w-md mx-auto">
+                Lieutenant <strong className="text-sailor-glow">{lieutenant?.nickname}</strong> is selecting the second card to complete the Logbook box.
+              </p>
+            </div>
+          )}
+        </CardParchment>
+      )}
+
+      {/* --------------------------------------------------------------------
+          VIEW 3: NAVIGATOR DECISION PHASE
+          -------------------------------------------------------------------- */}
+      {currentPhase === 'NAVIGATION_NAVIGATOR_DECISION' && (
+        <CardParchment stains={true} className="p-6 md:p-8 space-y-6">
+          {isNavigator ? (
+            <div className="space-y-6">
+              <div className="text-center max-w-xl mx-auto space-y-1.5">
+                <span className="inline-block px-3 py-0.5 bg-verdigris/20 border border-verdigris/40 text-verdigris-glow text-[10px] font-heading font-bold rounded uppercase tracking-widest">
+                  Navigator's Helm Decision
+                </span>
+                <h3 className="font-heading text-xl sm:text-2xl font-black text-parchment-bright uppercase">
+                  Steer the Ship or Jump Overboard
+                </h3>
+                <p className="text-xs sm:text-sm text-parchment-dim leading-relaxed">
+                  Below are the 2 sealed cards from the Captain and Lieutenant (shuffled randomly). Choose 1 to steer the vessel, or <span className="text-blood font-bold">Jump Overboard</span> in defiance.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                {activeCards.map((card, idx) => {
+                  const badge = getCardBadge(card.direction || card.color);
+                  const actionInfo = getActionDescription(card.action);
+                  const isSelected = selectedCardId === card.id;
+
+                  return (
+                    <div
+                      key={card.id || idx}
+                      id={`card-navigator-${card.id || idx}`}
+                      onClick={() => setSelectedCardId(card.id)}
+                      className={`cursor-pointer transition-all duration-300 transform ${
+                        isSelected ? 'scale-105' : 'hover:scale-102 opacity-85 hover:opacity-100'
+                      }`}
+                    >
+                      <CardParchment
+                        active={isSelected}
+                        faction={badge.faction}
+                        className="p-5 text-center space-y-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-heading font-bold border ${badge.bg}`}>
+                            {badge.icon} {badge.label}
+                          </span>
+                          <span className="font-mono text-[10px] text-parchment-dim">Logbook Card #{idx + 1}</span>
+                        </div>
+
+                        <div className="py-3">
+                          <div className="text-4xl mb-2">{badge.icon}</div>
+                          <div className="font-heading font-bold text-base text-parchment-bright">{actionInfo.title}</div>
+                          <p className="text-xs text-parchment-dim font-body mt-1 leading-relaxed">{actionInfo.desc}</p>
+                        </div>
+
+                        <div className="pt-2 border-t border-gold-dim/20 text-xs font-heading font-bold">
+                          <span className={isSelected ? 'text-verdigris-glow' : 'text-parchment-dim/60'}>
+                            {isSelected ? '✓ CHOSEN STEERING COURSE' : 'Discarded'}
+                          </span>
+                        </div>
+                      </CardParchment>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <ButtonWood
+                  variant="gold"
+                  size="lg"
+                  disabled={!selectedCardId}
+                  onClick={() => selectedCardId && onNavigatorSelectCard && onNavigatorSelectCard(selectedCardId)}
+                  icon={<Compass size={18} />}
+                >
+                  EXECUTE COURSE
+                </ButtonWood>
+
+                <ButtonWood
+                  variant="danger"
+                  size="md"
+                  onClick={() => setShowOverboardConfirm(true)}
+                  icon={<Skull size={16} />}
+                >
+                  JUMP OVERBOARD
+                </ButtonWood>
+              </div>
+
+              {/* Overboard Confirmation Modal */}
+              {showOverboardConfirm && (
+                <div className="fixed inset-0 bg-abyss/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <PanelWood glow="none" nails={true} className="max-w-md w-full text-center p-6 space-y-4 border-blood">
+                    <div className="text-4xl">🌊 🦈</div>
+                    <h3 className="font-heading text-lg sm:text-xl font-bold text-blood uppercase tracking-wider">
+                      Are You Certain You Want to Jump Overboard?
+                    </h3>
+                    <p className="text-xs text-parchment-dim leading-relaxed">
+                      This action will <strong className="text-blood font-bold">ELIMINATE YOU FROM THE VOYAGE</strong>. You will lose all guns and both cards in the Logbook will be discarded facedown.
+                    </p>
+                    <div className="flex items-center justify-center gap-3 pt-2">
+                      <ButtonWood variant="secondary" size="sm" onClick={() => setShowOverboardConfirm(false)}>
+                        Cancel
+                      </ButtonWood>
+                      <ButtonWood
+                        variant="danger"
+                        size="sm"
+                        onClick={() => onNavigatorJumpOverboard && onNavigatorJumpOverboard()}
+                      >
+                        CONFIRM JUMP
+                      </ButtonWood>
+                    </div>
+                  </PanelWood>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-12 text-center space-y-3">
+              <div className="w-16 h-16 mx-auto rounded-full bg-abyss border border-verdigris/50 flex items-center justify-center text-3xl animate-bounce">
+                🧭
+              </div>
+              <h3 className="font-heading text-lg font-bold text-parchment-bright uppercase tracking-wider">
+                Navigator is Deciding the Ship's Destiny
+              </h3>
+              <p className="text-xs text-parchment-dim max-w-md mx-auto">
+                Navigator <strong className="text-verdigris-glow">{navigator?.nickname}</strong> is opening the sealed Logbook to choose the final route.
+              </p>
+            </div>
+          )}
+        </CardParchment>
+      )}
+
+      {/* --------------------------------------------------------------------
+          VIEW 4: EMERGENCY NAVIGATOR SELECTION
+          -------------------------------------------------------------------- */}
+      {currentPhase === 'EMERGENCY_NAVIGATOR_SELECTION' && (
+        <CardParchment stains={true} className="p-6 md:p-8 space-y-6 border-blood">
+          <div className="text-center max-w-xl mx-auto space-y-1.5">
+            <span className="inline-block px-3 py-0.5 bg-blood/20 border border-blood/50 text-blood text-[10px] font-heading font-bold rounded uppercase tracking-widest animate-pulse">
+              🚨 Emergency on Deck
+            </span>
+            <h3 className="font-heading text-xl sm:text-2xl font-black text-parchment-bright uppercase">
+              Navigator Jumped Overboard!
+            </h3>
+            <p className="text-xs sm:text-sm text-parchment-dim leading-relaxed">
+              The previous Navigator has cast themselves into the sea. The Captain must immediately appoint an <strong className="text-blood">Emergency Navigator</strong> from the remaining sailors.
+            </p>
           </div>
-        )}
-      </div>
+
+          {isCaptain ? (
+            <div className="space-y-4 max-w-xl mx-auto">
+              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-parchment-dim">
+                Select a Sailor as Emergency Navigator:
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {eligibleEmergencyCandidates.map((cand) => {
+                  const isSelected = selectedEmergencyCandidateId === cand.id;
+                  const isOffDuty = cand.status === 'OFF_DUTY';
+
+                  return (
+                    <PanelWood
+                      key={cand.id}
+                      onClick={() => setSelectedEmergencyCandidateId(cand.id)}
+                      glow={isSelected ? 'firelight' : 'none'}
+                      variant={isSelected ? 'raised' : 'default'}
+                      className={`p-3 cursor-pointer flex items-center gap-3 border ${
+                        isSelected ? 'border-gold' : 'border-hull-light hover:border-gold-dim'
+                      }`}
+                    >
+                      <span className="text-2xl">{cand.avatar || '🧑‍✈️'}</span>
+                      <div className="min-w-0">
+                        <div className="font-heading font-bold text-xs text-parchment-bright truncate">{cand.nickname}</div>
+                        <div className="text-[10px] text-parchment-dim">
+                          Guns: {cand.gunCount} 🔫 {isOffDuty && '(Off-duty)'}
+                        </div>
+                      </div>
+                    </PanelWood>
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-center pt-2">
+                <ButtonWood
+                  variant="gold"
+                  size="lg"
+                  disabled={!selectedEmergencyCandidateId}
+                  onClick={() => selectedEmergencyCandidateId && onAppointEmergencyNavigator && onAppointEmergencyNavigator(selectedEmergencyCandidateId)}
+                  icon={<AlertTriangle size={18} />}
+                >
+                  APPOINT EMERGENCY NAVIGATOR
+                </ButtonWood>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center space-y-2">
+              <div className="text-3xl">👑</div>
+              <h4 className="font-heading font-bold text-base text-parchment-bright uppercase">
+                Awaiting Captain's Emergency Appointment
+              </h4>
+              <p className="text-xs text-parchment-dim">
+                Captain <strong className="text-gold-bright">{captain?.nickname}</strong> is choosing a new Navigator from the crew.
+              </p>
+            </div>
+          )}
+        </CardParchment>
+      )}
+
+      {/* --------------------------------------------------------------------
+          VIEW 5: EXECUTE ACTIONS PHASE
+          -------------------------------------------------------------------- */}
+      {currentPhase === 'EXECUTE_ACTIONS' && room?.executedNavigationCard && (
+        <CardParchment stains={true} className="p-6 md:p-8 space-y-6 text-center border-gold">
+          <span className="inline-block px-3 py-0.5 bg-hull border border-gold-dim text-gold-bright text-[10px] font-heading font-bold rounded uppercase tracking-widest">
+            Executed Sea Route
+          </span>
+          <h3 className="font-heading text-2xl sm:text-3xl font-black text-parchment-bright uppercase">
+            The Vessel Surges Forward!
+          </h3>
+
+          <div className="max-w-sm mx-auto">
+            {(() => {
+              const card = room.executedNavigationCard;
+              const badge = getCardBadge(card.direction || card.color);
+              const actionInfo = getActionDescription(card.action);
+
+              return (
+                <CardParchment faction={badge.faction} className="p-6 text-center space-y-4">
+                  <span className={`px-2.5 py-0.5 rounded text-[10px] font-heading font-bold border ${badge.bg}`}>
+                    {badge.icon} {badge.label}
+                  </span>
+                  <div className="py-2">
+                    <div className="text-5xl mb-2 animate-ship-bob">{badge.icon}</div>
+                    <div className="font-heading font-bold text-lg text-parchment-bright">{actionInfo.title}</div>
+                    <p className="text-xs text-parchment-dim font-body mt-1 leading-relaxed">{actionInfo.desc}</p>
+                  </div>
+                </CardParchment>
+              );
+            })()}
+          </div>
+        </CardParchment>
+      )}
+
     </div>
   );
 };

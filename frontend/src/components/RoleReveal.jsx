@@ -1,57 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Skull, Eye, EyeOff, Flame, Clock, Users, Anchor } from 'lucide-react';
+import { Shield, Skull, Eye, EyeOff, Flame, Clock, Anchor, Sparkles } from 'lucide-react';
+import CardParchment from './ui/CardParchment';
+import PanelWood from './ui/PanelWood';
 
-const FACTION_DETAILS = {
+const FACTION_CONFIG = {
   SAILOR: {
-    name: 'THỦY THỦ (SAILOR)',
-    color: 'from-blue-600 to-cyan-500',
-    border: 'border-blue-500/50',
-    glow: 'shadow-blue-500/20',
+    title: 'SAILOR',
+    subtitle: 'Loyal Crew of the Crown',
+    colorText: 'text-sailor-glow',
+    colorBorder: 'border-sailor',
+    glowClass: 'shadow-[0_0_25px_rgba(74,122,140,0.4)]',
     icon: Anchor,
-    tagline: 'Phe Trung Thành & Công Lý',
-    goal: 'Lái con tàu cập bến an toàn tại vịnh Bluewater Bay (Hướng Xanh Dương) hoặc tiêu diệt toàn bộ Hải tặc & Giáo phái.',
-    tips: 'Hãy cẩn trọng khi chọn Thuyền phó và Hoa tiêu. Đừng để Hải tặc kiểm soát bánh lái!'
+    badgeBg: 'bg-sailor/20 text-sailor-glow border-sailor/40',
+    goal: 'Steer the vessel safely to Bluewater Bay (Blue Harbor) or exterminate all Pirates and Cultists.',
+    tips: 'Watch who you appoint as Lieutenant and Navigator. Never let Pirates seize the helm.'
   },
   PIRATE: {
-    name: 'HẢI TẶC (PIRATE)',
-    color: 'from-red-600 to-rose-700',
-    border: 'border-red-500/50',
-    glow: 'shadow-red-500/30',
+    title: 'PIRATE',
+    subtitle: 'Brotherhood of the Black Flag',
+    colorText: 'text-pirate-glow',
+    colorBorder: 'border-pirate',
+    glowClass: 'shadow-[0_0_25px_rgba(168,59,42,0.45)]',
     icon: Skull,
-    tagline: 'Phe Cướp Biển & Nổi Loạn',
-    goal: 'Đánh cướp con tàu và điều hướng thẳng vào hang ổ Crimson Cove (Hướng Đỏ) để chia kho báu.',
-    tips: 'Phối hợp ngầm với đồng bọn! Sử dụng súng để Bạo Loạn (Mutiny) lật đổ Thuyền trưởng khi cần.'
+    badgeBg: 'bg-pirate/20 text-pirate-glow border-pirate/40',
+    goal: 'Hijack the vessel and steer directly into the fiery haven of Crimson Cove (Red Route) to divide the treasure.',
+    tips: 'Conspire with your mates in secret. Wield your flintlocks to launch a Mutiny against the Captain when the time is right.'
   },
   CULT_LEADER: {
-    name: 'GIÁO CHỦ (CULT LEADER)',
-    color: 'from-amber-500 to-yellow-600',
-    border: 'border-yellow-500/50',
-    glow: 'shadow-yellow-500/30',
+    title: 'CULT LEADER',
+    subtitle: 'High Priest of the Deep',
+    colorText: 'text-gold-bright',
+    colorBorder: 'border-gold',
+    glowClass: 'shadow-[0_0_30px_rgba(201,168,76,0.5)]',
     icon: Flame,
-    tagline: 'Lãnh Đạo Giáo Phái Kraken',
-    goal: 'Dụ dỗ con tàu vào sào huyệt của Thần Quái Vật Kraken (Hướng Vàng) HOẶC bị Thuyền trưởng ném cho Kraken ăn!',
-    tips: 'Sử dụng các thẻ Nghi Thức (Cult Rituals) để thu nạp thêm Giáo Đồ (Cultist) bí mật vào phe mình.'
+    badgeBg: 'bg-gold/20 text-gold-bright border-gold/40',
+    goal: 'Lure the vessel into the gaping maw of the Kraken Sanctuary (Yellow Route) OR get fed to the Kraken by the Captain!',
+    tips: 'Perform sacred Cult Rituals during sea events to secretly convert crew members into devout Cultists.'
   },
   CULTIST: {
-    name: 'GIÁO ĐỒ (CULTIST)',
-    color: 'from-purple-600 to-indigo-600',
-    border: 'border-purple-500/50',
-    glow: 'shadow-purple-500/30',
+    title: 'CULTIST',
+    subtitle: 'Devout Acolyte of the Abyss',
+    colorText: 'text-cult-glow',
+    colorBorder: 'border-cult',
+    glowClass: 'shadow-eldritch',
     icon: Eye,
-    tagline: 'Tín Đồ Tận Tụy',
-    goal: 'Phụng sự Giáo Chủ và hướng con tàu về phía Thần Bạch Tuộc Kraken.',
-    tips: 'Bảo vệ Giáo Chủ và tạo cơ hội để ngài thực hiện nghi thức tế thần.'
+    badgeBg: 'bg-cult/20 text-cult-glow border-cult/40',
+    goal: 'Serve the Cult Leader and sacrifice the ship to the Ancient Kraken in the deep abyss.',
+    tips: 'Protect your Cult Leader at all costs and assist their ascendancy without revealing your faith.'
   }
 };
 
 const RoleReveal = ({ room, myRole, currentUserId }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
   const [timeLeft, setTimeLeft] = useState(20);
-  const faction = FACTION_DETAILS[myRole] || FACTION_DETAILS.SAILOR;
+
+  const faction = FACTION_CONFIG[myRole] || FACTION_CONFIG.SAILOR;
   const Icon = faction.icon;
   const isPirate = myRole === 'PIRATE';
+  const isNightGathering = room?.gamePhase === 'PIRATES_GATHERING';
   const knownPirates = room?.knownPirates || [];
 
-  // Đồng bộ đếm ngược theo deadline từ server
+  // Countdown synchronization with server phase deadline
   useEffect(() => {
     if (!room?.phaseDeadline) return;
 
@@ -67,120 +76,190 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
   }, [room?.phaseDeadline]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
-      {/* Background ambient lighting */}
-      <div className={`absolute -top-40 -left-40 w-96 h-96 bg-gradient-to-br ${faction.color} opacity-20 blur-3xl rounded-full pointer-events-none`}></div>
-      <div className={`absolute -bottom-40 -right-40 w-96 h-96 bg-gradient-to-br ${faction.color} opacity-20 blur-3xl rounded-full pointer-events-none`}></div>
-
-      {/* Top Countdown Banner */}
-      <div className="z-10 mb-6 flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 shadow-xl">
-        <Clock className="text-yellow-400 animate-spin" style={{ animationDuration: '4s' }} size={20} />
-        <span className="font-semibold text-slate-300">GIAI ĐOẠN ĐÊM ĐẦU TIÊN:</span>
-        <span className={`font-mono text-2xl font-black ${timeLeft <= 5 ? 'text-red-400 animate-ping' : 'text-yellow-400'}`}>
+    <div className="w-full flex flex-col items-center justify-center p-4 py-8 relative select-none">
+      
+      {/* ====================================================================
+          Top Countdown Banner (Circular Ember Clock)
+          ==================================================================== */}
+      <div className="z-20 mb-6 flex items-center gap-3 px-5 py-2 bg-hull-dark/90 border border-gold-dim/40 rounded-full shadow-firelight animate-fade-in-up">
+        <Clock className="text-gold animate-spin" style={{ animationDuration: '6s' }} size={16} />
+        <span className="font-heading text-xs uppercase tracking-widest text-parchment-dim">
+          First Night Phase:
+        </span>
+        <span className={`font-mono text-lg font-black ${timeLeft <= 5 ? 'text-blood animate-ping' : 'text-gold-bright'}`}>
           {timeLeft}s
         </span>
       </div>
 
-      {/* Main Container */}
-      <div className="z-10 max-w-2xl w-full space-y-6">
-        
-        {/* Role Identity Card */}
-        <div className={`bg-slate-900/80 backdrop-blur-xl border ${faction.border} rounded-3xl p-6 sm:p-8 shadow-2xl ${faction.glow} transition duration-500`}>
-          <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-6">
-            <div className="flex items-center gap-4">
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${faction.color} flex items-center justify-center shadow-lg`}>
-                <Icon size={32} className="text-white" />
-              </div>
-              <div>
-                <span className="text-xs uppercase tracking-widest text-slate-400 font-bold">VAI TRÒ BÍ MẬT CỦA BẠN</span>
-                <h1 className={`text-2xl sm:text-3xl font-black bg-gradient-to-r ${faction.color} bg-clip-text text-transparent`}>
-                  {faction.name}
-                </h1>
-              </div>
-            </div>
-            <div className="text-right">
-              <span className="text-xs text-slate-400">Trang bị</span>
-              <div className="text-lg font-bold text-amber-400 flex items-center gap-1 justify-end">
-                🔫 3 Súng
-              </div>
-            </div>
-          </div>
+      <div className="z-20 max-w-xl w-full space-y-6">
 
-          {/* Goal & Mission */}
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-2">
-                <Shield size={16} className="text-blue-400" /> Nhiệm vụ phe
-              </h3>
-              <p className="text-slate-300 bg-white/5 p-4 rounded-xl border border-white/5 text-sm leading-relaxed">
-                {faction.goal}
-              </p>
+        {/* ====================================================================
+            Tarot 3D Flip Card Container
+            ==================================================================== */}
+        <div className="perspective-1000 w-full max-w-sm mx-auto h-[460px] sm:h-[480px]">
+          <div
+            onClick={() => setIsFlipped(!isFlipped)}
+            className={`w-full h-full relative cursor-pointer transform-style-3d transition-transform duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+              isFlipped ? 'rotate-y-180' : ''
+            }`}
+          >
+            {/* --------------------------------------------------------------
+                CARD BACK: Dark Leather with Gold Kraken Line Art
+                -------------------------------------------------------------- */}
+            <div className="absolute inset-0 w-full h-full backface-hidden rounded border-2 border-gold-dim bg-gradient-to-b from-[#2A2118] via-[#1A1510] to-[#0A0A08] shadow-2xl p-6 flex flex-col items-center justify-between overflow-hidden">
+              {/* Inner Decorative Golden Border */}
+              <div className="absolute inset-2 border border-gold-dim/30 rounded pointer-events-none" />
+
+              {/* Top Header */}
+              <div className="text-center pt-2">
+                <span className="font-heading text-[10px] uppercase tracking-[0.25em] text-gold-dim">
+                  Vessel Identity Card
+                </span>
+                <h3 className="font-display text-2xl text-gold-bright mt-0.5">
+                  Feed The Kraken
+                </h3>
+              </div>
+
+              {/* Center Emblem: Kraken Silhouette Line Art */}
+              <div className="relative w-36 h-36 flex items-center justify-center my-auto">
+                <div className="absolute inset-0 rounded-full border border-gold-dim/20 animate-spin" style={{ animationDuration: '20s' }} />
+                <div className="w-28 h-28 rounded-full bg-abyss border border-gold-dim/40 flex items-center justify-center shadow-inner">
+                  <Skull className="w-14 h-14 text-gold/60 animate-ship-bob" strokeWidth={1.2} />
+                </div>
+              </div>
+
+              {/* Bottom Instruction */}
+              <div className="text-center pb-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-hull rounded border border-gold-dim/40 text-xs font-heading text-parchment-bright tracking-wider animate-pulse">
+                  <Sparkles size={12} className="text-gold" />
+                  Tap Card to Reveal Role
+                </div>
+                <p className="text-[10px] text-parchment-dim/60 font-body italic mt-1.5">
+                  Keep your true faction hidden from prying eyes
+                </p>
+              </div>
             </div>
 
-            <div>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
-                💡 Lời khuyên
-              </h3>
-              <p className="text-xs text-slate-400 italic">
-                {faction.tips}
-              </p>
+            {/* --------------------------------------------------------------
+                CARD FRONT: Aged Parchment Role Face
+                -------------------------------------------------------------- */}
+            <div className={`absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded border-2 ${faction.colorBorder} ${faction.glowClass} bg-gradient-to-b from-[#3D3228] via-[#2A2118] to-[#1A1510] shadow-2xl p-5 sm:p-6 flex flex-col justify-between overflow-hidden`}>
+              {/* Inner Gold Foil Hairline */}
+              <div className="absolute inset-2 border border-gold-dim/30 rounded pointer-events-none" />
+
+              {/* Role Header */}
+              <div className="text-center border-b border-gold-dim/30 pb-3">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <div className={`p-2 rounded bg-abyss border border-gold-dim/40 shadow-inner`}>
+                    <Icon size={24} className={faction.colorText} strokeWidth={1.8} />
+                  </div>
+                </div>
+                <h2 className={`font-heading text-2xl sm:text-3xl font-black uppercase tracking-wider ${faction.colorText}`}>
+                  {faction.title}
+                </h2>
+                <p className="font-heading text-[11px] text-parchment-dim tracking-widest uppercase">
+                  {faction.subtitle}
+                </p>
+              </div>
+
+              {/* Win Goal on Aged Parchment Box */}
+              <div className="my-auto space-y-2.5">
+                <div className="bg-abyss/85 p-3.5 rounded border border-hull-light text-left shadow-inner">
+                  <div className="flex items-center gap-1.5 font-heading text-xs font-bold text-parchment-bright uppercase tracking-wider mb-1">
+                    <Shield size={13} className="text-gold" />
+                    Faction Victory Condition
+                  </div>
+                  <p className="text-xs text-parchment font-body leading-relaxed">
+                    {faction.goal}
+                  </p>
+                </div>
+
+                <div className="p-2.5 bg-hull-dark/90 rounded border border-gold-dim/20 text-left">
+                  <span className="font-heading text-[10px] uppercase tracking-wider text-parchment-dim block mb-0.5">
+                    💡 Secret Advice:
+                  </span>
+                  <p className="text-[11px] text-parchment-dim italic font-body">
+                    {faction.tips}
+                  </p>
+                </div>
+              </div>
+
+              {/* Bottom Card Footer */}
+              <div className="text-center border-t border-gold-dim/20 pt-2.5 flex items-center justify-between text-xs font-heading">
+                <span className="text-parchment-dim text-[11px]">Equipped: 🔫 3 Flintlocks</span>
+                <span className="text-gold-dim text-[10px] uppercase tracking-wider underline cursor-pointer">
+                  Tap to flip
+                </span>
+              </div>
             </div>
+
           </div>
         </div>
 
-        {/* Night Phase Actions Area */}
-        {isPirate ? (
-          /* Pirate Gathering Screen */
-          <div className="bg-red-950/40 backdrop-blur-md border border-red-500/30 rounded-3xl p-6 shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <Skull className="text-red-400 animate-bounce" size={24} />
+        {/* ====================================================================
+            Night Phase Gathering / Eyes Closed Veil Area
+            ==================================================================== */}
+        {isNightGathering && isPirate ? (
+          /* Pirate Secret Gathering Roster */
+          <PanelWood glow="none" nails={true} className="border-pirate/50 p-5 space-y-4 animate-fade-in-up">
+            <div className="flex items-center gap-2.5 border-b border-pirate/30 pb-3">
+              <Skull className="text-pirate-glow animate-pulse" size={22} />
               <div>
-                <h2 className="text-xl font-bold text-red-200">HẢI TẶC HỘI TỤ (PIRATES GATHERING)</h2>
-                <p className="text-xs text-red-300/80">Bạn và các đồng bọn dưới đây là những người thuộc phe Hải tặc:</p>
+                <h3 className="font-heading font-bold text-base text-pirate-glow tracking-wider uppercase">
+                  Pirates Gathering (Hải Tặc Hội Tụ)
+                </h3>
+                <p className="text-xs text-parchment-dim">
+                  Your fellow pirates aboard this vessel are:
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
-              {knownPirates.map((pirate) => (
-                <div 
-                  key={pirate.id} 
-                  className={`flex items-center gap-3 p-3 rounded-xl border ${
-                    pirate.id === currentUserId 
-                      ? 'bg-red-500/20 border-red-500/60 shadow-lg shadow-red-500/10' 
-                      : 'bg-black/40 border-red-500/20'
-                  }`}
-                >
-                  <div className="text-2xl w-10 h-10 rounded-full bg-red-900/40 flex items-center justify-center border border-red-500/30">
-                    {pirate.avatar || '🏴‍☠️'}
-                  </div>
-                  <div className="overflow-hidden">
-                    <div className="font-bold text-sm text-red-100 truncate flex items-center gap-1">
-                      {pirate.nickname || pirate.name}
-                      {pirate.id === currentUserId && <span className="text-[10px] bg-red-500 text-white px-1 rounded">Bạn</span>}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {knownPirates.map((pirate) => {
+                const isMe = pirate.id === currentUserId;
+                return (
+                  <div
+                    key={pirate.id}
+                    className={`flex items-center gap-2.5 p-2.5 rounded border ${
+                      isMe
+                        ? 'bg-pirate/20 border-pirate shadow-[0_0_10px_rgba(168,59,42,0.3)]'
+                        : 'bg-abyss/80 border-hull-light'
+                    }`}
+                  >
+                    <div className="text-xl w-8 h-8 rounded bg-hull flex items-center justify-center border border-gold-dim/30 shrink-0">
+                      {pirate.avatar || '🏴‍☠️'}
                     </div>
-                    <span className="text-[11px] text-red-400">Đồng bọn Hải tặc</span>
+                    <div className="overflow-hidden min-w-0">
+                      <div className="font-heading font-bold text-xs text-parchment-bright truncate flex items-center gap-1">
+                        <span className="truncate">{pirate.nickname || pirate.name}</span>
+                        {isMe && <span className="text-[9px] text-gold">(You)</span>}
+                      </div>
+                      <span className="text-[10px] text-pirate-glow font-body">Brotherhood</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </div>
-        ) : (
-          /* Non-Pirate Eyes Closed Overlay */
-          <div className="bg-slate-900/60 backdrop-blur-md border border-white/5 rounded-3xl p-8 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-slate-400 animate-pulse">
-              <EyeOff size={32} />
+          </PanelWood>
+        ) : isNightGathering && !isPirate ? (
+          /* Non-Pirate Veil: Eyes Closed Screen */
+          <CardParchment stains={true} className="text-center p-6 space-y-3 animate-fade-in-up border-hull-light">
+            <div className="w-12 h-12 mx-auto rounded-full bg-abyss border border-hull-light flex items-center justify-center text-parchment-dim">
+              <EyeOff size={24} className="animate-pulse" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-200">TẤT CẢ ĐANG NHẮM MẮT... 🌙</h2>
-              <p className="text-slate-400 text-sm mt-1 max-w-md mx-auto">
-                Bóng đêm bao trùm con tàu. Các Hải tặc đang bí mật nhận diện đồng bọn. Hãy giữ im lặng tuyệt đối cho đến khi trời sáng!
+              <h3 className="font-heading font-bold text-base text-parchment-bright uppercase tracking-wider">
+                All Eyes Closed in the Dark... 🌙
+              </h3>
+              <p className="text-xs text-parchment-dim max-w-md mx-auto mt-1 leading-relaxed">
+                Total darkness descends upon the sea. Pirates are secretly identifying their brethren. Maintain absolute silence until dawn arrives.
               </p>
             </div>
-            <div className="text-xs text-slate-500 font-mono">
-              Trời sẽ sáng tự động sau {timeLeft} giây
+            <div className="text-[11px] text-gold font-heading tracking-widest uppercase">
+              Dawn will break automatically in {timeLeft} seconds
             </div>
-          </div>
-        )}
+          </CardParchment>
+        ) : null}
 
       </div>
     </div>

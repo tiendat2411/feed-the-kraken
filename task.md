@@ -180,12 +180,12 @@
 
 **Purpose**: Nâng cấp toàn bộ component game: thẻ bài, bỏ phiếu, lái tàu, bản đồ, kết thúc.
 
-- [ ] T062 [BR-007] Revamp `RoleReveal.jsx`: Thẻ tarot cổ (mặt sau da dê tối + xúc tu Kraken vàng + viền vàng gỉ; mặt trước biểu tượng phe + tên Cinzel + điều kiện thắng trên card-parchment), 3D flip 600ms + ánh lửa hắt. Night overlay: đen kịt + mắt Kraken tím eldritch-pulse + đếm ngược ember vòng tròn.
-- [ ] T063 [BR-007] Revamp `MutinyBoard.jsx`: Bàn gỗ mục texture, đồng tiền vàng cổ / flintlock SVG, rương gỗ bản lề gỉ cho khay cược, screen shake gunShake khi công bố, xếp hạng súng + vương miện vàng đồng gỉ trao tay.
-- [ ] T064 [BR-007] Revamp `NavigationPhase.jsx`: Bàn gỗ mục, 3 thẻ bài da dê cổ mực phai (Blue sailor, Red pirate, Yellow cult kiểu bột màu), chọn = viền vàng + firelight glow, loại = mờ + trượt. Giữ nguyên logic Captain/Lieutenant/Navigator.
-- [ ] T065 [BR-007] Revamp `MapBoardUI.jsx`: Nền hải đồ da dê cổ (gradient parchment-dim, vệt ố, mép rêu moss-dim), đường mực lông vũ SVG nét run, ô sự kiện biểu tượng SVG + popover (nền hull, viền gold-dim), tàu buồm gỗ tối shipBob, 3 vùng đích màu đặc trưng (Sailor Cove verdigris, Crimson Cove pirate, Kraken Sanctuary cult).
-- [ ] T066 [BR-007] Revamp `EndGame.jsx`: Banner phe thắng hoành tráng (Sailor = bình minh ấm, Pirate = lửa đỏ Jolly Roger, Cult = xúc tu tím bùng nổ), lật mở đồng loạt vai trò trên bàn gỗ mục (card flip), nút quay lại/rời phòng ButtonWood.
-- [ ] T067 [BR-007] Verification & Polish: Kiểm tra nhất quán Design System trên mọi màn hình, responsive 375px-1920px+ zero overflow, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast. Chạy `npm run build` xác nhận không lỗi.
+- [x] T062 [BR-007] Revamp `RoleReveal.jsx`: Thẻ tarot cổ (mặt sau da dê tối + xúc tu Kraken vàng + viền vàng gỉ; mặt trước biểu tượng phe + tên Cinzel + điều kiện thắng trên card-parchment), 3D flip 600ms + ánh lửa hắt. Night overlay: đen kịt + mắt Kraken tím eldritch-pulse + đếm ngược ember vòng tròn.
+- [x] T063 [BR-007] Revamp `MutinyBoard.jsx`: Bàn gỗ mục texture, đồng tiền vàng cổ / flintlock SVG, rương gỗ bản lề gỉ cho khay cược, screen shake gunShake khi công bố, xếp hạng súng + vương miện vàng đồng gỉ trao tay.
+- [x] T064 [BR-007] Revamp `NavigationPhase.jsx`: Bàn gỗ mục, 3 thẻ bài da dê cổ mực phai (Blue sailor, Red pirate, Yellow cult kiểu bột màu), chọn = viền vàng + firelight glow, loại = mờ + trượt. Giữ nguyên logic Captain/Lieutenant/Navigator.
+- [x] T065 [BR-007] Revamp `MapBoardUI.jsx`: Nền hải đồ da dê cổ (gradient parchment-dim, vệt ố, mép rêu moss-dim), đường mực lông vũ SVG nét run, ô sự kiện biểu tượng SVG + popover (nền hull, viền gold-dim), tàu buồm gỗ tối shipBob, 3 vùng đích màu đặc trưng (Sailor Cove verdigris, Crimson Cove pirate, Kraken Sanctuary cult).
+- [x] T066 [BR-007] Revamp `EndGame.jsx`: Banner phe thắng hoành tráng (Sailor = bình minh ấm, Pirate = lửa đỏ Jolly Roger, Cult = xúc tu tím bùng nổ), lật mở đồng loạt vai trò trên bàn gỗ mục (card flip), nút quay lại/rời phòng ButtonWood.
+- [x] T067 [BR-007] Verification & Polish: Kiểm tra nhất quán Design System trên mọi màn hình, responsive 375px-1920px+ zero overflow, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast. Chạy `npm run build` xác nhận không lỗi.
 
 **Checkpoint**: Toàn bộ Frontend mang phong cách "Eldritch Parchment" nhất quán. Game có thể chơi trọn vẹn với giao diện mới từ Home → EndGame.
 
