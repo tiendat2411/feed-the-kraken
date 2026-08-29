@@ -30,21 +30,25 @@ Toàn bộ dự án sử dụng duy nhất font Gothic hải tặc **`'Pirata On
 - **Không bao giờ phẳng lì:** Mọi panel, card, input và modal phải có texture bề mặt (thớ gỗ mục `.panel-wood`, da dê cổ sần sùi `.card-parchment`, vệt ố `.aged-stain`, đinh sắt gỉ).
 - **Corner Radius:** Sử dụng góc sắc/thô (`rounded` 4px hoặc `rounded-sm` 2px). Nút bấm tối đa `rounded-md` (6px).
 
-### 2.4 Chuyển Động & Hiệu Ứng (Motion & Effects)
-- Chuyển động phải nặng nề, chậm rãi, có trọng lượng (như tàu dập dềnh `shipBob`, lật thẻ 3D `600ms`, rung nổ súng `gunShake`, lửa chập chờn `candleFlicker`).
-- Tuân thủ khả năng tiếp cận (`prefers-reduced-motion` phải tắt các hoạt cảnh rung lắc hoặc 3D phức tạp).
+### 2.5 Đồng Bộ Phong Cách Nghệ Thuật Asset Tuyệt Đối (Mandatory Asset Art Style Consistency)
+- **Hệ Quy Chiếu Đồng Bộ 100%:** Mọi Asset đồ họa (hình nền, sprite, texture, khung viền, phiến gỗ, thẻ giấy da, avatar, icon, nút bấm) khi được khởi tạo hoặc cập nhật cho dự án **BẮT BUỘC PHẢI ĐỒNG BỘ 100% ART STYLE** với các asset đã được chuẩn hóa và đang có sẵn trong dự án:
+  - **Nét vẽ (Inking Style):** Nét mực đen gothic đậm chất phác thảo tay, kỹ thuật đánh bóng gạch chéo tỉ mỉ (*hand-drawn dark ink crosshatching*), viền rách mép tự nhiên theo phong cách *Don't Starve Together*.
+  - **Chất liệu & Bề mặt (Materials):** Gỗ sồi phong hóa màu nâu ấm chạm khắc tinh xảo (`crew_plate_wood.png`, `wood_panel_clean.png`), kim loại đồng cổ đúc viền bọc góc rêu xanh verdigris (`wood_header_bar.png`), và giấy da dê cổ ố vàng đóng đinh sắt (`parchment_sheet_clean.png`, `parchment_nailed_plate.png`).
+  - **NGHIÊM CẤM LỆCH STYLE:** Tuyệt đối không cho phép tạo hoặc sử dụng các asset mới có art style bị lệch khỏi hệ thống (như phong cách 3D CGI bóng bẩy, flat vector hiện đại, pixel art, anime, phong cách tả thực rực rỡ, hoặc các texture gỗ/kim loại có màu sắc và chất liệu không ăn nhập với các asset hiện hữu).
+  - **Quy tắc Kiểm tra Đối chiếu (Pre-Asset Audit):** Trước khi đưa bất kỳ asset mới nào vào mã nguồn, AI bắt buộc phải đối chiếu trực quan với các asset mẫu có sẵn (`crew_plate_wood.png`, `button_helm_gold.png`, `parchment_sheet_clean.png`, `icon_kick_skull.png`) để đảm bảo tính đồng nhất 100% về độ tương phản, ánh sáng, nét vẽ và bảng màu.
 
 ---
 
 ## 3. Danh Sách Nghiêm Cấm Tuyệt Đối (Strict DON'Ts)
 
 1. ❌ **CẤM Tự ý code giao diện khi chưa có Mockup (Track B) hoặc Bản đề xuất Token (Track A) được User duyệt và chốt.**
-2. ❌ **CẤM Chỉ dùng CSS thuần (border, box-shadow) để giả lập chất liệu hữu cơ (mép giấy rách, vân gỗ nứt, ngọn nến) mà không qua Asset Generation.**
-3. ❌ **CẤM Sử dụng asset có viền/hộp nền đen hoặc trắng chưa tách phông (non-transparent assets)** — Bắt buộc phải qua bước tách phông thành file PNG trong suốt (`scripts/remove_background.py`) trước khi nạp vào giao diện.
-4. ❌ **CẤM Glassmorphism / Backdrop-blur bóng bẩy kiểu Apple / Linear.**
-5. ❌ **CẤM Màu Gradient Neon AI mặc định (tím xanh rực rỡ).**
-6. ❌ **CẤM Góc bo tròn lớn (`rounded-2xl`, `rounded-3xl`, `rounded-full` cho card/panel).**
-7. ❌ **CẤM Màu trắng tinh khiết (`#FFFFFF`)** — Màu sáng nhất cho phép là `--parchment-bright` (`#F0E6CC`).
-8. ❌ **CẤM Chấm trạng thái xanh lá cây neon** — Bắt buộc dùng `--verdigris` (`#4A7A6A`).
-9. ❌ **CẤM Animation nảy lò xo (bouncy/spring)** — Chuyển động phải có độ trễ và sức nặng.
-10. ❌ **CẤM Bề mặt đơn sắc phẳng lì không có texture/chiều sâu.**
+2. ❌ **CẤM Khởi tạo hoặc sử dụng các Asset mới có Art Style bị lệch khỏi phong cách gothic hand-inked crosshatch của các asset hiện hữu trong dự án.**
+3. ❌ **CẤM Chỉ dùng CSS thuần (border, box-shadow) để giả lập chất liệu hữu cơ (mép giấy rách, vân gỗ nứt, ngọn nến) mà không qua Asset Generation.**
+4. ❌ **CẤM Sử dụng asset có viền/hộp nền đen hoặc trắng chưa tách phông (non-transparent assets)** — Bắt buộc phải qua bước tách phông thành file PNG trong suốt (`scripts/remove_background.py`) trước khi nạp vào giao diện.
+5. ❌ **CẤM Glassmorphism / Backdrop-blur bóng bẩy kiểu Apple / Linear.**
+6. ❌ **CẤM Màu Gradient Neon AI mặc định (tím xanh rực rỡ).**
+7. ❌ **CẤM Góc bo tròn lớn (`rounded-2xl`, `rounded-3xl`, `rounded-full` cho card/panel).**
+8. ❌ **CẤM Màu trắng tinh khiết (`#FFFFFF`)** — Màu sáng nhất cho phép là `--parchment-bright` (`#F0E6CC`).
+9. ❌ **CẤM Chấm trạng thái xanh lá cây neon** — Bắt buộc dùng `--verdigris` (`#4A7A6A`).
+10. ❌ **CẤM Animation nảy lò xo (bouncy/spring)** — Chuyển động phải có độ trễ và sức nặng.
+11. ❌ **CẤM Bề mặt đơn sắc phẳng lì không có texture/chiều sâu.**
