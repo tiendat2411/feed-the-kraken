@@ -171,7 +171,7 @@
 **Purpose**: Áp dụng "Eldritch Parchment" lên 3 trang chính: Home (First impression), Lobby (Chờ đợi), Game HUD (Trong trận).
 
 - [x] T058 [BR-007] Revamp `Home.jsx`: Nền abyss + Vignette + DustParticles, panel trung tâm PanelWood chứa CardParchment (form Nickname/RoomCode bằng InputPlank), title "Feed the Kraken" Pirata One vàng đồng + tentacle ẩn hiện, buttons ButtonWood. **Loại bỏ hoàn toàn**: glassmorphism, gradient blue-indigo, rounded-3xl, system-ui font.
-- [ ] T059 [BR-007] Revamp `Lobby.jsx`: Nền sàn gỗ phong hóa + vignette, crew list = grid PanelWood nhỏ (thẻ gỗ mục đinh gỉ, avatar, crown vàng gỉ, chấm verdigris online), settings = CardParchment sổ da thuộc (Room code Cinzel, cuộn giấy hải đồ Quick/Long, avatar grid), START VOYAGE = ButtonWood lớn kiểu bánh lái.
+- [x] T059 [BR-007] Revamp `Lobby.jsx`: Nền sàn gỗ phong hóa + vignette, crew list = grid PanelWood nhỏ (thẻ gỗ mục đinh gỉ, avatar, crown vàng gỉ, chấm verdigris online), settings = CardParchment sổ da thuộc (Room code Cinzel, cuộn giấy hải đồ Quick/Long, avatar grid), START VOYAGE = ButtonWood lớn kiểu bánh lái.
 - [ ] T060 [BR-007] Revamp `GameHeader.jsx`: Thanh gỗ sẫm phong hóa cố định (nền hull-dark + texture, viền dưới hull-light), Room code Cinzel, Round counter, Cult Track tím eldritch-pulse, nút Role/Map/Settings. Mobile co gọn responsive.
 - [ ] T061 [BR-007] Revamp `Game.jsx`: Bọc Vignette + DustParticles, Main Stage nền abyss, Crew Dock = thanh thẻ gỗ mục ngang (desktop) / drawer trượt (mobile).
 

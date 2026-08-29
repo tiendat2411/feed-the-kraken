@@ -1,8 +1,21 @@
 import React from 'react';
-import { Users, Crown, Settings, Map as MapIcon, Play, LogOut, UserX } from 'lucide-react';
+import LobbyHeader from '../components/lobby/LobbyHeader';
+import CrewPlate from '../components/lobby/CrewPlate';
+import MapSelector from '../components/lobby/MapSelector';
+import AvatarSelector from '../components/lobby/AvatarSelector';
+import StartVoyageButton from '../components/lobby/StartVoyageButton';
+import CardParchment from '../components/ui/CardParchment';
+import Vignette from '../components/ui/Vignette';
+import DustParticles from '../components/ui/DustParticles';
+import lobbyCabinBg from '../assets/ui/backgrounds/lobby_cabin_bg.jpg';
 
-const AVATARS = ['🧑‍✈️', '👩‍🔧', '👨‍🍳', '🥷', '🧟‍♂️', '🧜‍♀️', '⚓', '🏴‍☠️', '🐙', '🦈'];
-
+/**
+ * Lobby Component (T059 - Eldritch Architecture)
+ * - Nền không gian cabin thuyền trưởng ấm cúng với đèn bão và bụi tro bay.
+ * - Thanh Header ván gỗ sồi phong hóa với mã phòng và nút thoát.
+ * - Lưới 2 cột Thẻ Thuyền Viên CrewPlate với 11 Avatar Pirates of the Caribbean.
+ * - Bản đồ Map Selection trong tờ giấy Da Dê lớn, Bảng chọn Avatar và nút Bánh Lái Hoàng Kim nằm bên dưới.
+ */
 const Lobby = ({
   room,
   currentUserId,
@@ -13,7 +26,13 @@ const Lobby = ({
   onDissolveRoom,
   onKickPlayer
 }) => {
-  if (!room) return <div className="text-white flex justify-center items-center h-full">Loading...</div>;
+  if (!room) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-[#0A0A08] text-gold font-display text-2xl animate-pulse">
+        Đang tải dữ liệu phòng...
+      </div>
+    );
+  }
 
   const players = room.players || [];
   const myId = room.myId || currentUserId;
@@ -22,175 +41,91 @@ const Lobby = ({
   const canStart = isHost && players.length >= 5 && players.length <= 11;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-4 md:p-8 font-sans bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-2xl">
-          <div>
-            <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-              Room: {room.id}
-            </h1>
-            <p className="text-slate-400 mt-2 flex items-center gap-2">
-              <Users size={18} /> {players.length} / 11 Players
-            </p>
-          </div>
-          <div className="flex gap-3">
-            {isHost && (
-              <button
-                onClick={onDissolveRoom}
-                className="px-4 py-2 flex items-center gap-2 bg-red-600/30 text-red-300 hover:bg-red-600/40 border border-red-500/30 rounded-xl transition duration-300 font-semibold"
-                title="Giải tán phòng"
-              >
-                <LogOut size={18} /> Close Room
-              </button>
-            )}
-            <button
-              onClick={onLeaveRoom}
-              className="px-4 py-2 flex items-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl transition duration-300 font-semibold border border-white/10"
-            >
-              <LogOut size={18} /> Leave
-            </button>
-          </div>
-        </div>
+    <div
+      className="relative min-h-screen w-full flex flex-col p-3 sm:p-6 overflow-x-hidden select-none bg-[#0A0A08] bg-cover bg-center"
+      style={{
+        backgroundImage: `url(${lobbyCabinBg})`,
+      }}
+    >
+      {/* ── Atmospheric Overlays ── */}
+      <Vignette />
+      <DustParticles count={12} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Players List */}
-          <div className="lg:col-span-2 space-y-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
-              <Users className="text-blue-400" /> Crew Members
+      {/* ── Main Layout Container ── */}
+      <div className="relative z-30 w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between py-2">
+        {/* Header Bar */}
+        <LobbyHeader
+          roomId={room.id}
+          playerCount={players.length}
+          maxPlayers={11}
+          isHost={isHost}
+          onDissolveRoom={onDissolveRoom}
+          onLeaveRoom={onLeaveRoom}
+        />
+
+        {/* Content Body: Left Crew Quarters + Right Navigation & Settings */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 flex-1 items-start">
+          {/* Left Column: Crew Members List (7 Cols) */}
+          <div className="lg:col-span-7 flex flex-col">
+            <h2 className="font-heading font-black text-xs sm:text-sm md:text-base text-gold uppercase tracking-widest mb-3 flex items-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              CREW QUARTERS ({players.length}/11)
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            {/* 2-Column Grid of Crew Plates */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               {players.map((player) => {
                 const isMe = (player.id === myId || player.id === me.id || player.id === currentUserId || player.sessionToken === currentUserId);
+                const isHostPlayer = player.id === room.hostId;
+
                 return (
-                  <div 
-                    key={player.id} 
-                    className={`flex items-center justify-between p-4 rounded-xl border transition duration-300 ${isMe ? 'bg-blue-900/40 border-blue-500/50' : 'bg-white/5 border-white/10'}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-2xl shadow-inner border border-white/5">
-                        {player.avatar || '❓'}
-                      </div>
-                      <div>
-                        <div className="font-semibold flex items-center gap-2">
-                          {player.name || player.nickname}
-                          {player.id === room.hostId && <Crown size={16} className="text-yellow-400" title="Chủ phòng" />}
-                          {isMe && (
-                            <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md">You</span>
-                          )}
-                        </div>
-                        <div className="text-sm text-slate-400 flex items-center gap-1">
-                          <div className={`w-2 h-2 rounded-full ${player.connectionStatus === 'OFFLINE' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
-                          {player.connectionStatus === 'OFFLINE' ? 'Offline' : 'Online'}
-                        </div>
-                      </div>
-                    </div>
-                    {isHost && !isMe && (
-                      <button 
-                        onClick={() => onKickPlayer(player.id)}
-                        className="text-slate-500 hover:text-red-400 transition p-2 rounded-lg hover:bg-white/5"
-                        title="Kick Player"
-                      >
-                        <UserX size={18} />
-                      </button>
-                    )}
-                  </div>
+                  <CrewPlate
+                    key={player.id}
+                    player={player}
+                    isMe={isMe}
+                    isHostPlayer={isHostPlayer}
+                    canKick={isHost && !isMe}
+                    onKick={() => onKickPlayer(player.id)}
+                  />
                 );
               })}
-              
-              {/* Empty slots placeholders */}
-              {Array.from({ length: Math.max(0, 5 - players.length) }).map((_, i) => (
-                <div key={`empty-${i}`} className="flex items-center gap-4 p-4 rounded-xl border border-dashed border-white/10 bg-white/5 opacity-50">
-                  <div className="w-12 h-12 rounded-full bg-slate-800/50 flex items-center justify-center"></div>
-                  <div className="text-slate-500 italic">Waiting for player...</div>
-                </div>
+
+              {/* Empty slot placeholders up to 5 minimum */}
+              {Array.from({ length: Math.max(0, 5 - players.length) }).map((_, idx) => (
+                <CrewPlate key={`empty-${idx}`} isEmpty={true} />
               ))}
             </div>
           </div>
 
-          {/* Settings Panel */}
-          <div className="space-y-6">
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-2xl">
-              <h2 className="text-xl font-bold flex items-center gap-2 mb-6 border-b border-white/10 pb-4">
-                <Settings className="text-purple-400" /> Room Settings
-              </h2>
-              
-              {/* Map Selection (Host Only) */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-400 mb-3 flex items-center gap-2">
-                  <MapIcon size={16} /> Map Type
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => isHost && onSelectMap('QUICK_JOURNEY')}
-                    disabled={!isHost}
-                    className={`px-4 py-3 rounded-xl border transition ${
-                      room.mapType === 'QUICK_JOURNEY' 
-                        ? 'bg-purple-500/20 border-purple-500 text-purple-200' 
-                        : 'bg-slate-800/50 border-white/5 text-slate-400 hover:bg-slate-700/50'
-                    } ${!isHost && 'cursor-not-allowed opacity-80'}`}
-                  >
-                    Quick Journey
-                  </button>
-                  <button
-                    onClick={() => isHost && onSelectMap('LONG_JOURNEY')}
-                    disabled={!isHost}
-                    className={`px-4 py-3 rounded-xl border transition ${
-                      room.mapType === 'LONG_JOURNEY' 
-                        ? 'bg-purple-500/20 border-purple-500 text-purple-200' 
-                        : 'bg-slate-800/50 border-white/5 text-slate-400 hover:bg-slate-700/50'
-                    } ${!isHost && 'cursor-not-allowed opacity-80'}`}
-                  >
-                    Long Journey
-                  </button>
-                </div>
+          {/* Right Column: Map Selection Logbook + Avatar Selector + Action Button (5 Cols) */}
+          <div className="lg:col-span-5 flex flex-col gap-3">
+            {/* 1. Map Selection inside CardParchment */}
+            <CardParchment className="w-full !p-3 sm:!p-5 !items-stretch">
+              <div className="text-center border-b border-hull/40 pb-1.5 mb-2.5">
+                <h2 className="font-display text-xl sm:text-2xl text-[#2E1F0C] tracking-wide drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]">
+                  MAP SELECTION
+                </h2>
               </div>
 
-              {/* Avatar Selection (Everyone) */}
-              <div>
-                <label className="block text-sm font-medium text-slate-400 mb-3">Choose Your Avatar</label>
-                <div className="flex flex-wrap gap-2">
-                  {AVATARS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      onClick={() => onSelectAvatar(emoji)}
-                      className={`w-12 h-12 text-2xl flex items-center justify-center rounded-xl transition transform hover:scale-110 ${
-                        me.avatar === emoji 
-                          ? 'bg-blue-500/30 border border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
-                          : 'bg-slate-800/50 border border-transparent hover:bg-slate-700'
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+              <MapSelector
+                selectedMap={room.mapType || 'QUICK_JOURNEY'}
+                onSelectMap={onSelectMap}
+                isHost={isHost}
+              />
+            </CardParchment>
 
-            {/* Start Button (Host Only) */}
-            {isHost && (
-              <button
-                onClick={onStartGame}
-                disabled={!canStart}
-                className={`w-full py-4 rounded-2xl flex justify-center items-center gap-3 font-bold text-lg transition duration-300 shadow-xl ${
-                  canStart 
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-1' 
-                    : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5'
-                }`}
-              >
-                <Play fill="currentColor" size={20} />
-                {canStart ? 'START VOYAGE' : 'WAITING FOR CREW (MIN 5)'}
-              </button>
-            )}
-            {!isHost && (
-              <div className="w-full py-4 rounded-2xl flex justify-center items-center gap-3 font-bold text-lg bg-slate-800/50 text-slate-400 border border-white/5">
-                WAITING FOR HOST TO START...
-              </div>
-            )}
+            {/* 2. Avatar Selection (Outside Parchment) */}
+            <AvatarSelector
+              currentAvatar={me.avatar}
+              onSelectAvatar={onSelectAvatar}
+            />
+
+            {/* 3. Start Voyage Action Button */}
+            <StartVoyageButton
+              isHost={isHost}
+              canStart={canStart}
+              onStartGame={onStartGame}
+            />
           </div>
-          
         </div>
       </div>
     </div>
