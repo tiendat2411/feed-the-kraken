@@ -45,7 +45,7 @@ const LobbyHeader = ({
               type="button"
               onClick={handleCopyRoomCode}
               className="group flex items-center gap-2 px-2.5 py-1 rounded bg-black/30 hover:bg-black/50 border border-gold/30 hover:border-gold transition-all duration-150 transform hover:scale-[1.03] active:scale-95 cursor-pointer"
-              title="Nhấp để sao chép mã phòng"
+              title="Click to copy Room Code"
             >
               <h1
                 className="font-display text-xl sm:text-2xl md:text-3xl text-gold tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] group-hover:text-gold-bright"

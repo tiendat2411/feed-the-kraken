@@ -12,11 +12,7 @@ import homeOceanBg from '../assets/ui/backgrounds/home_ocean_bg.jpg';
 
 /**
  * Home Component (T058 - Final Balanced & Calibrated Edition)
- * - Tỷ lệ khung gỗ & da dê chuẩn xác 100%, không bị méo.
- * - 2 Ô input & 2 nút bấm thu gọn 15%, nằm lọt 100% bên trong mặt giấy da dê với lề an toàn.
- * - Nút Join Room hiển thị trọn vẹn 100% cả viền trên và viền dưới.
- * - Toàn bộ bảng nằm trọn vẹn trong 1 màn hình viewport bình thường (không cần F11).
- * - Cặp nến cổ phát sáng rực rỡ ở 2 bên bệ gỗ.
+ * 100% English Display Interface.
  */
 const Home = () => {
   const navigate = useNavigate();
@@ -27,7 +23,7 @@ const Home = () => {
 
   const handleCreateRoom = () => {
     if (!nickname.trim()) {
-      setError('Vui lòng nhập biệt danh');
+      setError('Please enter your nickname');
       return;
     }
     setError('');
@@ -35,14 +31,14 @@ const Home = () => {
       if (response.success) {
         navigate(`/game/${response.room.id}`, { state: { initialRoom: response.room } });
       } else {
-        setError(response.error || 'Không thể tạo phòng');
+        setError(response.error || 'Failed to create room');
       }
     });
   };
 
   const handleJoinRoom = () => {
     if (!nickname.trim() || !roomCode.trim()) {
-      setError('Vui lòng nhập cả biệt danh và mã phòng');
+      setError('Please enter both nickname and room code');
       return;
     }
     setError('');
@@ -53,7 +49,7 @@ const Home = () => {
         if (response.success) {
           navigate(`/game/${response.room.id}`, { state: { initialRoom: response.room } });
         } else {
-          setError(response.error || 'Không thể vào phòng');
+          setError(response.error || 'Failed to join room');
         }
       }
     );
@@ -142,7 +138,7 @@ const Home = () => {
             {/* Server Connection Status */}
             {!socket?.connected && (
               <div className="mt-0.5 text-[10px] sm:text-[11px] font-heading text-gold-dim animate-pulse">
-                Đang kết nối tới máy chủ...
+                Connecting to server...
               </div>
             )}
           </CardParchment>

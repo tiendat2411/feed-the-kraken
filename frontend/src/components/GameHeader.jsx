@@ -12,11 +12,12 @@ import { SoundEngine } from '../utils/soundEffects';
 
 /**
  * GameHeader Component (Task T060 - Eldritch Architecture)
- * Thanh điều hướng đỉnh trận đấu cố định mang phong cách "Eldritch Parchment".
- * - Bảng biển gỗ khắc đồng hiển thị mã phòng ROOM: [ID] với cỡ chữ vừa vặn gọn trong lòng biển gỗ.
- * - Thẻ giấy da đóng 4 đinh sắt hiển thị giai đoạn trận đấu (Game Phase).
- * - Cụm Hải Trình trung tâm: Khung gỗ chạm khắc chỉ chứa tên Map, 2 bên là La Bàn và Thuyền Buồm phóng to +40%.
- * - Còi đồng âm thanh tách phông sạch 100% và các nút thao tác ButtonWood lớn.
+ * In-game top navigation header HUD in 100% English.
+ * - Weathered warm oak 14:1 beam fixed sticky top-0.
+ * - Ornate carved wood cartouche plate displaying ROOM: [ID].
+ * - Nailed parchment sheet displaying current Game Phase in English.
+ * - Central voyage frame displaying LONG JOURNEY / QUICK JOURNEY flanked by enlarged medallions.
+ * - Antique brass horn sound toggle button and ButtonWood action buttons.
  */
 const GameHeader = ({
   room,
@@ -39,29 +40,29 @@ const GameHeader = ({
     switch (phase) {
       case 'ROLE_REVEAL':
       case 'PIRATES_GATHERING':
-        return 'VAI TRÒ BÍ MẬT';
+        return 'SECRET ROLES';
       case 'DAY_1_CREW_SELECTION':
       case 'APPOINT_TEAM':
-        return 'BỔ NHIỆM THỦY THỦ';
+        return 'CREW APPOINTMENT';
       case 'LOYALTY_CHECK':
-        return 'BIỂU QUYẾT BẠO LOẠN';
+        return 'MUTINY VOTE';
       case 'MUTINY_REVEALED':
-        return 'KẾT QUẢ BẠO LOẠN';
+        return 'MUTINY RESULT';
       case 'MUTINY_TIE_BREAKER':
-        return 'HÒA SÚNG - QUYẾT ĐỊNH';
+        return 'TIE BREAKER';
       case 'NAVIGATION':
       case 'NAVIGATION_CAPTAIN_DRAW':
-        return 'THUYỀN TRƯỞNG RÚT BÀI';
+        return 'CAPTAIN DRAW';
       case 'NAVIGATION_LIEUTENANT_DRAW':
-        return 'THUYỀN PHÓ RÚT BÀI';
+        return 'LIEUTENANT DRAW';
       case 'NAVIGATION_NAVIGATOR_DECISION':
-        return 'HOA TIÊU QUYẾT ĐỊNH';
+        return 'NAVIGATOR DECISION';
       case 'EMERGENCY_NAVIGATOR_SELECTION':
-        return 'BỔ NHIỆM HOA TIÊU KHẨN CẤP';
+        return 'EMERGENCY APPOINTMENT';
       case 'EXECUTE_ACTIONS':
-        return 'THỰC THI ĐIỀU HƯỚNG';
+        return 'EXECUTE ACTIONS';
       default:
-        return phase;
+        return phase ? phase.replace(/_/g, ' ') : '';
     }
   };
 
@@ -78,7 +79,7 @@ const GameHeader = ({
 
         {/* Content Container */}
         <div className="relative z-10 w-full flex items-center justify-between gap-2 sm:gap-4">
-          {/* ── 1. Left: Room Code Plaque (Clean Fitted Font) & Nailed Parchment Phase Plate ── */}
+          {/* ── 1. Left: Room Code Plaque & Nailed Parchment Phase Plate ── */}
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {/* Ornate Wood & Bronze Cartouche Plaque for Room Code */}
             <div className="relative h-[55px] sm:h-[66px] md:h-[72px] aspect-[650/335] flex items-center justify-center filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">
@@ -108,16 +109,16 @@ const GameHeader = ({
             </div>
           </div>
 
-          {/* ── 2. Center: Voyage Mode with Flanking +40% Enlarged Compass & Ship Tokens ── */}
+          {/* ── 2. Center: Voyage Mode with Flanking Enlarged Compass & Ship Tokens ── */}
           <div className="hidden lg:flex items-center gap-3">
-            {/* Left: +40% Enlarged Glowing Compass Rose */}
+            {/* Left: Glowing Compass Rose */}
             <img
               src={badgeCompassRosePng}
               alt="Compass Rose"
               className="w-12 h-12 sm:w-14 sm:h-14 md:w-15 md:h-15 object-contain filter drop-shadow-[0_0_12px_rgba(232,166,62,0.9)] flex-shrink-0 transform hover:scale-105 transition"
             />
 
-            {/* Middle: Carved Wood Slot Frame (Text Only, Neatly Centered) */}
+            {/* Middle: Carved Wood Slot Frame (Text Only) */}
             <div className="relative h-[46px] sm:h-[54px] md:h-[58px] min-w-[180px] sm:min-w-[210px] md:min-w-[230px] aspect-[1058/374] flex items-center justify-center filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]">
               <img
                 src={inputWoodSlotCleanPng}
@@ -125,11 +126,11 @@ const GameHeader = ({
                 className="absolute inset-0 w-full h-full object-fill pointer-events-none"
               />
               <span className="relative z-10 font-heading font-black text-xs sm:text-sm md:text-base text-[#FFFCEB] tracking-widest uppercase whitespace-nowrap text-center px-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
-                {room.mapType === 'LONG_JOURNEY' ? 'HẢI TRÌNH DÀI' : 'HÀNH TRÌNH NHANH'}
+                {room.mapType === 'LONG_JOURNEY' ? 'LONG JOURNEY' : 'QUICK JOURNEY'}
               </span>
             </div>
 
-            {/* Right: +40% Enlarged Ship Voyage Token */}
+            {/* Right: Ship Voyage Token */}
             <img
               src={badgeShipVoyagePng}
               alt="Ship Voyage Token"
@@ -145,7 +146,7 @@ const GameHeader = ({
               id="btn-sound-toggle-header"
               onClick={handleToggleSound}
               className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full p-1.5 bg-black/40 hover:bg-black/60 border border-gold/40 hover:border-gold transition-all duration-150 transform hover:scale-110 active:scale-95 flex items-center justify-center cursor-pointer filter drop-shadow-[0_3px_6px_rgba(0,0,0,0.85)]"
-              title={muted ? 'Bật âm thanh (Sound On)' : 'Tắt âm thanh (Mute Sound)'}
+              title={muted ? 'Unmute Sound' : 'Mute Sound'}
             >
               <img
                 src={muted ? iconSoundOffPng : iconSoundOnPng}
@@ -162,7 +163,7 @@ const GameHeader = ({
                 onClick={onDissolveRoom}
                 className="!h-[38px] sm:!h-[44px] md:!h-[48px] !min-w-[105px] sm:!min-w-[125px] md:!min-w-[135px] !px-3 sm:!px-4 !text-xs sm:!text-sm md:!text-base"
               >
-                GIẢI TÁN
+                DISSOLVE
               </ButtonWood>
             )}
 
@@ -173,7 +174,7 @@ const GameHeader = ({
               onClick={onLeaveRoom}
               className="!h-[38px] sm:!h-[44px] md:!h-[48px] !min-w-[85px] sm:!min-w-[105px] md:!min-w-[115px] !px-3 sm:!px-4 !text-xs sm:!text-sm md:!text-base"
             >
-              RỜI PHÒNG
+              LEAVE
             </ButtonWood>
           </div>
         </div>

@@ -92,7 +92,7 @@ const CrewPlate = ({
               src={crownGoldBadgePng}
               alt="Captain Host Crown"
               className="w-5 h-5 sm:w-6 sm:h-6 object-contain filter drop-shadow-[0_0_8px_rgba(232,166,62,0.85)]"
-              title="Chủ phòng (Captain)"
+              title="Room Host (Captain)"
             />
           ) : (
             canKick && (
@@ -100,7 +100,7 @@ const CrewPlate = ({
                 type="button"
                 onClick={onKick}
                 className="p-1 rounded transition-all duration-150 transform hover:scale-125 hover:rotate-6 active:scale-95 flex-shrink-0"
-                title="Đuổi khỏi tàu (Walk the Plank)"
+                title="Walk the Plank (Kick Player)"
               >
                 <img
                   src={iconKickSkullPng}

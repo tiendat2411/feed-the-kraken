@@ -100,12 +100,12 @@ const Game = () => {
     });
 
     socket.on('ROOM_DISSOLVED', () => {
-      alert('Phòng đã bị chủ phòng giải tán.');
+      alert('The room was dissolved by the host.');
       navigate('/');
     });
 
     socket.on('PLAYER_KICKED', () => {
-      alert('Bạn đã bị chủ phòng kick.');
+      alert('You have been kicked from the room by the host.');
       navigate('/');
     });
 
@@ -138,7 +138,7 @@ const Game = () => {
   };
 
   const handleLeaveRoom = () => {
-    if (socket && window.confirm('Bạn có chắc chắn muốn rời khỏi phòng không?')) {
+    if (socket && window.confirm('Are you sure you want to leave the room?')) {
       socket.emit('leave_room', () => {
         navigate('/');
       });
@@ -146,7 +146,7 @@ const Game = () => {
   };
 
   const handleDissolveRoom = () => {
-    if (socket && window.confirm('Bạn có chắc chắn muốn giải tán phòng không? Tất cả người chơi sẽ bị đưa về trang chủ.')) {
+    if (socket && window.confirm('Are you sure you want to dissolve the room? All players will be returned to the title screen.')) {
       socket.emit('dissolve_room', () => {
         navigate('/');
       });
@@ -154,7 +154,7 @@ const Game = () => {
   };
 
   const handleKickPlayer = (playerId) => {
-    if (socket && window.confirm('Bạn có chắc chắn muốn kick người chơi này không?')) {
+    if (socket && window.confirm('Are you sure you want to kick this player from the ship?')) {
       socket.emit('kick_player', { targetId: playerId });
     }
   };
@@ -258,7 +258,7 @@ const Game = () => {
           onClick={() => navigate('/')}
           className="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition"
         >
-          Quay lại Trang Chủ
+          Return to Title Screen
         </button>
       </div>
     );
@@ -274,7 +274,7 @@ const Game = () => {
           onClick={fetchRoomState}
           className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 rounded-lg transition"
         >
-          Thử kết nối lại
+          Retry Connection
         </button>
       </div>
     );
@@ -302,20 +302,20 @@ const Game = () => {
         <div className="flex items-center space-x-3">
           <span className="text-3xl">🐙</span>
           <div>
-            <h4 className="font-black text-purple-300 text-sm">THU NẠP TÀ GIÁO BÍ MẬT</h4>
+            <h4 className="font-black text-purple-300 text-sm">SECRET CULT CONVERSION RITUAL</h4>
             <p className="text-xs text-purple-200">
               {conversionNotification.message}
             </p>
           </div>
         </div>
         <div className="p-2 rounded-xl bg-purple-900/60 text-xs border border-purple-500/40 text-amber-300">
-          Giáo chủ của bạn: <span className="font-black">{conversionNotification.cult_leader_name}</span>
+          Your Cult Leader: <span className="font-black">{conversionNotification.cult_leader_name}</span>
         </div>
         <button
           onClick={() => setConversionNotification(null)}
           className="w-full py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 font-bold text-xs"
         >
-          ĐÃ HIỂU
+          UNDERSTOOD
         </button>
       </div>
     );

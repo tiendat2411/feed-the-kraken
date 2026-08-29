@@ -19,12 +19,12 @@
 - **Ánh sáng:** Tương phản cực mạnh giữa ánh sáng ấm (nến/lửa `--firelight` `#E8A63E`, `--gold` `#C9A84C`) và bóng tối bao quanh.
 - **Vignette:** Bắt buộc áp dụng lớp phủ tối viền toàn cục (global dark vignette) trên toàn bộ viewport.
 
-### 2.2 Kiểu Chữ (Typography - Đồng bộ 100% Font 'Pirata One')
-Toàn bộ dự án sử dụng duy nhất font Gothic hải tặc **`'Pirata One'`** làm kiểu chữ chủ đạo để tạo sự đồng bộ nhận diện cổ kính, huyền bí:
+### 2.2 Kiểu Chữ & Ngôn Ngữ (Typography & 100% English Display Language)
+Toàn bộ dự án sử dụng duy nhất font Gothic hải tặc **`'Pirata One'`** và **100% TIẾNG ANH (English - en-US)** làm ngôn ngữ hiển thị giao diện chính thức:
 - **Game Title & Display:** `'Pirata One'`, `'Georgia'`, `serif` (cỡ lớn, drop-shadow vàng đồng/firelight).
-- **Heading / Phase / Role Names:** `'Pirata One'`, `'Georgia'`, `serif` (tracking-wider).
-- **Body / Status / Buttons / Input Labels:** `'Pirata One'`, `'Georgia'`, `serif` (tracking-wide, drop-shadow nổi khối).
-- **Cấm:** Tuyệt đối không dùng font mặc định browser hoặc các font sans-serif hiện đại trơn lùi (như Inter, Roboto, Arial, Helvetica).
+- **Heading / Phase / Role Names:** `'Pirata One'`, `'Georgia'`, `serif` (100% English: `MUTINY VOTE`, `CAPTAIN DRAW`, `ROLE REVEAL`...).
+- **Body / Status / Buttons / Input Labels:** `'Pirata One'`, `'Georgia'`, `serif` (100% English: `START VOYAGE`, `DISSOLVE ROOM`, `LEAVE ROOM`, `CREW QUARTERS`...).
+- **Cấm:** Tuyệt đối không dùng font mặc định browser, sans-serif hiện đại, và không để sót bất kỳ văn bản tiếng Việt nào trên giao diện UI Frontend.
 
 ### 2.3 Chất Liệu Bề Mặt (Surfaces & Textures)
 - **Không bao giờ phẳng lì:** Mọi panel, card, input và modal phải có texture bề mặt (thớ gỗ mục `.panel-wood`, da dê cổ sần sùi `.card-parchment`, vệt ố `.aged-stain`, đinh sắt gỉ).

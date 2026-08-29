@@ -117,11 +117,11 @@ const MapBoardUI = ({
 
   const getActionName = (actionType) => {
     switch (actionType) {
-      case 'CABIN_SEARCH': return 'Khám Xét Cabin';
-      case 'FLOGGING': return 'Đánh Roi / Tra Khảo';
-      case 'OFF_WITH_THE_TONGUE': return 'Cắt Lưỡi';
-      case 'FEED_THE_KRAKEN': return 'Tế Thần Kraken';
-      default: return 'Vùng Biển Êm Đềm';
+      case 'CABIN_SEARCH': return 'Cabin Search';
+      case 'FLOGGING': return 'Interrogation (Flogging)';
+      case 'OFF_WITH_THE_TONGUE': return 'Silence (Cut Tongue)';
+      case 'FEED_THE_KRAKEN': return 'Feed to Kraken';
+      default: return 'Calm Waters';
     }
   };
 
@@ -136,7 +136,7 @@ const MapBoardUI = ({
         <div className="flex items-center space-x-3">
           <span className="text-3xl animate-bounce">⛵</span>
           <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">Vị Trí Hiện Tại</div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">Current Waypoint</div>
             <div className="text-lg font-black text-amber-400 flex items-center gap-2">
               {currentNode?.name}
               <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
@@ -155,7 +155,7 @@ const MapBoardUI = ({
           <div className="flex items-center gap-2 bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-700">
             <span className="text-purple-400">🔮</span>
             <span className="text-slate-300 font-medium">
-              Nghi thức: {room?.mapBoard?.cultRitualDeck?.length ?? 5} lá
+              Rituals: {room?.mapBoard?.cultRitualDeck?.length ?? 5} cards
             </span>
           </div>
 
@@ -163,7 +163,7 @@ const MapBoardUI = ({
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${room?.mapBoard?.hasCrossedSupplyLine ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-slate-800/60 border-slate-700 text-slate-400'}`}>
               <span>📦</span>
               <span className="font-medium">
-                Tuyến tiếp tế: {room?.mapBoard?.hasCrossedSupplyLine ? 'Đã kích hoạt' : 'Chưa cắt qua'}
+                Supply Line: {room?.mapBoard?.hasCrossedSupplyLine ? 'Crossed' : 'Not Crossed'}
               </span>
             </div>
           )}
@@ -220,7 +220,7 @@ const MapBoardUI = ({
               <g className="opacity-80">
                 <path d="M 80 470 Q 500 310 920 470" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="8 8" />
                 <text x="500" y="340" fill="#f59e0b" fontSize="13" fontWeight="bold" textAnchor="middle" letterSpacing="3">
-                  ⚔️ RANH GIỚI TUYẾN TIẾP TẾ (SUPPLY LINE) ⚔️
+                  ⚔️ SUPPLY LINE BOUNDARY ⚔️
                 </text>
               </g>
             )}
@@ -365,7 +365,7 @@ const MapBoardUI = ({
                 {hoveredNode.name}
               </div>
               <div className="text-slate-300 mt-1">
-                Hành động: <span className="font-semibold text-white">{getActionName(hoveredNode.mapAction)}</span>
+                Action: <span className="font-semibold text-white">{getActionName(hoveredNode.mapAction)}</span>
               </div>
               {hoveredNode.victoryZone && (
                 <div className="text-emerald-400 font-bold mt-1">
@@ -395,7 +395,7 @@ const MapBoardUI = ({
             {isCaptain ? (
               <div className="space-y-4">
                 <p className="text-sm text-amber-200/90 text-center">
-                  Thưa Thuyền trưởng, hãy chọn 1 thủy thủ đoàn để thực hiện hành động này:
+                  Thưa Captain, hãy chọn 1 thủy thủ đoàn để thực hiện hành động này:
                 </p>
 
                 <div className="grid grid-cols-2 gap-2.5 max-h-48 overflow-y-auto p-1">
@@ -442,7 +442,7 @@ const MapBoardUI = ({
               <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 text-center space-y-3">
                 <div className="w-12 h-12 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mx-auto" />
                 <p className="text-sm font-semibold text-slate-300">
-                  Thuyền trưởng đang cân nhắc thực thi hành động <span className="text-amber-400">{getActionName(room?.pendingMapAction?.type)}</span>...
+                  Captain đang cân nhắc thực thi hành động <span className="text-amber-400">{getActionName(room?.pendingMapAction?.type)}</span>...
                 </p>
                 {room?.lastMapActionResult && (
                   <div className="text-emerald-300 font-bold text-sm animate-pulse">
@@ -468,8 +468,8 @@ const MapBoardUI = ({
               </h2>
               <p className="text-xs text-slate-400">
                 {room?.pendingCardAction?.type === 'MERMAID'
-                  ? 'Thuyền trưởng hãy chỉ định 1 người bí mật xem 3 lá bài trong Hòm Bỏ.'
-                  : 'Thuyền trưởng hãy chỉ định 1 người bí mật xem lá bài trên đỉnh Chồng Rút.'}
+                  ? 'Captain hãy chỉ định 1 người bí mật xem 3 lá bài trong Hòm Bỏ.'
+                  : 'Captain hãy chỉ định 1 người bí mật xem lá bài trên đỉnh Chồng Rút.'}
               </p>
             </div>
 
@@ -496,7 +496,7 @@ const MapBoardUI = ({
               </div>
             ) : (
               <div className="p-6 text-center text-slate-300">
-                Thuyền trưởng đang chọn người được hưởng quyền năng...
+                Captain đang chọn người được hưởng quyền năng...
               </div>
             )}
           </div>
@@ -588,7 +588,7 @@ const MapBoardUI = ({
               </button>
             ) : (
               <div className="text-slate-300 text-sm">
-                Đang chờ Thuyền trưởng lật mở bài Nghi thức...
+                Đang chờ Captain lật mở bài Nghi thức...
               </div>
             )}
           </div>
@@ -674,9 +674,9 @@ const MapBoardUI = ({
                 <div className="space-y-4">
                   <div className="p-4 rounded-2xl bg-purple-950/40 border border-purple-500/40 text-left space-y-2 text-xs">
                     <div className="font-bold text-amber-300 mb-2">Thị Kiến Thật Ban Điều Hướng:</div>
-                    <div>Thuyền trưởng: <span className="font-bold text-white">{room?.myCultInspection?.captain?.name}</span> ({room?.myCultInspection?.captain?.role})</div>
-                    <div>Thuyền phó: <span className="font-bold text-white">{room?.myCultInspection?.lieutenant?.name}</span> ({room?.myCultInspection?.lieutenant?.role})</div>
-                    <div>Hoa tiêu: <span className="font-bold text-white">{room?.myCultInspection?.navigator?.name}</span> ({room?.myCultInspection?.navigator?.role})</div>
+                    <div>Captain: <span className="font-bold text-white">{room?.myCultInspection?.captain?.name}</span> ({room?.myCultInspection?.captain?.role})</div>
+                    <div>Lieutenant: <span className="font-bold text-white">{room?.myCultInspection?.lieutenant?.name}</span> ({room?.myCultInspection?.lieutenant?.role})</div>
+                    <div>Navigator: <span className="font-bold text-white">{room?.myCultInspection?.navigator?.name}</span> ({room?.myCultInspection?.navigator?.role})</div>
                   </div>
                   <button
                     onClick={onResolveCultCabinSearch}
@@ -755,7 +755,7 @@ const MapBoardUI = ({
               </button>
             ) : (
               <p className="text-xs text-slate-400 italic">
-                ⏳ Đang chờ Thuyền trưởng chốt chuyển ca trực và bắt đầu vòng mới...
+                ⏳ Đang chờ Captain chốt chuyển ca trực và bắt đầu vòng mới...
               </p>
             )}
           </div>

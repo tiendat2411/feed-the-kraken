@@ -29,7 +29,7 @@ const Lobby = ({
   if (!room) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-[#0A0A08] text-gold font-display text-2xl animate-pulse">
-        Đang tải dữ liệu phòng...
+        Loading room data...
       </div>
     );
   }
