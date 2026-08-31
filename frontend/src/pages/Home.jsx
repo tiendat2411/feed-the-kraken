@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../contexts/SocketContext';
+import PanelWood from '../components/ui/PanelWood';
+import CardParchment from '../components/ui/CardParchment';
+import ButtonWood from '../components/ui/ButtonWood';
+import InputPlank from '../components/ui/InputPlank';
+import CandleProp from '../components/ui/CandleProp';
+import Vignette from '../components/ui/Vignette';
+import DustParticles from '../components/ui/DustParticles';
+import homeOceanBg from '../assets/ui/backgrounds/home_ocean_bg.jpg';
 
+/**
+ * Home Component (T058 - Final Balanced & Calibrated Edition)
+ * 100% English Display Interface.
+ */
 const Home = () => {
   const navigate = useNavigate();
   const socket = useSocket();
@@ -11,11 +23,11 @@ const Home = () => {
 
   const handleCreateRoom = () => {
     if (!nickname.trim()) {
-      setError('Please enter a nickname');
+      setError('Please enter your nickname');
       return;
     }
     setError('');
-    socket.emit('create_room', { playerName: nickname }, (response) => {
+    socket.emit('create_room', { playerName: nickname.trim() }, (response) => {
       if (response.success) {
         navigate(`/game/${response.room.id}`, { state: { initialRoom: response.room } });
       } else {
@@ -30,73 +42,111 @@ const Home = () => {
       return;
     }
     setError('');
-    socket.emit('join_room', { roomId: roomCode.toUpperCase(), playerName: nickname }, (response) => {
-      if (response.success) {
-        navigate(`/game/${response.room.id}`, { state: { initialRoom: response.room } });
-      } else {
-        setError(response.error || 'Failed to join room');
+    socket.emit(
+      'join_room',
+      { roomId: roomCode.trim().toUpperCase(), playerName: nickname.trim() },
+      (response) => {
+        if (response.success) {
+          navigate(`/game/${response.room.id}`, { state: { initialRoom: response.room } });
+        } else {
+          setError(response.error || 'Failed to join room');
+        }
       }
-    });
+    );
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white font-sans bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
-      <div className="bg-white/10 backdrop-blur-md p-10 rounded-3xl border border-white/20 shadow-2xl max-w-md w-full text-center">
-        <h1 className="text-5xl font-black tracking-tight mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-          Feed The Kraken
-        </h1>
-        <p className="text-slate-400 mb-8 font-medium">Prepare for a treacherous voyage.</p>
-        
-        {error && <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 text-red-300 rounded-xl text-sm">{error}</div>}
+    <div
+      className="relative h-screen w-full flex items-center justify-center p-3 sm:p-6 overflow-hidden select-none bg-[#0A0A08] bg-cover bg-center"
+      style={{
+        backgroundImage: `url(${homeOceanBg})`,
+      }}
+    >
+      {/* ── Atmospheric Overlays ── */}
+      <Vignette />
+      <DustParticles count={10} />
 
-        <div className="space-y-4 mb-8">
-          <div>
-            <input 
-              type="text" 
-              placeholder="Enter your nickname" 
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              maxLength={15}
-            />
-          </div>
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Room Code (to join)" 
-              value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value)}
-              className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition uppercase"
-              maxLength={6}
-            />
-          </div>
-        </div>
+      {/* ── Centerpiece: Harmonious Assembly Container ── */}
+      <div className="relative z-30 w-full max-w-[620px] max-h-[82vh] my-auto flex items-center justify-center">
+        {/* Layer 1: Weathered Oak Timber Backing Panel (1398:1024 Aspect Ratio) */}
+        <PanelWood className="relative overflow-visible">
+          {/* Layer 2: Ragged-edge Antique Parchment Card (1155:808 Aspect Ratio) */}
+          <CardParchment className="relative overflow-visible">
+            {/* Header: Title & Subtitle in Pirata One */}
+            <div className="text-center pt-1 mb-0.5">
+              <h1
+                className="font-display text-3xl sm:text-4xl md:text-5xl text-gold tracking-wide drop-shadow-[0_4px_8px_rgba(0,0,0,0.95)]"
+                style={{ textShadow: '0 0 25px rgba(201,168,76,0.4), 0 4px 8px rgba(0,0,0,0.9)' }}
+              >
+                Feed the Kraken
+              </h1>
+              <p className="font-heading text-[11px] sm:text-xs text-parchment-dim tracking-widest mt-0.5">
+                Prepare for a treacherous voyage.
+              </p>
+            </div>
 
-        <div className="flex flex-col gap-3">
-          <button 
-            onClick={handleCreateRoom}
-            disabled={!socket?.connected}
-            className="w-full py-4 rounded-xl font-bold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition duration-300 shadow-lg shadow-blue-500/20 disabled:opacity-50"
-          >
-            CREATE NEW ROOM
-          </button>
-          <div className="flex items-center gap-4 my-2">
-            <div className="flex-1 border-t border-white/10"></div>
-            <span className="text-slate-500 text-sm font-medium">OR</span>
-            <div className="flex-1 border-t border-white/10"></div>
-          </div>
-          <button 
-            onClick={handleJoinRoom}
-            disabled={!socket?.connected}
-            className="w-full py-4 rounded-xl font-bold text-lg bg-slate-800 hover:bg-slate-700 border border-white/10 transition duration-300 disabled:opacity-50"
-          >
-            JOIN ROOM
-          </button>
-        </div>
-        
-        {!socket?.connected && (
-          <p className="mt-6 text-sm text-yellow-500/80 animate-pulse">Connecting to server...</p>
-        )}
+            {/* Error Alert Box Overlay (if error) */}
+            {error && (
+              <div className="mb-1 px-3 py-0.5 rounded bg-blood/95 border border-pirate-glow text-parchment-bright text-[11px] sm:text-xs font-heading font-bold shadow-2xl text-center animate-bounce">
+                ⚠️ {error}
+              </div>
+            )}
+
+            {/* Form Fields: Sleek Nautical InputPlank components (-15% Scaled) */}
+            <div className="w-full space-y-1 sm:space-y-1.5 my-1 flex flex-col items-center">
+              <InputPlank
+                id="input-nickname"
+                name="nickname"
+                label="NICKNAME"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                maxLength={15}
+              />
+
+              <InputPlank
+                id="input-room-code"
+                name="roomCode"
+                label="ROOM CODE"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value)}
+                maxLength={6}
+                uppercase
+              />
+            </div>
+
+            {/* Action Buttons: Unified Pair (-15% Scaled, 100% Inside Parchment) */}
+            <div className="flex flex-row items-center justify-center gap-3 sm:gap-4 w-full pt-1 pb-1">
+              <ButtonWood
+                id="btn-create-room"
+                variant="gold"
+                onClick={handleCreateRoom}
+                className="w-auto"
+              >
+                CREATE ROOM
+              </ButtonWood>
+
+              <ButtonWood
+                id="btn-join-room"
+                variant="primary"
+                onClick={handleJoinRoom}
+                className="w-auto"
+              >
+                JOIN ROOM
+              </ButtonWood>
+            </div>
+
+            {/* Server Connection Status */}
+            {!socket?.connected && (
+              <div className="mt-0.5 text-[10px] sm:text-[11px] font-heading text-gold-dim animate-pulse">
+                Connecting to server...
+              </div>
+            )}
+          </CardParchment>
+
+          {/* ── Standalone Atmospheric Candle Props: Large candles at bottom corners ── */}
+          <CandleProp className="absolute -bottom-8 sm:-bottom-12 -left-8 sm:-left-14 w-24 sm:w-32 md:w-36 h-36 sm:h-48 md:h-56 hidden sm:block" />
+          <CandleProp className="absolute -bottom-8 sm:-bottom-12 -right-8 sm:-right-14 w-24 sm:w-32 md:w-36 h-36 sm:h-48 md:h-56 hidden sm:block" />
+        </PanelWood>
       </div>
     </div>
   );

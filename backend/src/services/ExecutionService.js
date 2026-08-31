@@ -171,7 +171,7 @@ export class ExecutionService {
 
         resultPayload.isPrivate = true;
         resultPayload.privateResult = privateResult;
-        resultPayload.publicMessage = `Thuyền trưởng đã bí mật khám xét cabin của ${targetPlayer.nickname}.`;
+        resultPayload.publicMessage = `Captain secretly searched the cabin of ${targetPlayer.nickname}.`;
         break;
       }
 
@@ -193,12 +193,18 @@ export class ExecutionService {
         }
 
         const falseFaction = candidateFalseFactions[Math.floor(Math.random() * candidateFalseFactions.length)];
-        const falseFactionLabel = falseFaction === 'SAILOR' ? 'Thủy thủ (Sailor)' : falseFaction === 'PIRATE' ? 'Hải tặc (Pirate)' : 'Giáo chủ (Cult Leader)';
+        const falseFactionLabel = falseFaction === 'SAILOR' ? 'Sailor' : falseFaction === 'PIRATE' ? 'Pirate' : 'Cultist';
+
+        targetPlayer.floggingStatement = {
+          falseFaction,
+          factionType: falseFaction === 'CULT_LEADER' ? 'CULT' : falseFaction,
+          text: `NOT A ${falseFaction === 'SAILOR' ? 'SAILOR' : falseFaction === 'PIRATE' ? 'PIRATE' : 'CULTIST'}`
+        };
 
         resultPayload.isPrivate = false;
         resultPayload.falseFaction = falseFaction;
-        resultPayload.publicStatement = `Người này không phải là ${falseFactionLabel}`;
-        resultPayload.publicMessage = `Sau khi tra khảo, Thuyền trưởng công khai: "${targetPlayer.nickname} không phải là ${falseFactionLabel}".`;
+        resultPayload.publicStatement = `This person is NOT a ${falseFactionLabel}`;
+        resultPayload.publicMessage = `After flogging, Captain publicly declared: "${targetPlayer.nickname} is NOT a ${falseFactionLabel}".`;
         break;
       }
 
@@ -206,7 +212,7 @@ export class ExecutionService {
         // Cắt lưỡi (Speech Restriction)
         targetPlayer.speechRestricted = true;
         resultPayload.isPrivate = false;
-        resultPayload.publicMessage = `${targetPlayer.nickname} đã bị cắt lưỡi! (Khóa chat vĩnh viễn và mất quyền làm Thuyền trưởng).`;
+        resultPayload.publicMessage = `${targetPlayer.nickname}'s tongue has been cut! (Permanently silenced and disqualified from Captaincy).`;
         break;
       }
 
@@ -662,13 +668,14 @@ export class ExecutionService {
     if (!ritualCard) {
       room.gamePhase = 'ROUND_END';
       room.pendingCultRitual = null;
+      room.revealedCultRitual = null;
       room.touch();
 
       return {
         ritualCard: null,
         isDeckEmpty: true,
         nextPhase: 'ROUND_END',
-        publicMessage: 'Bộ bài Nghi thức Tà giáo đã hết! Nghi thức kết thúc.',
+        publicMessage: 'Cult Ritual deck is empty! Proceeding to next round.',
         room
       };
     }
@@ -678,13 +685,14 @@ export class ExecutionService {
     if (!cultLeader) {
       room.gamePhase = 'ROUND_END';
       room.pendingCultRitual = null;
+      room.revealedCultRitual = null;
       room.touch();
 
       return {
         ritualCard,
         isLeaderEliminated: true,
         nextPhase: 'ROUND_END',
-        publicMessage: `Lá bài Nghi thức ${ritualCard} được lật mở nhưng Giáo chủ đã bị loại! Nghi thức kết thúc.`,
+        publicMessage: `Cult Ritual card [${ritualCard}] was drawn, but the Cult Leader is eliminated! Ritual ends.`,
         room
       };
     }
@@ -702,28 +710,81 @@ export class ExecutionService {
       };
     }
 
+    const ritualMeta = {
+      GUNS_STASH: {
+        name: 'Guns Stash (Phát Súng Tà Giáo)',
+        description: 'Dark energy summons 3 firearms from the abyss! During the night, the Cult Leader will secretly distribute 3 guns among the crew.'
+      },
+      CULT_CABIN_SEARCH: {
+        name: 'Cult Cabin Search (Thị Kiến Ban Điều Hướng)',
+        description: 'The Cult Leader opens their third eye in darkness to secretly peer into the true allegiance of the Captain, Lieutenant, and Navigator!'
+      },
+      CONVERSION: {
+        name: 'Conversion (Thu Nạp Giáo Đồ)',
+        description: 'The whispering shadows seek a new vessel! During the night, the Cult Leader will secretly convert one eligible crew member into a loyal Cultist!'
+      }
+    };
+
+    room.revealedCultRitual = {
+      type: ritualCard,
+      name: ritualMeta[ritualCard]?.name || ritualCard,
+      description: ritualMeta[ritualCard]?.description || ''
+    };
+
     room.pendingCultRitual = {
       type: ritualCard,
       cultLeaderId: cultLeader.id,
       inspectionData
     };
 
-    room.gamePhase = 'CULT_UPRISING_BLIND';
+    // Note: Remains in CULT_UPRISING for the public reveal step so all players see the ritual card!
+    room.gamePhase = 'CULT_UPRISING';
     room.touch();
-
-    const ritualNames = {
-      GUNS_STASH: 'Phát súng Tà giáo (Guns Stash)',
-      CULT_CABIN_SEARCH: 'Thị kiến Ban điều hướng (Cult Cabin Search)',
-      CONVERSION: 'Thu nạp Giáo đồ (Conversion)'
-    };
 
     return {
       ritualCard,
-      ritualName: ritualNames[ritualCard] || ritualCard,
+      ritualName: room.revealedCultRitual.name,
+      ritualDescription: room.revealedCultRitual.description,
       cultLeaderId: cultLeader.id,
       inspectionData,
-      nextPhase: 'CULT_UPRISING_BLIND',
-      publicMessage: `Lá bài Nghi thức [${ritualNames[ritualCard] || ritualCard}] được lật mở! Toàn bộ thủy thủ đoàn phải nhắm mắt...`,
+      nextPhase: 'CULT_UPRISING',
+      publicMessage: `Cult Ritual card [${room.revealedCultRitual.name}] was drawn! Prepare for the night ritual...`,
+      room
+    };
+  }
+
+  /**
+   * Thuyền trưởng xác nhận bắt đầu Màn đêm Tà giáo (CULT_UPRISING_BLIND) sau khi cả phòng đã xem thẻ bài nghi thức
+   * @param {Object} room 
+   * @param {string} captainToken 
+   * @returns {Object}
+   */
+  static startCultNight(room, captainToken) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'CULT_UPRISING') {
+      throw new Error(`Không thể bắt đầu Màn đêm Tà giáo ở giai đoạn ${room.gamePhase}`);
+    }
+
+    const captain = room.getPlayerByToken(captainToken);
+    if (!captain || room.captainId !== captain.id) {
+      throw new Error('Chỉ có Thuyền trưởng mới có quyền kích hoạt Màn đêm');
+    }
+
+    if (!room.pendingCultRitual) {
+      room.gamePhase = 'ROUND_END';
+      room.revealedCultRitual = null;
+    } else {
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+    }
+
+    room.touch();
+
+    return {
+      nextPhase: room.gamePhase,
+      publicMessage: 'Night descends... All crew members must close their eyes in fear.',
       room
     };
   }
@@ -770,13 +831,14 @@ export class ExecutionService {
     });
 
     room.pendingCultRitual = null;
+    room.revealedCultRitual = null;
     room.gamePhase = 'ROUND_END';
     room.touch();
 
     return {
       success: true,
       nextPhase: 'ROUND_END',
-      publicMessage: 'Nghi thức Tà giáo kết thúc, trời đã sáng trở lại!',
+      publicMessage: 'Cult Ritual has ended. Dawn arrives upon the ship!',
       room
     };
   }
@@ -806,13 +868,14 @@ export class ExecutionService {
     }
 
     room.pendingCultRitual = null;
+    room.revealedCultRitual = null;
     room.gamePhase = 'ROUND_END';
     room.touch();
 
     return {
       success: true,
       nextPhase: 'ROUND_END',
-      publicMessage: 'Giáo chủ đã hoàn tất Thị kiến, trời đã sáng trở lại!',
+      publicMessage: 'Cult Leader has concluded their secret vision. Dawn arrives!',
       room
     };
   }
@@ -842,6 +905,26 @@ export class ExecutionService {
       throw new Error('Chỉ có Giáo chủ mới có quyền thực thi quyền năng này');
     }
 
+    // Trường hợp không có người chơi thỏa mãn (hoặc Cult Leader bỏ qua)
+    if (!targetPlayerId) {
+      room.pendingCultRitual = null;
+      room.revealedCultRitual = null;
+      room.gamePhase = 'ROUND_END';
+      room.touch();
+
+      return {
+        success: true,
+        noConversion: true,
+        convertedPlayerId: null,
+        convertedPlayerName: null,
+        cultLeaderId: leader.id,
+        cultLeaderName: leader.nickname,
+        nextPhase: 'ROUND_END',
+        publicMessage: 'Conversion Ritual has concluded. Dawn arrives upon the ship!',
+        room
+      };
+    }
+
     const targetPlayer = room.getPlayer(targetPlayerId);
     if (!targetPlayer) {
       throw new Error('Người chơi mục tiêu không tồn tại');
@@ -865,6 +948,7 @@ export class ExecutionService {
     targetPlayer.isConvertible = false; // Đã thu nạp thì không bị thu nạp lại
 
     room.pendingCultRitual = null;
+    room.revealedCultRitual = null;
     room.gamePhase = 'ROUND_END';
     room.touch();
 
@@ -875,7 +959,7 @@ export class ExecutionService {
       cultLeaderId: leader.id,
       cultLeaderName: leader.nickname,
       nextPhase: 'ROUND_END',
-      publicMessage: 'Nghi thức Thu Nạp kết thúc, trời đã sáng trở lại!',
+      publicMessage: 'Conversion Ritual has concluded. Dawn arrives upon the ship!',
       room
     };
   }

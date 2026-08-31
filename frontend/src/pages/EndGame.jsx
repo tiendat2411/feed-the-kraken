@@ -23,9 +23,9 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
   // Cấu hình chủ đề theo phe thắng cuộc
   const factionThemes = {
     SAILOR: {
-      title: 'PHE THỦY THỦ CHIẾN THẮNG!',
-      subtitle: 'Con tàu đã cập bến an toàn tại vịnh Bluewater Bay!',
-      badge: 'THỦY THỦ ĐOÀN (SAILORS)',
+      title: 'SAILORS WIN THE VOYAGE!',
+      subtitle: 'The vessel has safely anchored at Bluewater Bay!',
+      badge: 'SAILORS',
       icon: '⛵',
       bgGradient: 'from-blue-950 via-slate-900 to-cyan-950',
       heroGradient: 'from-cyan-400 via-blue-400 to-indigo-400',
@@ -34,9 +34,9 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
       accentColor: 'text-cyan-300'
     },
     PIRATE: {
-      title: 'PHE HẢI TẶC CHIẾN THẮNG!',
-      subtitle: 'Con tàu đã bị cướp và đưa về sào huyệt Crimson Cove!',
-      badge: 'BĂNG HẢI TẶC (PIRATES)',
+      title: 'PIRATES CLAIM THE SHIP!',
+      subtitle: 'The ship was hijacked and steered into Crimson Cove!',
+      badge: 'PIRATE CREW',
       icon: '🏴‍☠️',
       bgGradient: 'from-red-950 via-slate-900 to-amber-950',
       heroGradient: 'from-red-400 via-amber-400 to-yellow-300',
@@ -45,11 +45,11 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
       accentColor: 'text-red-400'
     },
     CULT: {
-      title: 'PHE TÀ GIÁO CHIẾN THẮNG!',
+      title: 'KRAKEN CULT VICTORY!',
       subtitle: winReason.includes('SACRIFICED')
-        ? 'Giáo chủ đã được hiến tế thành công! Thần Kraken trỗi dậy nuốt chửng tất cả!'
-        : 'Con tàu đã bị dẫn dắt thẳng vào Hang ổ của Thần Kraken vĩ đại!',
-      badge: 'HỘI TÀ GIÁO (CULT OF KRAKEN)',
+        ? 'The Cult Leader was successfully sacrificed! The Kraken rises to devour all!'
+        : 'The ship was steered directly into the Maw of the Great Kraken!',
+      badge: 'KRAKEN CULT',
       icon: '🐙',
       bgGradient: 'from-purple-950 via-slate-900 to-pink-950',
       heroGradient: 'from-purple-400 via-pink-400 to-indigo-300',
@@ -74,7 +74,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
     if (isCultLeader) {
       return (
         <span className="px-2.5 py-1 rounded-full text-xs font-black bg-purple-600/40 text-purple-200 border border-purple-400/60 flex items-center gap-1">
-          <span>👑</span> GIÁO CHỦ (CULT LEADER)
+          <span>👑</span> CULT LEADER
         </span>
       );
     }
@@ -87,7 +87,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
           </span>
           <span className="text-purple-400 font-bold text-xs">➔</span>
           <span className="px-2.5 py-1 rounded-full text-xs font-black bg-purple-600/40 text-pink-200 border border-purple-400/60 flex items-center gap-1 animate-pulse">
-            <span>🐙</span> CULTIST (ĐÃ CẢI ĐẠO)
+            <span>🐙</span> CULTIST (CONVERTED)
           </span>
         </div>
       );
@@ -96,14 +96,14 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
     if (player.currentFaction === 'PIRATE' || player.originalFaction === 'PIRATE') {
       return (
         <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-600/30 text-red-200 border border-red-400/40 flex items-center gap-1">
-          <span>🏴‍☠️</span> HẢI TẶC (PIRATE)
+          <span>🏴‍☠️</span> PIRATE
         </span>
       );
     }
 
     return (
       <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-600/30 text-blue-200 border border-blue-400/40 flex items-center gap-1">
-        <span>⛵</span> THỦY THỦ (SAILOR)
+        <span>⛵</span> SAILOR
       </span>
     );
   };
@@ -134,15 +134,15 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
           {/* Quick Match Statistics */}
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-300">
             <div className="px-4 py-2 rounded-2xl bg-slate-800/80 border border-slate-700/80">
-              🗺️ Bản đồ: <span className="font-bold text-white">{room?.mapType === 'LONG_JOURNEY' ? 'Long Journey' : 'Quick Journey'}</span>
+              🗺️ Sea Chart: <span className="font-bold text-white">{room?.mapType === 'LONG_JOURNEY' ? 'Long Journey' : 'Quick Journey'}</span>
             </div>
             {terminalNode && (
               <div className="px-4 py-2 rounded-2xl bg-slate-800/80 border border-slate-700/80">
-                🏁 Điểm kết thúc: <span className="font-bold text-amber-300">{terminalNode.name || terminalNode.id}</span>
+                🏁 Destination: <span className="font-bold text-amber-300">{terminalNode.name || terminalNode.id}</span>
               </div>
             )}
             <div className="px-4 py-2 rounded-2xl bg-slate-800/80 border border-slate-700/80">
-              ⏳ Tổng số vòng: <span className="font-bold text-white">{totalRounds}</span>
+              ⏳ Total Rounds: <span className="font-bold text-white">{totalRounds}</span>
             </div>
           </div>
         </div>
@@ -151,7 +151,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
         {/* 2. BẢNG VINH DANH & TIẾT LỘ 100% DANH TÍNH (HALL OF FAME) */}
         {/* ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* CỘT 1: NHỮNG NGƯỜI CHIẾN THẮNG */}
+          {/* CỘT 1: NHỮNG VICTORS */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2 px-2">
               <span className="text-xl">🏆</span>
@@ -177,7 +177,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
                         </span>
                         {player.id === currentUserId && (
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-slate-950">
-                            BẠN
+                            YOU
                           </span>
                         )}
                       </div>
@@ -189,7 +189,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
 
                   <div className="text-right text-xs space-y-1 pl-2">
                     <div className="font-black text-emerald-400 flex items-center justify-end gap-1">
-                      <span>👑</span> THẮNG CUỘC
+                      <span>👑</span> VICTORIOUS
                     </div>
                     <div className="text-slate-400 text-[11px]">
                       🔫 {player.gunCount ?? 0} súng
@@ -200,7 +200,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
             </div>
           </div>
 
-          {/* CỘT 2: NHỮNG NGƯỜI THUA CUỘC */}
+          {/* CỘT 2: NHỮNG DEFEATED */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2 px-2">
               <span className="text-xl">💀</span>
@@ -226,7 +226,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
                         </span>
                         {player.id === currentUserId && (
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-slate-300">
-                            BẠN
+                            YOU
                           </span>
                         )}
                         {player.status === 'ELIMINATED' && (
@@ -243,7 +243,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
 
                   <div className="text-right text-xs space-y-1 pl-2">
                     <div className="font-semibold text-slate-500">
-                      THẤT BẠI
+                      DEFEATED
                     </div>
                     <div className="text-slate-500 text-[11px]">
                       🔫 {player.gunCount ?? 0} súng
@@ -275,7 +275,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
               onClick={onLeaveRoom}
               className="flex-1 md:flex-initial px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
             >
-              🚪 RỜI PHÒNG
+              🚪 LEAVE ROOM
             </button>
 
             {isHost && (
@@ -283,7 +283,7 @@ const EndGame = ({ room, currentUserId, onReturnToLobby, onLeaveRoom }) => {
                 onClick={onReturnToLobby}
                 className="flex-1 md:flex-initial px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 font-black text-slate-950 text-sm shadow-lg shadow-amber-500/20 active:scale-98 transition transform"
               >
-                QUAY LẠI SẢNH CHỜ (CHƠI VÁN MỚI) 🔁
+                RETURN TO LOBBY (CHƠI VÁN MỚI) 🔁
               </button>
             )}
           </div>

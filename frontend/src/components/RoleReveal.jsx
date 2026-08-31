@@ -3,44 +3,44 @@ import { Shield, Skull, Eye, EyeOff, Flame, Clock, Users, Anchor } from 'lucide-
 
 const FACTION_DETAILS = {
   SAILOR: {
-    name: 'THỦY THỦ (SAILOR)',
+    name: 'SAILOR',
     color: 'from-blue-600 to-cyan-500',
     border: 'border-blue-500/50',
     glow: 'shadow-blue-500/20',
     icon: Anchor,
-    tagline: 'Phe Trung Thành & Công Lý',
-    goal: 'Lái con tàu cập bến an toàn tại vịnh Bluewater Bay (Hướng Xanh Dương) hoặc tiêu diệt toàn bộ Hải tặc & Giáo phái.',
-    tips: 'Hãy cẩn trọng khi chọn Thuyền phó và Hoa tiêu. Đừng để Hải tặc kiểm soát bánh lái!'
+    tagline: 'Loyal Crew & Defenders of the Ship',
+    goal: 'Navigate the ship safely to Bluewater Bay (Blue Route) or defeat all Pirates & Cultists.',
+    tips: 'Be cautious when electing the Lieutenant and Navigator. Never let Pirates take the helm!'
   },
   PIRATE: {
-    name: 'HẢI TẶC (PIRATE)',
+    name: 'PIRATE',
     color: 'from-red-600 to-rose-700',
     border: 'border-red-500/50',
     glow: 'shadow-red-500/30',
     icon: Skull,
-    tagline: 'Phe Cướp Biển & Nổi Loạn',
-    goal: 'Đánh cướp con tàu và điều hướng thẳng vào hang ổ Crimson Cove (Hướng Đỏ) để chia kho báu.',
-    tips: 'Phối hợp ngầm với đồng bọn! Sử dụng súng để Bạo Loạn (Mutiny) lật đổ Thuyền trưởng khi cần.'
+    tagline: 'Buccaneers & Mutineers',
+    goal: 'Hijack the ship and steer directly into Crimson Cove (Red Route) to claim the plunder.',
+    tips: 'Coordinate covertly with your comrades! Use guns to trigger a Mutiny and overthrow the Captain.'
   },
   CULT_LEADER: {
-    name: 'GIÁO CHỦ (CULT LEADER)',
+    name: 'CULT LEADER',
     color: 'from-amber-500 to-yellow-600',
     border: 'border-yellow-500/50',
     glow: 'shadow-yellow-500/30',
     icon: Flame,
-    tagline: 'Lãnh Đạo Giáo Phái Kraken',
-    goal: 'Dụ dỗ con tàu vào sào huyệt của Thần Quái Vật Kraken (Hướng Vàng) HOẶC bị Thuyền trưởng ném cho Kraken ăn!',
-    tips: 'Sử dụng các thẻ Nghi Thức (Cult Rituals) để thu nạp thêm Giáo Đồ (Cultist) bí mật vào phe mình.'
+    tagline: 'Herald of the Deep Kraken',
+    goal: 'Lure the ship into the Kraken Lair (Yellow Route) OR get fed to the Kraken by the Captain!',
+    tips: 'Use Cult Rituals to secretly convert crew members into devout Cultists.'
   },
   CULTIST: {
-    name: 'GIÁO ĐỒ (CULTIST)',
+    name: 'CULTIST',
     color: 'from-purple-600 to-indigo-600',
     border: 'border-purple-500/50',
     glow: 'shadow-purple-500/30',
     icon: Eye,
-    tagline: 'Tín Đồ Tận Tụy',
-    goal: 'Phụng sự Giáo Chủ và hướng con tàu về phía Thần Bạch Tuộc Kraken.',
-    tips: 'Bảo vệ Giáo Chủ và tạo cơ hội để ngài thực hiện nghi thức tế thần.'
+    tagline: 'Devout Follower of the Deep',
+    goal: 'Serve the Cult Leader and steer the vessel towards the Maw of the Kraken.',
+    tips: 'Protect your Cult Leader and create opportunities for ritual sacrifices.'
   }
 };
 
@@ -51,7 +51,7 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
   const isPirate = myRole === 'PIRATE';
   const knownPirates = room?.knownPirates || [];
 
-  // Đồng bộ đếm ngược theo deadline từ server
+  // Synchronize countdown with server deadline
   useEffect(() => {
     if (!room?.phaseDeadline) return;
 
@@ -75,7 +75,7 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
       {/* Top Countdown Banner */}
       <div className="z-10 mb-6 flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 shadow-xl">
         <Clock className="text-yellow-400 animate-spin" style={{ animationDuration: '4s' }} size={20} />
-        <span className="font-semibold text-slate-300">GIAI ĐOẠN ĐÊM ĐẦU TIÊN:</span>
+        <span className="font-semibold text-slate-300">FIRST NIGHT PHASE:</span>
         <span className={`font-mono text-2xl font-black ${timeLeft <= 5 ? 'text-red-400 animate-ping' : 'text-yellow-400'}`}>
           {timeLeft}s
         </span>
@@ -92,16 +92,16 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
                 <Icon size={32} className="text-white" />
               </div>
               <div>
-                <span className="text-xs uppercase tracking-widest text-slate-400 font-bold">VAI TRÒ BÍ MẬT CỦA BẠN</span>
+                <span className="text-xs uppercase tracking-widest text-slate-400 font-bold">YOUR SECRET IDENTITY</span>
                 <h1 className={`text-2xl sm:text-3xl font-black bg-gradient-to-r ${faction.color} bg-clip-text text-transparent`}>
                   {faction.name}
                 </h1>
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xs text-slate-400">Trang bị</span>
+              <span className="text-xs text-slate-400">Armament</span>
               <div className="text-lg font-bold text-amber-400 flex items-center gap-1 justify-end">
-                🔫 3 Súng
+                🔫 3 Guns
               </div>
             </div>
           </div>
@@ -110,7 +110,7 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-2">
-                <Shield size={16} className="text-blue-400" /> Nhiệm vụ phe
+                <Shield size={16} className="text-blue-400" /> Faction Objective
               </h3>
               <p className="text-slate-300 bg-white/5 p-4 rounded-xl border border-white/5 text-sm leading-relaxed">
                 {faction.goal}
@@ -119,7 +119,7 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
 
             <div>
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
-                💡 Lời khuyên
+                💡 Tactical Advice
               </h3>
               <p className="text-xs text-slate-400 italic">
                 {faction.tips}
@@ -135,8 +135,8 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
             <div className="flex items-center gap-3 mb-4">
               <Skull className="text-red-400 animate-bounce" size={24} />
               <div>
-                <h2 className="text-xl font-bold text-red-200">HẢI TẶC HỘI TỤ (PIRATES GATHERING)</h2>
-                <p className="text-xs text-red-300/80">Bạn và các đồng bọn dưới đây là những người thuộc phe Hải tặc:</p>
+                <h2 className="text-xl font-bold text-red-200">PIRATES GATHERING</h2>
+                <p className="text-xs text-red-300/80">You and your fellow pirates below share allegiance to the Crimson Flag:</p>
               </div>
             </div>
 
@@ -156,9 +156,9 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
                   <div className="overflow-hidden">
                     <div className="font-bold text-sm text-red-100 truncate flex items-center gap-1">
                       {pirate.nickname || pirate.name}
-                      {pirate.id === currentUserId && <span className="text-[10px] bg-red-500 text-white px-1 rounded">Bạn</span>}
+                      {pirate.id === currentUserId && <span className="text-[10px] bg-red-500 text-white px-1 rounded">YOU</span>}
                     </div>
-                    <span className="text-[11px] text-red-400">Đồng bọn Hải tặc</span>
+                    <span className="text-[11px] text-red-400">Fellow Pirate</span>
                   </div>
                 </div>
               ))}
@@ -171,13 +171,13 @@ const RoleReveal = ({ room, myRole, currentUserId }) => {
               <EyeOff size={32} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-200">TẤT CẢ ĐANG NHẮM MẮT... 🌙</h2>
+              <h2 className="text-xl font-bold text-slate-200">ALL EYES ARE CLOSED... 🌙</h2>
               <p className="text-slate-400 text-sm mt-1 max-w-md mx-auto">
-                Bóng đêm bao trùm con tàu. Các Hải tặc đang bí mật nhận diện đồng bọn. Hãy giữ im lặng tuyệt đối cho đến khi trời sáng!
+                Darkness shrouds the ship. The Pirates are secretly identifying their comrades. Remain silent until dawn breaks!
               </p>
             </div>
             <div className="text-xs text-slate-500 font-mono">
-              Trời sẽ sáng tự động sau {timeLeft} giây
+              Dawn will break automatically in {timeLeft} seconds
             </div>
           </div>
         )}

@@ -33,7 +33,20 @@ const NavigationPhase = ({
   const isNavigator = me?.id === room?.navigatorId;
 
   const currentPhase = room?.gamePhase || 'NAVIGATION';
-  const activeCards = (privateCards && privateCards.length > 0) ? privateCards : (room?.myNavigationCards || []);
+
+  // Determine if it is the current player's turn to act
+  const isMyTurnToAct = (currentPhase === 'NAVIGATION_CAPTAIN_DRAW' && isCaptain) ||
+                        (currentPhase === 'NAVIGATION_LIEUTENANT_DRAW' && isLieutenant) ||
+                        (currentPhase === 'NAVIGATION_NAVIGATOR_DECISION' && isNavigator) ||
+                        (currentPhase === 'EMERGENCY_NAVIGATOR_SELECTION' && isCaptain);
+
+  // Always prioritize room.myNavigationCards (which comes directly from the server's sanitized room state)
+  // and fallback to privateCards only when available and needed.
+  const activeCards = isMyTurnToAct
+    ? ((room?.myNavigationCards && room.myNavigationCards.length > 0)
+        ? room.myNavigationCards
+        : (privateCards || []))
+    : [];
 
   // Play flip sound when new active cards appear
   useEffect(() => {
@@ -46,7 +59,7 @@ const NavigationPhase = ({
   useEffect(() => {
     setSelectedCardId(null);
     setShowOverboardConfirm(false);
-  }, [currentPhase, activeCards]);
+  }, [currentPhase, activeCards?.map(c => c.id).join(',')]);
 
   // Countdown timer for 60s
   useEffect(() => {
@@ -74,11 +87,11 @@ const NavigationPhase = ({
   const getCardBadge = (direction) => {
     switch (direction) {
       case 'BLUE':
-        return { label: 'SAILOR (THỦY THỦ)', bg: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40', icon: '⚓' };
+        return { label: 'SAILOR', bg: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40', icon: '⚓' };
       case 'RED':
-        return { label: 'PIRATE (HẢI TẶC)', bg: 'bg-red-500/20 text-red-300 border-red-500/40', icon: '⚔️' };
+        return { label: 'PIRATE', bg: 'bg-red-500/20 text-red-300 border-red-500/40', icon: '⚔️' };
       case 'YELLOW':
-        return { label: 'CULT (TÀ GIÁO)', bg: 'bg-amber-500/20 text-amber-300 border-amber-500/40', icon: '🐙' };
+        return { label: 'CULT', bg: 'bg-amber-500/20 text-amber-300 border-amber-500/40', icon: '🐙' };
       default:
         return { label: 'UNKNOWN', bg: 'bg-slate-700 text-slate-300', icon: '❓' };
     }
@@ -87,20 +100,20 @@ const NavigationPhase = ({
   const getActionDescription = (action) => {
     switch (action) {
       case 'DRUNK':
-        return { title: 'Say Xỉn 🍺', desc: 'Thuyền trưởng say rượu! Quyền Thuyền trưởng sẽ chuyển sang người kế tiếp bên trái.' };
+        return { title: 'Drunken Stupor 🍺', desc: 'Captain is intoxicated! Captaincy passes to the player on the left.' };
       case 'CULT_UPRISING':
-        return { title: 'Khởi Nghĩa Tà Giáo 👁️', desc: 'Triệu hồi sức mạnh bóng tối! Tăng cường tín đồ và chuyển biến lòng trung thành.' };
+        return { title: 'Cult Uprising 👁️', desc: 'Dark powers summon the Deep! Secret conversions may occur.' };
       case 'ARMED':
-        return { title: 'Tiếp Vũ Khí 🔫', desc: 'Cung cấp thêm 1 khẩu súng mới cho Hoa tiêu đương nhiệm.' };
+        return { title: 'Arms Cache 🔫', desc: 'Grants +1 pistol to the incumbent Navigator.' };
       case 'DISARMED':
-        return { title: 'Tước Khí 🚫', desc: 'Hoa tiêu bị tịch thu 1 khẩu súng vào kho vũ khí chung.' };
+        return { title: 'Disarm 🚫', desc: 'Navigator loses 1 pistol to the common armory.' };
       case 'MERMAID':
-        return { title: 'Tiếng Hát Tiên Cá 🧜‍♀️', desc: 'Thuyền trưởng chỉ định 1 người chơi bí mật xem lại 3 lá bài bị hủy gần nhất.' };
+        return { title: 'Mermaid Song 🧜‍♀️', desc: 'Captain appoints 1 player to secretly examine the last 3 discarded cards.' };
       case 'TELESCOPE':
-        return { title: 'Kính Viễn Vọng 🔭', desc: 'Thuyền trưởng chỉ định 1 người chơi bí mật nhìn lá bài trên đỉnh bộ bài bốc (chọn giữ lại hoặc hủy).' };
+        return { title: 'Spyglass 🔭', desc: 'Captain appoints 1 player to inspect the top card of the navigation deck.' };
       case 'NONE':
       default:
-        return { title: 'Thuận Buồm Xuôi Gió ⛵', desc: 'Con tàu di chuyển êm đềm theo hướng hải đồ, không có tác động phụ.' };
+        return { title: 'Fair Winds ⛵', desc: 'The vessel glides smoothly along the plotted course with no extra incident.' };
     }
   };
 
@@ -122,23 +135,23 @@ const NavigationPhase = ({
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-200 to-amber-300">
-                GIAI ĐOẠN ĐIỀU HƯỚNG TÀU
+                NAVIGATION PHASE
               </h1>
-              <p className="text-xs text-slate-400">Phòng: <span className="font-mono text-cyan-300 font-semibold">{room?.id}</span> | Chế độ: <span className="text-amber-300 font-medium">{room?.mapType}</span></p>
+              <p className="text-xs text-slate-400">Room: <span className="font-mono text-cyan-300 font-semibold">{room?.id}</span> | Mode: <span className="text-amber-300 font-medium">{room?.mapType}</span></p>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-xs">
-              <span className="text-slate-400">Chồng bài bốc:</span>
+              <span className="text-slate-400">Deck:</span>
               <span className="font-bold text-cyan-400">{room?.navigationDeck?.drawPileCount ?? 19} 🎴</span>
             </div>
             <div className="flex items-center space-x-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-xs">
-              <span className="text-slate-400">Đã hủy:</span>
+              <span className="text-slate-400">Discard:</span>
               <span className="font-bold text-red-400">{room?.navigationDeck?.discardPileCount ?? 0} 🗑️</span>
             </div>
             <div className="flex items-center space-x-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-xs">
-              <span className="text-slate-400">Nhật ký:</span>
+              <span className="text-slate-400">Logbook:</span>
               <span className="font-bold text-amber-400">{room?.navigationDeck?.logbookCount ?? 0}/2 📖</span>
             </div>
             <div className={`px-3 py-1.5 rounded-lg border font-mono font-bold text-sm ${timeLeft <= 10 ? 'bg-red-500/20 text-red-400 border-red-500/50 animate-pulse' : 'bg-slate-800 text-cyan-300 border-cyan-500/30'}`}>
@@ -152,24 +165,24 @@ const NavigationPhase = ({
           <div className={`p-3 rounded-xl border flex items-center space-x-3 ${isCaptain ? 'bg-amber-950/40 border-amber-500/60 ring-2 ring-amber-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
             <span className="text-2xl">👑</span>
             <div className="overflow-hidden">
-              <div className="text-xs text-amber-400/90 font-bold uppercase tracking-wider">Thuyền Trưởng {isCaptain && '(BẠN)'}</div>
-              <div className="text-sm font-semibold truncate text-white">{captain?.nickname || 'Chưa chỉ định'}</div>
+              <div className="text-xs text-amber-400/90 font-bold uppercase tracking-wider">Captain {isCaptain && '(YOU)'}</div>
+              <div className="text-sm font-semibold truncate text-white">{captain?.nickname || 'Unassigned'}</div>
             </div>
           </div>
 
           <div className={`p-3 rounded-xl border flex items-center space-x-3 ${isLieutenant ? 'bg-sky-950/40 border-sky-500/60 ring-2 ring-sky-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
             <span className="text-2xl">⚔️</span>
             <div className="overflow-hidden">
-              <div className="text-xs text-sky-400/90 font-bold uppercase tracking-wider">Thuyền Phó {isLieutenant && '(BẠN)'}</div>
-              <div className="text-sm font-semibold truncate text-white">{lieutenant?.nickname || 'Chưa chỉ định'}</div>
+              <div className="text-xs text-sky-400/90 font-bold uppercase tracking-wider">Lieutenant {isLieutenant && '(YOU)'}</div>
+              <div className="text-sm font-semibold truncate text-white">{lieutenant?.nickname || 'Unassigned'}</div>
             </div>
           </div>
 
           <div className={`p-3 rounded-xl border flex items-center space-x-3 ${isNavigator ? 'bg-emerald-950/40 border-emerald-500/60 ring-2 ring-emerald-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
             <span className="text-2xl">🧭</span>
             <div className="overflow-hidden">
-              <div className="text-xs text-emerald-400/90 font-bold uppercase tracking-wider">Hoa Tiêu {isNavigator && '(BẠN)'}</div>
-              <div className="text-sm font-semibold truncate text-white">{navigator?.nickname || 'Chưa chỉ định'}</div>
+              <div className="text-xs text-emerald-400/90 font-bold uppercase tracking-wider">Navigator {isNavigator && '(YOU)'}</div>
+              <div className="text-sm font-semibold truncate text-white">{navigator?.nickname || 'Unassigned'}</div>
             </div>
           </div>
         </div>
@@ -186,15 +199,15 @@ const NavigationPhase = ({
               <div>
                 <div className="text-center mb-8">
                   <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-2">
-                    LƯỢT CỦA THUYỀN TRƯỞNG
+                    CAPTAIN'S TURN
                   </span>
                   <h2 className="text-2xl md:text-3xl font-extrabold text-white">
-                    {activeCards.length > 0 ? 'Hãy Chọn 1 Lá Bài Để Bỏ Vào Nhật Ký' : 'Bắt Đầu Lượt Rút Hải Đồ Bí Mật'}
+                    {activeCards.length > 0 ? 'Select 1 Card to Keep in Logbook' : 'Draw Secret Navigation Cards'}
                   </h2>
                   <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
                     {activeCards.length > 0
-                      ? 'Bạn vừa rút 2 hải đồ bí mật. Hãy nhấp chọn 1 lá bạn muốn giữ để chuyển tiếp cho Hoa tiêu. Lá còn lại sẽ bị hủy úp kín.'
-                      : 'Nhấn nút bên dưới để rút 2 hải đồ đầu tiên từ đầu cọc bài bốc.'}
+                      ? 'You drew 2 secret navigation cards. Click 1 card to seal into the Logbook. The other card will be discarded face-down.'
+                      : 'Click the button below to draw 2 navigation cards from the deck.'}
                   </p>
                 </div>
 
@@ -206,7 +219,7 @@ const NavigationPhase = ({
                       className="px-8 py-4 rounded-xl font-bold text-base bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 shadow-xl shadow-amber-500/30 transition-all duration-200 transform hover:scale-105 cursor-pointer flex items-center space-x-3"
                     >
                       <span className="text-2xl">🧭</span>
-                      <span>RÚT 2 HẢI ĐỒ BÍ MẬT</span>
+                      <span>DRAW 2 SECRET NAVIGATION CARDS</span>
                     </button>
                   </div>
                 ) : (
@@ -233,7 +246,7 @@ const NavigationPhase = ({
                               <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
                                 {badge.icon} {badge.label}
                               </span>
-                              <span className="text-xs font-mono opacity-60">Thẻ #{idx + 1}</span>
+                              <span className="text-xs font-mono opacity-60">Card #{idx + 1}</span>
                             </div>
 
                             <div className="my-6 text-center">
@@ -243,9 +256,9 @@ const NavigationPhase = ({
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                              <span className="text-slate-300">Trạng thái:</span>
+                              <span className="text-slate-300">Status:</span>
                               <span className={`font-semibold ${isSelected ? 'text-amber-300 font-bold' : 'text-slate-400'}`}>
-                                {isSelected ? '✓ SẼ GIỮ VÀO NHẬT KÝ' : 'Sẽ bị hủy'}
+                                {isSelected ? '✓ KEEP IN LOGBOOK' : 'Will be discarded'}
                               </span>
                             </div>
                           </div>
@@ -265,7 +278,7 @@ const NavigationPhase = ({
                         }`}
                       >
                         <span>📖</span>
-                        <span>XÁC NHẬN BỎ VÀO NHẬT KÝ</span>
+                        <span>CONFIRM LOGBOOK SELECTION</span>
                       </button>
                     </div>
                   </div>
@@ -276,9 +289,9 @@ const NavigationPhase = ({
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-4xl animate-bounce">
                   👑
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Thuyền Trưởng Đang Xem Xét Hải Đồ</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Captain is Inspecting the Charts</h3>
                 <p className="text-sm text-slate-400 max-w-md mx-auto">
-                  Thuyền trưởng <span className="text-amber-300 font-semibold">{captain?.nickname}</span> đang bí mật rút 2 thẻ hải đồ và chọn 1 lá để chuyển vào Nhật Ký Hành Trình.
+                  Captain <span className="text-amber-300 font-semibold">{captain?.nickname}</span> is secretly drawing 2 navigation cards and keeping 1 in the Logbook.
                 </p>
                 <div className="mt-6 flex justify-center space-x-2">
                   <div className="w-3 h-3 bg-amber-400 rounded-full animate-ping" />
@@ -297,11 +310,11 @@ const NavigationPhase = ({
               <div>
                 <div className="text-center mb-8">
                   <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/40 mb-2">
-                    LƯỢT CỦA THUYỀN PHÓ
+                    LIEUTENANT'S TURN
                   </span>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">Hãy Chọn 1 Lá Bài Tiếp Theo Vào Nhật Ký</h2>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">Select 1 More Card for the Logbook</h2>
                   <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-                    Thuyền trưởng đã bỏ 1 lá vào Nhật Ký. Bây giờ đến lượt bạn rút 2 lá mới và <span className="text-sky-300 font-semibold">chọn 1 lá để giữ</span>. 2 lá trong Nhật Ký sẽ được xáo ngẫu nhiên trước khi chuyển cho Hoa tiêu.
+                    Captain kept 1 card in the Logbook. Now draw 2 cards and <span className="text-sky-300 font-semibold">choose 1 to keep</span>. The 2 Logbook cards will be shuffled before passing to the Navigator.
                   </p>
                 </div>
 
@@ -327,7 +340,7 @@ const NavigationPhase = ({
                           <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
                             {badge.icon} {badge.label}
                           </span>
-                          <span className="text-xs font-mono opacity-60">Thẻ #{idx + 1}</span>
+                          <span className="text-xs font-mono opacity-60">Card #{idx + 1}</span>
                         </div>
 
                         <div className="my-6 text-center">
@@ -337,9 +350,9 @@ const NavigationPhase = ({
                         </div>
 
                         <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                          <span className="text-slate-300">Trạng thái:</span>
+                          <span className="text-slate-300">Status:</span>
                           <span className={`font-semibold ${isSelected ? 'text-sky-300' : 'text-slate-400'}`}>
-                            {isSelected ? '✓ SẼ GIỮ VÀO NHẬT KÝ' : 'Sẽ bị hủy'}
+                            {isSelected ? '✓ KEEP IN LOGBOOK' : 'Will be discarded'}
                           </span>
                         </div>
                       </div>
@@ -359,7 +372,7 @@ const NavigationPhase = ({
                     }`}
                   >
                     <span>📖</span>
-                    <span>XÁC NHẬN BỎ VÀO NHẬT KÝ</span>
+                    <span>CONFIRM LOGBOOK SELECTION</span>
                   </button>
                 </div>
               </div>
@@ -368,9 +381,9 @@ const NavigationPhase = ({
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-4xl animate-bounce">
                   ⚔️
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Thuyền Phó Đang Xem Xét Hải Đồ</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Lieutenant is Inspecting the Charts</h3>
                 <p className="text-sm text-slate-400 max-w-md mx-auto">
-                  Thuyền phó <span className="text-sky-300 font-semibold">{lieutenant?.nickname}</span> đang chọn 1 lá bài tiếp theo để hoàn thành 2 lá trong Hộp Nhật Ký Hành Trình.
+                  Lieutenant <span className="text-sky-300 font-semibold">{lieutenant?.nickname}</span> is selecting 1 card to seal into the Captain's Logbook.
                 </p>
                 <div className="mt-6 flex justify-center space-x-2">
                   <div className="w-3 h-3 bg-sky-400 rounded-full animate-ping" />
@@ -389,11 +402,11 @@ const NavigationPhase = ({
               <div>
                 <div className="text-center mb-8">
                   <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 mb-2">
-                    QUYẾT ĐỊNH CỦA HOA TIÊU
+                    NAVIGATOR'S COURSE DECISION
                   </span>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">Chọn 1 Hải Đồ Để Con Tàu Di Chuyển</h2>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-white">Select 1 Navigation Card to Steer the Vessel</h2>
                   <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-                    Dưới đây là 2 lá bài được gửi từ Thuyền trưởng và Thuyền phó (đã được Server xáo trộn ngẫu nhiên). Bạn có quyền chọn 1 lá để thực thi, hoặc chọn <span className="text-red-400 font-semibold">Tự Nhảy Tàu</span> nếu phản đối.
+                    Here are the 2 secret cards placed into the Logbook by the Captain and Lieutenant (shuffled). Select 1 card to steer the ship, or <span className="text-red-400 font-semibold">Jump Overboard</span> to protest.
                   </p>
                 </div>
 
@@ -419,7 +432,7 @@ const NavigationPhase = ({
                           <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${badge.bg}`}>
                             {badge.icon} {badge.label}
                           </span>
-                          <span className="text-xs font-mono opacity-60">Lá trong Nhật Ký #{idx + 1}</span>
+                          <span className="text-xs font-mono opacity-60">Logbook Card #{idx + 1}</span>
                         </div>
 
                         <div className="my-6 text-center">
@@ -429,9 +442,9 @@ const NavigationPhase = ({
                         </div>
 
                         <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                          <span className="text-slate-300">Hướng đi:</span>
+                          <span className="text-slate-300">Course:</span>
                           <span className={`font-semibold ${isSelected ? 'text-emerald-300 font-bold' : 'text-slate-400'}`}>
-                            {isSelected ? '✓ CHỌN ĐIỀU HƯỚNG' : 'Bỏ qua'}
+                            {isSelected ? '✓ STEER THIS COURSE' : 'Will be discarded'}
                           </span>
                         </div>
                       </div>
@@ -451,7 +464,7 @@ const NavigationPhase = ({
                     }`}
                   >
                     <span>🧭</span>
-                    <span>CHỐT ĐIỀU HƯỚNG TÀU</span>
+                    <span>STEER VESSEL ON THIS COURSE ➔</span>
                   </button>
 
                   <button
@@ -460,7 +473,7 @@ const NavigationPhase = ({
                     className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-sm bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-500/50 shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer hover:border-red-400"
                   >
                     <span>🌊</span>
-                    <span>TỰ NHẢY TÀU (JUMP OVERBOARD)</span>
+                    <span>JUMP OVERBOARD</span>
                   </button>
                 </div>
 
@@ -469,24 +482,24 @@ const NavigationPhase = ({
                   <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-slate-900 border border-red-500/60 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl text-center">
                       <div className="text-5xl mb-4">🌊 🦈</div>
-                      <h3 className="text-xl font-extrabold text-red-400 mb-2">BẠN CÓ CHẮC CHẮN MUỐN NHẢY TÀU?</h3>
+                      <h3 className="text-xl font-extrabold text-red-400 mb-2">ARE YOU SURE YOU WANT TO JUMP OVERBOARD?</h3>
                       <p className="text-sm text-slate-300 mb-6 leading-relaxed">
-                        Hành động này sẽ <span className="text-red-400 font-bold">LOẠI BẠN HOÀN TOÀN KHỎI VÁN ĐẤU (ELIMINATED)</span> và bạn sẽ mất toàn bộ súng. Cả 2 lá bài trong Nhật ký sẽ bị hủy bí mật.
+                        This action will permanently <span className="text-red-400 font-bold">ELIMINATE YOU FROM THE VOYAGE</span> and forfeit all your firearms. Both cards in the Logbook will be discarded secretly.
                       </p>
                       <div className="flex space-x-3 justify-center">
                         <button
                           id="btn-cancel-overboard"
                           onClick={() => setShowOverboardConfirm(false)}
-                          className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors"
+                          className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors cursor-pointer"
                         >
-                          Hủy bỏ
+                          Cancel
                         </button>
                         <button
                           id="btn-confirm-overboard"
                           onClick={() => onNavigatorJumpOverboard && onNavigatorJumpOverboard()}
-                          className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm shadow-lg shadow-red-900/50 transition-colors"
+                          className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm shadow-lg shadow-red-900/50 transition-colors cursor-pointer"
                         >
-                          XÁC NHẬN NHẢY TÀU
+                          CONFIRM JUMP OVERBOARD
                         </button>
                       </div>
                     </div>
@@ -498,9 +511,9 @@ const NavigationPhase = ({
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-4xl animate-bounce">
                   🧭
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Hoa Tiêu Đang Định Đoạt Hướng Đi</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Navigator is Charting the Course</h3>
                 <p className="text-sm text-slate-400 max-w-md mx-auto">
-                  Hoa tiêu <span className="text-emerald-300 font-semibold">{navigator?.nickname}</span> đang mở Hộp Nhật Ký và lựa chọn hướng điều hướng cho con tàu.
+                  Navigator <span className="text-emerald-300 font-semibold">{navigator?.nickname}</span> is inspecting the Logbook and selecting the vessel's trajectory.
                 </p>
                 <div className="mt-6 flex justify-center space-x-2">
                   <div className="w-3 h-3 bg-emerald-400 rounded-full animate-ping" />
@@ -517,17 +530,17 @@ const NavigationPhase = ({
 
             <div className="text-center mb-8">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40 mb-2 animate-pulse">
-                🚨 TÌNH HUỐNG KHẨN CẤP
+                🚨 EMERGENCY AT SEA
               </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white">Hoa Tiêu Đã Tự Nhảy Tàu!</h2>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white">The Navigator Has Jumped Overboard!</h2>
               <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-                Hoa tiêu trước đó đã nhảy xuống biển và bị loại khỏi trò chơi. Thuyền trưởng cần bổ nhiệm ngay một <span className="text-rose-300 font-semibold">Hoa Tiêu Khẩn Cấp</span> mới để tiếp tục hành trình.
+                The incumbent Navigator has abandoned ship and perished. The Captain must immediately appoint an <span className="text-rose-300 font-semibold">Emergency Navigator</span> to continue the voyage.
               </p>
             </div>
 
             {isCaptain ? (
               <div className="max-w-xl mx-auto">
-                <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Chọn 1 Thủy Thủ Làm Hoa Tiêu Khẩn Cấp:</h4>
+                <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Appoint 1 Crew Member as Emergency Navigator:</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                   {eligibleEmergencyCandidates.map(cand => {
                     const isSelected = selectedEmergencyCandidateId === cand.id;
@@ -548,8 +561,8 @@ const NavigationPhase = ({
                         <div className="overflow-hidden flex-1">
                           <div className="font-bold truncate">{cand.nickname}</div>
                           <div className="text-xs text-slate-400 flex items-center space-x-2">
-                            <span>Súng: {cand.gunCount} 🔫</span>
-                            {isOffDuty && <span className="text-amber-400 font-medium">(Nghỉ phép)</span>}
+                            <span>Guns: {cand.gunCount} 🔫</span>
+                            {isOffDuty && <span className="text-amber-400 font-medium">(Off-Duty)</span>}
                           </div>
                         </div>
                       </div>
@@ -569,16 +582,16 @@ const NavigationPhase = ({
                     }`}
                   >
                     <span>🚨</span>
-                    <span>BỔ NHIỆM HOA TIÊU KHẨN CẤP</span>
+                    <span>EMERGENCY NAVIGATOR APPOINTMENT</span>
                   </button>
                 </div>
               </div>
             ) : (
               <div className="py-8 text-center">
                 <div className="text-4xl mb-3">👑</div>
-                <h4 className="text-lg font-bold text-white mb-1">Đang Chờ Thuyền Trưởng Bổ Nhiệm</h4>
+                <h4 className="text-lg font-bold text-white mb-1">Awaiting Captain's Emergency Appointment</h4>
                 <p className="text-sm text-slate-400">
-                  Thuyền trưởng <span className="text-amber-300 font-semibold">{captain?.nickname}</span> đang chọn một Hoa tiêu mới từ các thành viên còn lại trên tàu.
+                  Captain <span className="text-amber-300 font-semibold">{captain?.nickname}</span> is selecting a new Navigator from the remaining crew.
                 </p>
               </div>
             )}
@@ -589,9 +602,9 @@ const NavigationPhase = ({
         {currentPhase === 'EXECUTE_ACTIONS' && room?.executedNavigationCard && (
           <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl border border-indigo-500/40 p-6 md:p-8 shadow-2xl text-center">
             <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 mb-3">
-              KẾT QUẢ ĐIỀU HƯỚNG
+              NAVIGATION EXECUTED
             </span>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-6">Con Tàu Đang Rẽ Sóng Tiến Về Phía Trước!</h2>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-6">The Vessel Cuts Through the Waves!</h2>
 
             <div className="max-w-md mx-auto mb-6">
               {(() => {

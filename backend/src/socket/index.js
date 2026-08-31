@@ -487,6 +487,10 @@ export function setupSocket(server) {
           role: 'NAVIGATOR',
           cards: navResult.cards
         });
+        emitPrivate(io, room.id, room.navigatorId, 'CARDS_DRAWN_SECRET', {
+          role: 'NAVIGATOR',
+          cards: navResult.cards
+        });
         io.to(room.id).emit('NAVIGATOR_DRAWING', { navigatorId: room.navigatorId, timeout: 60 });
         broadcastRoomState(io, room);
 
@@ -834,7 +838,7 @@ export function setupSocket(server) {
       }
     });
 
-    // START CULT UPRISING (UC-015)
+    // START / DRAW CULT UPRISING RITUAL CARD (UC-015 Step 1: Public Reveal)
     socket.on('start_cult_uprising', async (callback) => {
       try {
         const found = RoomManager.getRoomByToken(socket.sessionToken);
@@ -845,25 +849,102 @@ export function setupSocket(server) {
         await RoomManager.saveSnapshot(room.id);
 
         if (result.ritualCard) {
-          // Công khai loại bài Nghi thức vừa lật mở (AC-1)
+          // Công khai loại bài Nghi thức vừa lật mở cho toàn phòng (AC-1)
           io.to(room.id).emit('CULT_RITUAL_REVEALED', {
             card_action: result.ritualCard,
-            ritualName: result.ritualName
+            ritualName: result.ritualName,
+            ritualDescription: result.ritualDescription
           });
-
-          // Kích hoạt màn hình mù cho toàn phòng (Không chứa bất kỳ ID của Cult Leader nào - Anti-Sniffing AC-1)
-          io.to(room.id).emit('CULT_UPRISING_STARTED', {});
-
-          // Gửi riêng dữ liệu thị kiến ban điều hướng cho Cult Leader nếu là CULT_CABIN_SEARCH
-          if (result.inspectionData && result.cultLeaderId) {
-            emitPrivate(io, room.id, result.cultLeaderId, 'CULT_CABIN_SEARCH_DATA', {
-              inspectionData: result.inspectionData
-            });
-          }
         } else {
           io.to(room.id).emit('CULT_UPRISING_ENDED', {
             publicMessage: result.publicMessage
           });
+        }
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    socket.on('draw_cult_ritual', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.startCultUprising(room);
+        await RoomManager.saveSnapshot(room.id);
+
+        if (result.ritualCard) {
+          io.to(room.id).emit('CULT_RITUAL_REVEALED', {
+            card_action: result.ritualCard,
+            ritualName: result.ritualName,
+            ritualDescription: result.ritualDescription
+          });
+        } else {
+          io.to(room.id).emit('CULT_UPRISING_ENDED', {
+            publicMessage: result.publicMessage
+          });
+        }
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    // CONFIRM CULT NIGHT / BEGIN BLIND PHASE (UC-015 Step 2: Night Descends)
+    socket.on('start_cult_night', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.startCultNight(room, socket.sessionToken);
+        await RoomManager.saveSnapshot(room.id);
+
+        if (result.nextPhase === 'CULT_UPRISING_BLIND') {
+          // Kích hoạt màn hình mù cho toàn phòng (Không chứa bất kỳ ID của Cult Leader nào - Anti-Sniffing AC-1)
+          io.to(room.id).emit('CULT_UPRISING_STARTED', {});
+
+          // Gửi riêng dữ liệu thị kiến ban điều hướng cho Cult Leader nếu là CULT_CABIN_SEARCH
+          if (room.pendingCultRitual?.inspectionData && room.pendingCultRitual?.cultLeaderId) {
+            emitPrivate(io, room.id, room.pendingCultRitual.cultLeaderId, 'CULT_CABIN_SEARCH_DATA', {
+              inspectionData: room.pendingCultRitual.inspectionData
+            });
+          }
+        }
+
+        broadcastRoomState(io, room);
+
+        if (typeof callback === 'function') callback({ success: true, result });
+      } catch (err) {
+        if (typeof callback === 'function') callback({ success: false, error: err.message });
+      }
+    });
+
+    socket.on('confirm_cult_night', async (callback) => {
+      try {
+        const found = RoomManager.getRoomByToken(socket.sessionToken);
+        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
+
+        const { room } = found;
+        const result = ExecutionService.startCultNight(room, socket.sessionToken);
+        await RoomManager.saveSnapshot(room.id);
+
+        if (result.nextPhase === 'CULT_UPRISING_BLIND') {
+          io.to(room.id).emit('CULT_UPRISING_STARTED', {});
+
+          if (room.pendingCultRitual?.inspectionData && room.pendingCultRitual?.cultLeaderId) {
+            emitPrivate(io, room.id, room.pendingCultRitual.cultLeaderId, 'CULT_CABIN_SEARCH_DATA', {
+              inspectionData: room.pendingCultRitual.inspectionData
+            });
+          }
         }
 
         broadcastRoomState(io, room);
@@ -918,8 +999,9 @@ export function setupSocket(server) {
     });
 
     // RESOLVE CULT CONVERSION (UC-015 AC-3)
-    socket.on('resolve_cult_conversion', async ({ targetPlayerId }, callback) => {
+    socket.on('resolve_cult_conversion', async (payload, callback) => {
       try {
+        const targetPlayerId = payload?.targetPlayerId || null;
         const found = RoomManager.getRoomByToken(socket.sessionToken);
         if (!found) throw new Error('Bạn chưa tham gia phòng nào');
 
@@ -927,14 +1009,18 @@ export function setupSocket(server) {
         const result = ExecutionService.resolveCultConversion(room, socket.sessionToken, targetPlayerId);
         await RoomManager.saveSnapshot(room.id);
 
-        // GỬI RIÊNG THÔNG BÁO CHO NẠN NHÂN VỪA ĐƯỢC THU NẠP (AC-3)
-        emitPrivate(io, room.id, result.convertedPlayerId, 'CULTIST_CONVERTED', {
-          message: 'Bạn đã được Giáo chủ thu nạp vào Hội Tà Giáo (Cultist)!',
-          cult_leader_id: result.cultLeaderId,
-          cult_leader_name: result.cultLeaderName
-        });
+        // GỬI RIÊNG THÔNG BÁO CHO NẠN NHÂN VỪA ĐƯỢC THU NẠP (Nếu có) (AC-3)
+        if (result.convertedPlayerId) {
+          const cultLeader = room.getPlayer(result.cultLeaderId);
+          emitPrivate(io, room.id, result.convertedPlayerId, 'CULTIST_CONVERTED', {
+            message: 'You have been secretly converted into the Cult by the Cult Leader!',
+            cult_leader_id: result.cultLeaderId,
+            cult_leader_name: result.cultLeaderName,
+            cult_leader_avatar: cultLeader?.avatar || 'jack_sparrow'
+          });
+        }
 
-        // Kết thúc màn hình mù cho toàn phòng
+        // Kết thúc màn hình mù cho toàn phòng (Mọi người chỉ biết đêm đã tàn, không ai biết có ai bị thu nạp hay không!)
         io.to(room.id).emit('CULT_UPRISING_ENDED', {
           publicMessage: result.publicMessage
         });
