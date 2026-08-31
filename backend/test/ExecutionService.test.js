@@ -372,20 +372,27 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
   });
 
   describe('UC-015: Cult Uprising (Nghi thức Tà giáo)', () => {
-    test('startCultUprising: Rút 1 lá Nghi thức và chuyển sang CULT_UPRISING_BLIND (AC-1)', () => {
-      const { room, p4 } = setupTestRoom();
+    test('startCultUprising (Step 1: Public Reveal): Rút lá Nghi thức và lưu trạng thái công khai cho cả phòng', () => {
+      const { room, p1, p4 } = setupTestRoom();
       room.gamePhase = 'CULT_UPRISING';
       room.mapBoard.cultRitualDeck = ['CULT_CABIN_SEARCH'];
 
       const result = ExecutionService.startCultUprising(room);
 
       assert.equal(result.ritualCard, 'CULT_CABIN_SEARCH');
-      assert.equal(result.nextPhase, 'CULT_UPRISING_BLIND');
-      assert.equal(room.gamePhase, 'CULT_UPRISING_BLIND');
+      assert.equal(result.nextPhase, 'CULT_UPRISING');
+      assert.equal(room.gamePhase, 'CULT_UPRISING');
+      assert.ok(room.revealedCultRitual);
+      assert.equal(room.revealedCultRitual.type, 'CULT_CABIN_SEARCH');
       assert.equal(result.cultLeaderId, p4.id);
       assert.ok(result.inspectionData.captain);
       assert.ok(result.inspectionData.lieutenant);
       assert.ok(result.inspectionData.navigator);
+
+      // Step 2: Thuyền trưởng xác nhận bắt đầu Màn đêm (CULT_UPRISING_BLIND)
+      const nightResult = ExecutionService.startCultNight(room, p1.sessionToken);
+      assert.equal(nightResult.nextPhase, 'CULT_UPRISING_BLIND');
+      assert.equal(room.gamePhase, 'CULT_UPRISING_BLIND');
     });
 
     test('resolveCultGunsStash (AC-2): Cult Leader phân phát đúng 3 súng và bảo toàn ẩn danh', () => {
@@ -445,6 +452,21 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       assert.throws(() => {
         ExecutionService.resolveCultConversion(room, p4.sessionToken, p2.id);
       }, /Người chơi này đã được miễn nhiễm/);
+    });
+
+    test('resolveCultConversion: Cho phép kết thúc êm đẹp khi không có mục tiêu hợp lệ (targetPlayerId = null)', () => {
+      const { room, p4 } = setupTestRoom();
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'CONVERSION', cultLeaderId: p4.id };
+
+      const result = ExecutionService.resolveCultConversion(room, p4.sessionToken, null);
+
+      assert.equal(result.success, true);
+      assert.equal(result.noConversion, true);
+      assert.equal(result.convertedPlayerId, null);
+      assert.equal(result.nextPhase, 'ROUND_END');
+      assert.equal(room.gamePhase, 'ROUND_END');
+      assert.equal(room.pendingCultRitual, null);
     });
 
     test('resolveCultCabinSearch: Cult Leader hoàn tất thị kiến', () => {

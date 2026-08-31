@@ -30,6 +30,7 @@ class Player {
     this.status = 'ACTIVE'; // 'ACTIVE' | 'OFF_DUTY' | 'ELIMINATED'
     this.eliminationReason = null; // 'JUMP_OVERBOARD' | 'FEED_THE_KRAKEN' | 'EXECUTION'
     this.gunCount = gunCount;
+    this.floggingStatement = null; // Statement from Flogging map action (e.g. { falseFaction: 'SAILOR', text: 'NOT A SAILOR' })
   }
 
   toPublicJSON() {
@@ -45,7 +46,8 @@ class Player {
       isConvertible: this.isConvertible,
       status: this.status,
       eliminationReason: this.eliminationReason,
-      gunCount: this.gunCount
+      gunCount: this.gunCount,
+      floggingStatement: this.floggingStatement
     };
   }
 
@@ -65,7 +67,8 @@ class Player {
       isConvertible: this.isConvertible,
       status: this.status,
       eliminationReason: this.eliminationReason,
-      gunCount: this.gunCount
+      gunCount: this.gunCount,
+      floggingStatement: this.floggingStatement
     };
   }
 
@@ -86,6 +89,7 @@ class Player {
     player.status = data.status || 'ACTIVE';
     player.eliminationReason = data.eliminationReason || null;
     player.gunCount = data.gunCount || 0;
+    player.floggingStatement = data.floggingStatement || null;
     return player;
   }
 }

@@ -109,17 +109,17 @@ const GameHeader = ({
             </div>
           </div>
 
-          {/* ── 2. Center: Voyage Mode with Flanking Enlarged Compass & Ship Tokens ── */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* ── 2. Center: Voyage Mode with Flanking Enlarged Compass & Ship Tokens (Dead-Centered Horizontally) ── */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:flex items-center gap-3 pointer-events-none z-10">
             {/* Left: Glowing Compass Rose */}
             <img
               src={badgeCompassRosePng}
               alt="Compass Rose"
-              className="w-12 h-12 sm:w-14 sm:h-14 md:w-15 md:h-15 object-contain filter drop-shadow-[0_0_12px_rgba(232,166,62,0.9)] flex-shrink-0 transform hover:scale-105 transition"
+              className="w-12 h-12 sm:w-14 sm:h-14 md:w-15 md:h-15 object-contain filter drop-shadow-[0_0_12px_rgba(232,166,62,0.9)] flex-shrink-0 transform hover:scale-105 transition pointer-events-auto"
             />
 
             {/* Middle: Carved Wood Slot Frame (Text Only) */}
-            <div className="relative h-[46px] sm:h-[54px] md:h-[58px] min-w-[180px] sm:min-w-[210px] md:min-w-[230px] aspect-[1058/374] flex items-center justify-center filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]">
+            <div className="relative h-[46px] sm:h-[54px] md:h-[58px] min-w-[180px] sm:min-w-[210px] md:min-w-[230px] aspect-[1058/374] flex items-center justify-center filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] pointer-events-auto">
               <img
                 src={inputWoodSlotCleanPng}
                 alt="Voyage Wood Slot Frame"
@@ -134,7 +134,7 @@ const GameHeader = ({
             <img
               src={badgeShipVoyagePng}
               alt="Ship Voyage Token"
-              className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 object-contain filter drop-shadow-[0_0_10px_rgba(232,166,62,0.8)] flex-shrink-0 transform hover:scale-105 transition"
+              className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 object-contain filter drop-shadow-[0_0_10px_rgba(232,166,62,0.8)] flex-shrink-0 transform hover:scale-105 transition pointer-events-auto"
             />
           </div>
 

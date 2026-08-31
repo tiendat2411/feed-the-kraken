@@ -159,6 +159,7 @@ class Room {
       pendingCultRitual: this.pendingCultRitual ? {
         type: this.pendingCultRitual.type
       } : null,
+      revealedCultRitual: this.revealedCultRitual || null,
       myCultInspection: (this.pendingCultRitual && this.pendingCultRitual.type === 'CULT_CABIN_SEARCH' && requestingPlayer?.factionRole === 'CULT_LEADER')
         ? this.pendingCultRitual.inspectionData || null
         : null,
@@ -180,6 +181,19 @@ class Room {
       result.knownPirates = this.getPlayers()
         .filter(p => p.factionRole === 'PIRATE')
         .map(p => ({ id: p.id, nickname: p.nickname, name: p.nickname, avatar: p.avatar }));
+    }
+
+    // Nếu người này là CULTIST -> Cho biết Giáo chủ là ai (AC-3 UC-015)
+    if (requestingPlayer?.factionRole === 'CULTIST') {
+      const cultLeader = this.getPlayers().find(p => p.factionRole === 'CULT_LEADER');
+      if (cultLeader) {
+        result.knownCultLeader = {
+          id: cultLeader.id,
+          nickname: cultLeader.nickname,
+          name: cultLeader.nickname,
+          avatar: cultLeader.avatar
+        };
+      }
     }
 
     return result;

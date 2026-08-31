@@ -10,9 +10,9 @@ import EndGame from './EndGame';
 import GameHeader from '../components/GameHeader';
 import CrewSeatingDrawer from '../components/game/CrewSeatingDrawer';
 import EventModalOverlay from '../components/game/EventModalOverlay';
-import Vignette from '../components/ui/Vignette';
 import DustParticles from '../components/ui/DustParticles';
 import lobbyCabinBg from '../assets/ui/backgrounds/lobby_cabin_bg.jpg';
+import { getAvatarSrc } from '../constants/avatars';
 
 /**
  * Game Master Page Component (Task T061 - In-Game Command Layout Architecture)
@@ -41,7 +41,7 @@ const Game = () => {
 
   const fetchRoomState = () => {
     if (!socket || !roomId) return;
-    socket.emit('get_room', { roomId }, (response) => {
+    socket.emit('get_room_state', { roomId }, (response) => {
       if (response && response.success) {
         setRoom(response.room);
         if (response.room?.myRole) {
@@ -49,6 +49,9 @@ const Game = () => {
         }
         if (response.room?.myId) {
           setCurrentUserId(response.room.myId);
+        }
+        if (response.room?.myNavigationCards) {
+          setPrivateCards(response.room.myNavigationCards);
         }
         setError(null);
       } else {
@@ -70,13 +73,14 @@ const Game = () => {
       if (updatedRoom?.myId) {
         setCurrentUserId(updatedRoom.myId);
       }
+      if (updatedRoom?.myNavigationCards !== undefined) {
+        setPrivateCards(updatedRoom.myNavigationCards || []);
+      }
     };
 
-    const handlePlayerKicked = ({ playerId }) => {
-      if (playerId === currentUserId) {
-        alert('You have been kicked from the room by the host.');
-        navigate('/');
-      }
+    const handlePlayerKicked = () => {
+      alert('You have been kicked from the room by the host.');
+      navigate('/');
     };
 
     const handleRoomDissolved = () => {
@@ -89,52 +93,94 @@ const Game = () => {
     };
 
     const handlePrivateCardsDrawn = ({ cards }) => {
-      setPrivateCards(cards);
+      setPrivateCards(cards || []);
     };
 
     const handlePrivateCardsPassed = ({ cards }) => {
-      setPrivateCards(cards);
+      setPrivateCards(cards || []);
     };
 
     const handlePrivateCardAction = ({ cards }) => {
-      setPrivateCards(cards);
+      setPrivateCards(cards || []);
+    };
+
+    const handleNavigationCardExecuted = () => {
+      setPrivateCards([]);
     };
 
     const handleCultConversionSuccess = (data) => {
-      setConversionNotification(data);
-      if (data.new_role) {
-        setMyRole(data.new_role);
-      }
+      setConversionNotification({
+        message: data?.message || 'You have been secretly converted into the Cult by the Cult Leader!',
+        cult_leader_id: data?.cult_leader_id,
+        cult_leader_name: data?.cult_leader_name,
+        cult_leader_avatar: data?.cult_leader_avatar || 'jack_sparrow'
+      });
+      setMyRole('CULTIST');
     };
 
+    // Listen to real-time room updates from backend
+    socket.on('room_state', handleRoomUpdated);
     socket.on('room_updated', handleRoomUpdated);
+    socket.on('PLAYER_KICKED', handlePlayerKicked);
     socket.on('player_kicked', handlePlayerKicked);
+    socket.on('ROOM_DISSOLVED', handleRoomDissolved);
     socket.on('room_dissolved', handleRoomDissolved);
+    socket.on('ROLE_ASSIGNED', handleRoleAssigned);
     socket.on('role_assigned', handleRoleAssigned);
-    socket.on('private_cards_drawn', handlePrivateCardsDrawn);
-    socket.on('private_cards_passed', handlePrivateCardsPassed);
-    socket.on('private_card_action', handlePrivateCardAction);
+    socket.on('CARDS_DRAWN_SECRET', handlePrivateCardsDrawn);
+    socket.on('cards_drawn_secret', handlePrivateCardsDrawn);
+    socket.on('NAVIGATOR_CARDS_SECRET', handlePrivateCardsDrawn);
+    socket.on('navigator_cards_secret', handlePrivateCardsDrawn);
+    socket.on('CARD_PASSED_SECRET', handlePrivateCardsPassed);
+    socket.on('card_passed_secret', handlePrivateCardsPassed);
+    socket.on('CARD_ACTION_PRIVATE', handlePrivateCardAction);
+    socket.on('card_action_private', handlePrivateCardAction);
+    socket.on('NAVIGATION_CARD_EXECUTED', handleNavigationCardExecuted);
+    socket.on('navigation_card_executed', handleNavigationCardExecuted);
+    socket.on('CULTIST_CONVERTED', handleCultConversionSuccess);
+    socket.on('cultist_converted', handleCultConversionSuccess);
+    socket.on('CULT_CONVERSION_SUCCESS', handleCultConversionSuccess);
     socket.on('cult_conversion_success', handleCultConversionSuccess);
 
     return () => {
+      socket.off('room_state', handleRoomUpdated);
       socket.off('room_updated', handleRoomUpdated);
+      socket.off('PLAYER_KICKED', handlePlayerKicked);
       socket.off('player_kicked', handlePlayerKicked);
+      socket.off('ROOM_DISSOLVED', handleRoomDissolved);
       socket.off('room_dissolved', handleRoomDissolved);
+      socket.off('ROLE_ASSIGNED', handleRoleAssigned);
       socket.off('role_assigned', handleRoleAssigned);
-      socket.off('private_cards_drawn', handlePrivateCardsDrawn);
-      socket.off('private_cards_passed', handlePrivateCardsPassed);
-      socket.off('private_card_action', handlePrivateCardAction);
+      socket.off('CARDS_DRAWN_SECRET', handlePrivateCardsDrawn);
+      socket.off('cards_drawn_secret', handlePrivateCardsDrawn);
+      socket.off('NAVIGATOR_CARDS_SECRET', handlePrivateCardsDrawn);
+      socket.off('navigator_cards_secret', handlePrivateCardsDrawn);
+      socket.off('CARD_PASSED_SECRET', handlePrivateCardsPassed);
+      socket.off('card_passed_secret', handlePrivateCardsPassed);
+      socket.off('CARD_ACTION_PRIVATE', handlePrivateCardAction);
+      socket.off('card_action_private', handlePrivateCardAction);
+      socket.off('NAVIGATION_CARD_EXECUTED', handleNavigationCardExecuted);
+      socket.off('navigation_card_executed', handleNavigationCardExecuted);
+      socket.off('CULTIST_CONVERTED', handleCultConversionSuccess);
+      socket.off('cultist_converted', handleCultConversionSuccess);
+      socket.off('CULT_CONVERSION_SUCCESS', handleCultConversionSuccess);
       socket.off('cult_conversion_success', handleCultConversionSuccess);
     };
   }, [socket, roomId, currentUserId, navigate]);
 
   // Actions
   const handleSelectAvatar = (avatarId) => {
-    if (socket) socket.emit('select_avatar', { avatar: avatarId });
+    if (socket) {
+      socket.emit('update_avatar', { avatar: avatarId });
+      socket.emit('select_avatar', { avatar: avatarId });
+    }
   };
 
   const handleSelectMap = (mapType) => {
-    if (socket) socket.emit('select_map', { mapType });
+    if (socket) {
+      socket.emit('update_map', { mapType });
+      socket.emit('select_map', { mapType });
+    }
   };
 
   const handleStartGame = () => {
@@ -229,6 +275,10 @@ const Game = () => {
 
   const handleStartCultUprising = () => {
     if (socket) socket.emit('start_cult_uprising');
+  };
+
+  const handleConfirmCultNight = () => {
+    if (socket) socket.emit('confirm_cult_night');
   };
 
   const handleResolveCultGuns = (allocations) => {
@@ -364,7 +414,6 @@ const Game = () => {
       }}
     >
       {/* ── Atmospheric Overlays ── */}
-      <Vignette />
       <DustParticles count={12} />
 
       {/* ── Fixed Top HUD Header ── */}
@@ -424,6 +473,7 @@ const Game = () => {
                 onResolveTelescope={handleResolveTelescope}
                 onAcknowledgeMermaid={handleAcknowledgeMermaid}
                 onStartCultUprising={handleStartCultUprising}
+                onConfirmCultNight={handleConfirmCultNight}
                 onResolveCultGuns={handleResolveCultGuns}
                 onResolveCultCabinSearch={handleResolveCultCabinSearch}
                 onResolveCultConversion={handleResolveCultConversion}
@@ -471,24 +521,57 @@ const Game = () => {
         </div>
       </main>
 
-      {/* ── Minimizable Center Event Modal Overlay (Cult Ritual / Waypoint Alert) ── */}
+      {/* ── Secret Cult Conversion Modal for Converted Victim (AC-3 UC-015) ── */}
       {conversionNotification && (
-        <EventModalOverlay
-          isOpen={true}
-          title="SECRET CULT CONVERSION RITUAL"
-          subtitle="A dark touch in the shadows of the cabin..."
-          icon="🐙"
-          onClose={() => setConversionNotification(null)}
-        >
-          <div className="space-y-2 text-center">
-            <p className="font-heading text-sm text-[#2A2118] leading-relaxed">
-              {conversionNotification.message}
-            </p>
-            <div className="p-2 rounded bg-purple-950/20 border border-purple-800/40 text-purple-900 font-bold">
-              Your Cult Leader: <span className="text-gold-dim font-black">{conversionNotification.cult_leader_name}</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn select-none">
+          <div className="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#120A16] border-2 border-purple-500 shadow-[0_0_80px_rgba(168,85,247,0.6)] text-center space-y-5 text-parchment-bright">
+            {/* Header */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="text-5xl animate-bounce">👁️ 🐙 👁️</div>
+              <h2 className="text-2xl sm:text-3xl font-display font-black text-purple-300 tracking-wider">
+                YOU HAVE BEEN CONVERTED!
+              </h2>
+              <div className="px-3.5 py-1 rounded-full bg-purple-900/60 border border-purple-400 text-purple-200 font-heading font-black text-xs uppercase tracking-widest">
+                NEW FACTION: CULTIST
+              </div>
             </div>
+
+            <p className="text-xs sm:text-sm font-heading text-slate-300 leading-relaxed px-2">
+              An occult whisper from the depths has claimed your soul. You are no longer loyal to your former faction — you now serve the ancient Kraken! Your new mission is to steer the ship to the <span className="font-bold text-purple-300">Kraken's Nest</span> or sacrifice your Cult Leader to the abyss!
+            </p>
+
+            {/* Revealed Cult Leader Identity Card */}
+            <div className="p-4 rounded-2xl bg-purple-950/80 border border-purple-400/80 shadow-2xl flex items-center gap-4 text-left">
+              <div className="relative w-16 h-16 rounded-full p-1 bg-[#1A1510] border-2 border-gold shadow-[0_0_15px_rgba(232,166,62,0.7)] flex-shrink-0">
+                <img
+                  src={getAvatarSrc(conversionNotification.cult_leader_avatar)}
+                  alt={conversionNotification.cult_leader_name}
+                  className="w-full h-full object-cover rounded-full pointer-events-none"
+                />
+                <span className="absolute -top-1 -right-1 text-lg">👑</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-heading text-[11px] text-purple-300 uppercase tracking-widest font-black">
+                  YOUR SECRET CULT LEADER
+                </div>
+                <div className="font-display font-black text-lg sm:text-xl text-gold-bright truncate">
+                  {conversionNotification.cult_leader_name}
+                </div>
+                <div className="font-heading text-[10px] text-slate-400 leading-tight">
+                  Protect their identity at all costs. Do not let other factions discover them!
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setConversionNotification(null)}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-800 via-purple-700 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 font-display font-black text-white text-sm sm:text-base tracking-widest uppercase shadow-2xl shadow-purple-900/50 active:scale-98 transition cursor-pointer"
+            >
+              I SERVE THE KRAKEN ➔
+            </button>
           </div>
-        </EventModalOverlay>
+        </div>
       )}
 
       {/* ── Fixed Bottom Crew Dock with Sliding Seating Radar Drawer ── */}
