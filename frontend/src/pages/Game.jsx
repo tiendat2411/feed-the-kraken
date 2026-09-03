@@ -367,12 +367,6 @@ const Game = () => {
   if (room.gamePhase === 'ROLE_REVEAL' || room.gamePhase === 'PIRATES_GATHERING') {
     return (
       <div className="min-h-screen flex flex-col bg-[#0A0A08]">
-        <GameHeader
-          room={room}
-          currentUserId={effectiveUserId}
-          onLeaveRoom={handleLeaveRoom}
-          onDissolveRoom={handleDissolveRoom}
-        />
         <div className="flex-1">
           <RoleReveal 
             room={room} 
