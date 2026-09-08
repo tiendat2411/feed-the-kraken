@@ -67,42 +67,51 @@
 
 ---
 
-## 3. 🎯 LỘ TRÌNH TIẾP THEO (NEXT ROADMAP): PHASE 9.3
+## 3. 🎯 LỘ TRÌNH TIẾP THEO (NEXT ROADMAP): HAI TRACK SONG SONG (PARALLEL TRACKS)
 
-Khi mở conversation mới, tiếp tục triển khai các task còn lại của **Phase 9.3: Game Components Revamp** theo thứ tự:
+Dự án hiện được phân chia thành 2 đường ray (Tracks) làm việc độc lập & song song:
+- **Track 1 (Frontend UI Revamp - Phase 9.3):** Hoàn thiện các component giao diện T063 - T069 theo phong cách "Eldritch Parchment" và quy trình 6 bước SOP.
+- **Track 2 (Backend & Website Operations Testing - Phase 10):** Kiểm thử thực tế backend, game logic và vận hành website. Ghi nhận lỗi và xử lý bugfix trực tiếp theo dạng backlog động ngay khi phát hiện.
+
+
+### Chi Tiết Phase 9.3: Game Components Revamp (Track 1 - UI)
+
 
 | Task ID | Component | Mô tả công việc cần làm |
 | :--- | :--- | :--- |
 | **T062** | `RoleReveal.jsx` | *(Đã hoàn thành ✅)* Thẻ Tarot cổ 3D Flip 180°, mặt sau da thuộc nứt + xúc tu la bàn đồng cổ, mặt trước giấy da dê + biểu tượng phe mực phai, Night overlay mắt Kraken tím eldritch-pulse. |
-| **T063** | `MutinyBoard.jsx` | Bàn gỗ cược súng nổi loạn, đồng tiền vàng / flintlock SVG, rương gỗ bản lề gỉ, screen shake `gunShake` khi công bố, xếp hạng súng + trao Mũ Thuyền trưởng. |
-| **T064** | `NavigationPhase.jsx` | Bàn điều hướng hải trình, 3 thẻ bài da dê cổ mực phai (Blue Sailor, Red Pirate, Yellow Cult), hiệu ứng chọn viền vàng + firelight glow, loại thẻ trượt mờ. |
-| **T065** | `MapBoardUI.jsx` | Hoàn thiện toàn diện Hải đồ cổ da dê (gradient parchment-dim, vệt ố, mép rêu moss-dim), đường mực lông vũ SVG nét run, ô sự kiện SVG + popover, tàu buồm gỗ tối `shipBob`. |
-| **T066** | `EndGame.jsx` | Màn hình chiến thắng theo từng phe (Sailor = bình minh ấm, Pirate = lửa đỏ Jolly Roger, Cult = xúc tu tím bùng nổ), lật mở đồng loạt vai trò trên bàn gỗ mục, nút quay lại/rời phòng `ButtonWood`. |
-| **T067** | **Polish & Verification** | Kiểm tra responsive 375px-1920px+, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast, chạy `npm run build` xác nhận không lỗi. |
+| **T063** | `Game.jsx`, `CrewSeatingDrawer.jsx` | Khởi tạo không gian Bàn gỗ làm việc Thuyền trưởng (`game_tabletop_desk_bg.jpg` với súng flintlock, vàng cổ, cốc bia gỗ, dao găm cắm bàn), Hải đồ trung tâm 70-80%, Cuộn giấy da dê góc phải trượt đè hải đồ, Hộc ngăn kéo gầm bàn không cố định non-sticky, loại bỏ `handle_drawer_brass.png` và `wood_bottom_bar.png`, tạo asset tay nắm/mặt ngăn kéo mới, cấm 100% stock emoji. |
+| **T064** | `CrewAppointment` (`MutinyBoard.jsx`) | Bàn chỉ định nhân sự Thuyền trưởng chọn Lieutenant & Navigator, thẻ chân dung thủy thủ nền gỗ mục/da dê, huy hiệu bổ nhiệm đồng cổ & la bàn, trạng thái Off-duty xiềng xích phong ấn, nút xác nhận `CONFIRM NAVIGATION TEAM`. |
+| **T065** | `MutinyBoard.jsx` | Bàn gỗ cược súng nổi loạn, đồng tiền vàng / flintlock SVG, rương gỗ bản lề gỉ, screen shake `gunShake` khi công bố, xếp hạng súng + trao Mũ Thuyền trưởng. |
+| **T066** | `NavigationPhase.jsx` | Bàn điều hướng hải trình, 3 thẻ bài da dê cổ mực phai (Blue Sailor, Red Pirate, Yellow Cult), hiệu ứng chọn viền vàng + firelight glow, loại thẻ trượt mờ. |
+| **T067** | `MapBoardUI.jsx` | Hoàn thiện toàn diện Hải đồ cổ da dê (gradient parchment-dim, vệt ố, mép rêu moss-dim), đường mực lông vũ SVG nét run, ô sự kiện SVG + popover, tàu buồm gỗ tối `shipBob`. |
+| **T068** | `EndGame.jsx` | Màn hình chiến thắng theo từng phe (Sailor = bình minh ấm, Pirate = lửa đỏ Jolly Roger, Cult = xúc tu tím bùng nổ), lật mở đồng loạt vai trò trên bàn gỗ mục, nút quay lại/rời phòng `ButtonWood`. |
+| **T069** | **Polish & Verification** | Kiểm tra responsive 375px-1920px+, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast, chạy `npm run build` xác nhận không lỗi. |
 
 ---
 
-## 4. 📌 QUY TRÌNH THỰC HIỆN BẮT BUỘC: TRACK B 6 BƯỚC (THEO RULE-UI-REVAMP-SOP.MD)
+## 4. 📌 QUY TRÌNH THỰC HIỆN BẮT BUỘC: TRACK B 7 BƯỚC (THEO RULE-UI-REVAMP-SOP.MD)
 
-Đối với **TẤT CẢ CÁC TASK GIAO DIỆN (T062 -> T066)**, AI **TUYỆT ĐỐI KHÔNG ĐƯỢC NHẢY VÀO CODE NGAY**. Phải tuân thủ nghiêm ngặt 6 bước:
+Đối với **TẤT CẢ CÁC TASK GIAO DIỆN (T063 -> T068)**, AI **TUYỆT ĐỐI KHÔNG ĐƯỢC NHẢY VÀO TẠO MOCKUP HOẶC CODE NGAY**. Phải tuân thủ nghiêm ngặt quy trình 7 bước với 2 Cổng chặn:
 
 ```text
-[Bước B1: Generate Mockup & Trình Bày Bố Cục] ➔ [CỔNG CHẶN: Chờ User Duyệt 🎯]
-   ↓ (Sau khi User duyệt)
-[Bước B2: Bóc Tách & Tách Phông PNG Trong Suốt (Atomic Sprites)] (Nghiêm cấm nướng chết text)
+[Bước B1: Phân Tích Cấu Trúc Phân Tầng & Lập Ma Trận Layer/Asset] ➔ [CỔNG CHẶN 1: Chờ User Duyệt Kế Hoạch 🎯]
+   ↓ (Sau khi User duyệt kế hoạch Layer & Asset)
+[Bước B2: Generate Mockup (Toàn Cảnh / Phân Tầng) & Trình Bày Bố Cục] ➔ [CỔNG CHẶN 2: Chờ User Duyệt Mockup 🎯]
+   ↓ (Sau khi User duyệt Mockup)
+[Bước B3: Bóc Tách & Tách Phông PNG Trong Suốt (Atomic Sprites)] (Nghiêm cấm nướng chết text)
    ↓
-[Bước B3: Lưu Trữ Vào frontend/src/assets/ui/]
+[Bước B4: Lưu Trữ Vào frontend/src/assets/ui/]
    ↓
-[Bước B4: Code Component & Layering] (Bảo toàn 100% Game Logic & State)
+[Bước B5: Code Component & Ghép Layer] (Bảo toàn 100% Game Logic & State)
    ↓
-[Bước B5: Thẩm Định Trực Quan 1:1 & Build Check (npm run build)]
+[Bước B6: Thẩm Định Trực Quan 1:1 & Build Check (npm run build)]
    ↓
-[Bước B6: Cập Nhật task.md & Đề Xuất Git Commit]
+[Bước B7: Cập Nhật task.md, Báo Cáo Self-Review & Đề Xuất Git Commit]
 ```
 
-### Hướng Dẫn Mở Đầu Cho Conversation Mới:
-Khi bắt đầu conversation mới, người dùng sẽ yêu cầu làm **Task T062 (`RoleReveal.jsx`)**.  
-AI **BẮT BUỘC** phải:
-1. Đọc `.agents/rules/rule-ui-revamp-sop.md` và `spec/features/007-frontend-ui-revamp/art-direction-guide.md`.
-2. Bắt đầu bằng **Bước B1**: Sử dụng công cụ `generate_image` để tạo bản vẽ Mockup Thẻ bài Tarot cổ (`RoleReveal`), trình bày chi tiết bố cục/hiệu ứng lật 3D/quầng sáng lửa cho người dùng xem và **DỪNG LẠI CHỜ NGƯỜI DÙNG DUYỆT**.
-3. Tuyệt đối không tự ý sửa file `RoleReveal.jsx` hay đánh dấu `[x] T062` khi chưa hoàn thành Bước B1, B2 và B3!
+### Hướng Dẫn Thực Hiện Cho Task Tiếp Theo (Task T063 - In-Game Tabletop & Under-Drawer):
+Khi tiếp tục thực hiện **Task T063 (`Game.jsx`, `CrewSeatingDrawer.jsx`, `MapBoardUI.jsx`)**, AI **BẮT BUỘC** phải:
+1. Đọc kỹ `.agents/rules/rule-ui-revamp-sop.md`, `spec/features/007-frontend-ui-revamp/art-direction-guide.md` và `spec/features/007-frontend-ui-revamp/ingame-command-layout-spec.md`.
+2. Bắt đầu bằng **Bước B1**: Phân tích cấu trúc phân tầng 5 Zones của bàn làm việc Thuyền trưởng (Tabletop Desk Background, Sea Chart, Sliding Action Desk, Non-sticky Under-drawer Seating Radar & Crew Roster, Event Modal), lập bảng ma trận phân rã Component & Danh mục Asset cần tạo (kèm định vị Z-index, kích thước và yêu cầu kênh Alpha tách nền) và **DỪNG LẠI CHỜ NGƯỜI DÙNG DUYỆT (CỔNG CHẶN 1 🎯)**.
+3. Chỉ khi người dùng duyệt kế hoạch Bước B1 mới tiến hành **Bước B2** tạo Mockup trực quan. Tuyệt đối không nhảy cóc!

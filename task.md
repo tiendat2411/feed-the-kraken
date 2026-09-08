@@ -176,15 +176,36 @@
 
 **Checkpoint**: Home → Lobby → Game HUD đều mang phong cách "Eldritch Parchment" nhất quán. Responsive 375px → 1920px+.
 
-### Phase 9.3: Game Components Revamp — Cards, Mutiny, Navigation, Map & EndGame (UC-022, UC-023 / FR-004—FR-008, FR-010, FR-011, US3, US4, US5)
+### Phase 9.3: Game Components Revamp — Tabletop Environment, Cards, Crew Appointment, Mutiny, Navigation, Map & EndGame (UC-022, UC-023 / FR-004—FR-008, FR-010, FR-011, US2, US3, US4, US5)
 
-**Purpose**: Nâng cấp toàn bộ component game: thẻ bài, bỏ phiếu, lái tàu, bản đồ, kết thúc.
+**Purpose**: Nâng cấp toàn diện không gian bàn chơi và component game: bàn gỗ làm việc Thuyền trưởng, hải đồ trung tâm, hộc ngăn kéo gầm bàn, thẻ bài, chỉ định nhân sự, bỏ phiếu, lái tàu, bản đồ, kết thúc.
 
 - [x] T062 [BR-007] Revamp `RoleReveal.jsx`: Thẻ tarot cổ (mặt sau da dê tối + xúc tu Kraken vàng + viền vàng gỉ; mặt trước biểu tượng phe + tên Cinzel + điều kiện thắng trên card-parchment), 3D flip 600ms + ánh lửa hắt. Night overlay: đen kịt + mắt Kraken tím eldritch-pulse + đếm ngược ember vòng tròn.
-- [ ] T063 [BR-007] Revamp `MutinyBoard.jsx`: Bàn gỗ mục texture, đồng tiền vàng cổ / flintlock SVG, rương gỗ bản lề gỉ cho khay cược, screen shake gunShake khi công bố, xếp hạng súng + vương miện vàng đồng gỉ trao tay.
-- [ ] T064 [BR-007] Revamp `NavigationPhase.jsx`: Bàn gỗ mục, 3 thẻ bài da dê cổ mực phai (Blue sailor, Red pirate, Yellow cult kiểu bột màu), chọn = viền vàng + firelight glow, loại = mờ + trượt. Giữ nguyên logic Captain/Lieutenant/Navigator.
-- [ ] T065 [BR-007] Revamp `MapBoardUI.jsx`: Nền hải đồ da dê cổ (gradient parchment-dim, vệt ố, mép rêu moss-dim), đường mực lông vũ SVG nét run, ô sự kiện biểu tượng SVG + popover (nền hull, viền gold-dim), tàu buồm gỗ tối shipBob, 3 vùng đích màu đặc trưng (Sailor Cove verdigris, Crimson Cove pirate, Kraken Sanctuary cult).
-- [ ] T066 [BR-007] Revamp `EndGame.jsx`: Banner phe thắng hoành tráng (Sailor = bình minh ấm, Pirate = lửa đỏ Jolly Roger, Cult = xúc tu tím bùng nổ), lật mở đồng loạt vai trò trên bàn gỗ mục (card flip), nút quay lại/rời phòng ButtonWood.
-- [ ] T067 [BR-007] Verification & Polish: Kiểm tra nhất quán Design System trên mọi màn hình, responsive 375px-1920px+ zero overflow, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast. Chạy `npm run build` xác nhận không lỗi.
+- [ ] T063 [BR-007] Revamp Captain's Tabletop Environment & Under-Drawer (`Game.jsx`, `CrewSeatingDrawer.jsx`): Khởi tạo không gian bàn gỗ làm việc Thuyền trưởng (background với súng lục flintlock, tiền vàng cổ, cốc bia gỗ, dao găm cắm bàn, vệt nến nung chảy, thay thế hoàn toàn background cũ); tấm hải đồ trung tâm (`MapBoardUI.jsx`) chiếm 70% - 80% không gian bàn; cuộn giấy da dê góc phải kích hoạt Action Desk trượt đè lên mặt hải đồ; hộc ngăn kéo gầm bàn không cố định (non-sticky tactile under-drawer, chỉ thấy khi cuộn xuống mép bàn, nhấp mở/đóng bàn tròn Seating Radar & Crew Roster); loại bỏ hoàn toàn `handle_drawer_brass.png` và `wood_bottom_bar.png`, tạo asset tay nắm/mặt ngăn kéo gỗ mới đồng bộ 100%; nghiêm cấm stock emoji/icon.
+- [ ] T064 [BR-007] Revamp Crew Appointment Phase (`CrewAppointment.jsx` / `MutinyBoard.jsx`): Bàn chỉ định nhân sự Thuyền trưởng lựa chọn Phó thuyền trưởng (Lieutenant) và Hoa tiêu (Navigator) chuẩn phong cách Eldritch Parchment. Thẻ chân dung thủy thủ trên nền gỗ mục / giấy da cổ (avatar viền đồng cổ, số lượng súng flintlock, trạng thái Off-duty xiềng xích phong ấn), huy hiệu bổ nhiệm Lieutenant / Navigator viền đồng chạm khắc, nút bấm xác nhận ButtonWood "CONFIRM NAVIGATION TEAM".
+- [ ] T065 [BR-007] Revamp `MutinyBoard.jsx`: Bàn gỗ mục texture, đồng tiền vàng cổ / flintlock SVG, rương gỗ bản lề gỉ cho khay cược, screen shake gunShake khi công bố, xếp hạng súng + mũ thuyền trưởng hải tặc trao tay.
+- [ ] T066 [BR-007] Revamp `NavigationPhase.jsx`: Bàn gỗ mục, 3 thẻ bài da dê cổ mực phai (Blue sailor, Red pirate, Yellow cult kiểu bột màu), chọn = viền vàng + firelight glow, loại = mờ + trượt. Giữ nguyên logic Captain/Lieutenant/Navigator.
+- [ ] T067 [BR-007] Revamp `MapBoardUI.jsx`: Nền hải đồ da dê cổ (gradient parchment-dim, vệt ố, mép rêu moss-dim), đường mực lông vũ SVG nét run, ô sự kiện biểu tượng SVG + popover (nền hull, viền gold-dim), tàu buồm gỗ tối shipBob, 3 vùng đích màu đặc trưng (Sailor Cove verdigris, Crimson Cove pirate, Kraken Sanctuary cult).
+- [ ] T068 [BR-007] Revamp `EndGame.jsx`: Banner phe thắng hoành tráng (Sailor = bình minh ấm, Pirate = lửa đỏ Jolly Roger, Cult = xúc tu tím bùng nổ), lật mở đồng loạt vai trò trên bàn gỗ mục (card flip), nút quay lại/rời phòng ButtonWood.
+- [ ] T069 [BR-007] Verification & Polish: Kiểm tra nhất quán Design System trên mọi màn hình, responsive 375px-1920px+ zero overflow, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast. Chạy `npm run build` xác nhận không lỗi.
 
 **Checkpoint**: Toàn bộ Frontend mang phong cách "Eldritch Parchment" nhất quán. Game có thể chơi trọn vẹn với giao diện mới từ Home → EndGame.
+
+---
+
+## Phase 10: Backend Logic, Real-Time Sync & Website Operations Testing (Dynamic Track) 🧪
+
+**Goal**: Theo dõi quá trình kiểm thử thực tế hoạt động của website và backend logic. Các task/bugfix trong phase này sẽ được ghi nhận và xử lý linh hoạt ngay khi phát hiện lỗi trong quá trình test, không cố định danh sách trước.
+
+**Workflow**:
+1. Kiểm thử hoạt động thực tế trên website (người chơi / headless bots).
+2. Khi phát hiện bug / lỗi logic / sai lệch state: Thêm ngay 1 task mới vào backlog bên dưới (`T07x [FIX/BUG] Mô tả lỗi`).
+3. Điều tra nguyên nhân, sửa code, verify và đánh dấu `[x]` hoàn thành.
+
+### Dynamic Issue & Bugfix Backlog
+<!-- Các task phát sinh trong quá trình kiểm thử sẽ được thêm liên tục vào đây -->
+*(Hiện tại chưa có lỗi nào được ghi nhận. Sẵn sàng tiếp nhận lỗi từ quá trình test thực tế của bạn)*
+
+**Checkpoint**: Toàn bộ các lỗi và bất thường phát hiện trong quá trình kiểm thử thực tế đều được ghi nhận, sửa chữa triệt để và hoạt động ổn định.
+
+
