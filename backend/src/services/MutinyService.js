@@ -96,7 +96,7 @@ export class MutinyService {
     const mutinySession = new MutinySession({
       roomId: room.id,
       captainId: captain.id,
-      playerCount: room.getPlayers().length,
+      playerCount: room.getPlayers().filter(p => p.status !== 'ELIMINATED').length,
       nominatedLieutenantId: lieutenantId,
       nominatedNavigatorId: navigatorId
     });

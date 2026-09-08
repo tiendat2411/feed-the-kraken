@@ -203,6 +203,8 @@
 ### Dynamic Issue & Bugfix Backlog
 - [x] T070 [FIX/BUG] Sửa logic nạp súng Tuyến tiếp tế (Supply Line): Bổ sung súng lên 3 cho toàn bộ người chơi chưa bị loại (`player.status !== 'ELIMINATED'`), bao gồm cả người chơi đang ở trạng thái nghỉ phép `OFF_DUTY`.
 - [x] T071 [FIX/BUG] Sửa logic thu nạp Tà giáo (Cult Conversion): Cho phép thu nạp người chơi ở trạng thái `OFF_DUTY` trên cả Frontend (`MapBoardUI.jsx`), Backend (`ExecutionService.js`) và Bot (`AutoResponder.js`), chỉ loại trừ người bị `ELIMINATED`.
+- [x] T072 [AUDIT/FIX] Rà soát toàn diện vòng đời trạng thái `status`: Chuẩn hóa phân định `ACTIVE`, `OFF_DUTY` và `ELIMINATED` trên toàn bộ Backend, Frontend và Bots. `OFF_DUTY` chỉ đóng vai trò chặn bổ nhiệm ban điều hướng thông thường; tất cả quyền hạn khác (bỏ phiếu nổi loạn, nhận súng, chịu hiệu ứng bản đồ/thẻ bài, thu nạp tà giáo) đều hoạt động bình thường.
+
 
 
 

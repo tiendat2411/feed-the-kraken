@@ -369,7 +369,7 @@ const MutinyBoard = ({
             <div className="space-y-3">
               <h4 className="text-xs uppercase font-bold tracking-widest text-slate-400 text-center">Crew Ballot Status</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
-                {players.filter(p => p.id !== room.captainId).map((p) => {
+                {players.filter(p => p.id !== room.captainId && p.status !== 'ELIMINATED').map((p) => {
                   const voted = votesList.find(v => v.playerId === p.id)?.hasVoted;
                   return (
                     <div key={p.id} className="p-3 bg-slate-900/60 border border-white/5 rounded-2xl flex items-center justify-between">
