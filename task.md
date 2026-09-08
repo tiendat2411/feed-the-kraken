@@ -188,3 +188,22 @@
 - [ ] T067 [BR-007] Verification & Polish: Kiểm tra nhất quán Design System trên mọi màn hình, responsive 375px-1920px+ zero overflow, 60 FPS performance, `prefers-reduced-motion`, WCAG AA contrast. Chạy `npm run build` xác nhận không lỗi.
 
 **Checkpoint**: Toàn bộ Frontend mang phong cách "Eldritch Parchment" nhất quán. Game có thể chơi trọn vẹn với giao diện mới từ Home → EndGame.
+
+---
+
+## Phase 10: Backend Logic, Real-Time Sync & Website Operations Testing (Dynamic Track) 🧪
+
+**Goal**: Theo dõi quá trình kiểm thử thực tế hoạt động của website và backend logic. Các task/bugfix trong phase này sẽ được ghi nhận và xử lý linh hoạt ngay khi phát hiện lỗi trong quá trình test, không cố định danh sách trước.
+
+**Workflow**:
+1. Kiểm thử hoạt động thực tế trên website (người chơi / headless bots).
+2. Khi phát hiện bug / lỗi logic / sai lệch state: Thêm ngay 1 task mới vào backlog bên dưới (`T07x [FIX/BUG] Mô tả lỗi`).
+3. Điều tra nguyên nhân, sửa code, verify và đánh dấu `[x]` hoàn thành.
+
+### Dynamic Issue & Bugfix Backlog
+- [x] T070 [FIX/BUG] Sửa logic nạp súng Tuyến tiếp tế (Supply Line): Bổ sung súng lên 3 cho toàn bộ người chơi chưa bị loại (`player.status !== 'ELIMINATED'`), bao gồm cả người chơi đang ở trạng thái nghỉ phép `OFF_DUTY`.
+
+
+
+**Checkpoint**: Toàn bộ các lỗi và bất thường phát hiện trong quá trình kiểm thử thực tế đều được ghi nhận, sửa chữa triệt để và hoạt động ổn định.
+

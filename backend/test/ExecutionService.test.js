@@ -520,6 +520,38 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       assert.equal(p4.gunCount, 3);
       assert.deepEqual(result.supplyLineRefilledPlayers, ['p2', 'p3', 'p4']);
     });
+
+    test('Cắt qua Tuyến tiếp tế sạc đầy 3 súng cho cả người chơi OFF_DUTY và bỏ qua người ELIMINATED', () => {
+      const { room, p1, p2, p3, p4 } = setupTestRoom('LONG_JOURNEY');
+      room.mapBoard = new MapBoard({
+        roomId: room.id,
+        mapMode: 'LONG_JOURNEY',
+        shipPosition: 'L_R5_C2'
+      });
+
+      p1.gunCount = 3; // Đã đủ 3 súng
+      p2.status = 'OFF_DUTY';
+      p2.gunCount = 1; // Đang nghỉ phép và chỉ có 1 súng -> Phải được nạp lên 3
+      p3.status = 'ELIMINATED';
+      p3.gunCount = 0; // Đã bị loại -> Không được nạp
+      p4.status = 'ACTIVE';
+      p4.gunCount = 2; // ACTIVE có 2 súng -> Phải được nạp lên 3
+
+      room.executedNavigationCard = {
+        id: 'card_yellow_1',
+        color: 'YELLOW',
+        action: 'CULT_UPRISING'
+      };
+
+      const result = ExecutionService.executeShipMovement(room);
+
+      assert.equal(result.crossedSupplyLine, true);
+      assert.equal(p1.gunCount, 3); // Giữ nguyên 3
+      assert.equal(p2.gunCount, 3); // OFF_DUTY được nạp lên 3
+      assert.equal(p3.gunCount, 0); // ELIMINATED không được nạp
+      assert.equal(p4.gunCount, 3); // ACTIVE được nạp lên 3
+      assert.deepEqual(result.supplyLineRefilledPlayers, ['p2', 'p4']);
+    });
   });
 
   describe('Invariants & Defensive Programming', () => {

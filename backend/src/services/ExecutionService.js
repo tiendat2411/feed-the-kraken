@@ -46,7 +46,7 @@ export class ExecutionService {
     let supplyLineRefilledPlayers = [];
     if (crossedSupplyLine) {
       room.getPlayers().forEach(player => {
-        if (player.status === 'ACTIVE') {
+        if (player.status !== 'ELIMINATED') {
           if (player.gunCount < 3) {
             player.gunCount = 3;
             supplyLineRefilledPlayers.push(player.id);

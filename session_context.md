@@ -2,9 +2,10 @@
 
 > **Tài liệu lưu trữ ngữ cảnh chuyển giao phiên làm việc (Session Handoff Context)**  
 > **Dự án:** Feed The Kraken (Real-time Multiplayer Hidden Role Game)  
-> **Ngày cập nhật:** 2026-09-01  
-> **Nhánh hiện tại:** `ui-revamp-rebase` (đã merge đồng bộ vào `master`)  
-> **Trạng thái:** Hoàn thành toàn bộ **Phase 9.1** & **Phase 9.2**. Sẵn sàng cho **Phase 9.3**.
+> **Ngày cập nhật:** 2026-09-08  
+> **Nhánh hiện tại:** `backend-testing-and-fix` (base từ `master`)  
+> **Trạng thái:** Tập trung kiểm thử backend logic, real-time sync và xử lý lỗi vận hành website (Phase 10 Dynamic Track).
+
 
 ---
 
@@ -67,9 +68,14 @@
 
 ---
 
-## 3. 🎯 LỘ TRÌNH TIẾP THEO (NEXT ROADMAP): PHASE 9.3
+## 3. 🎯 LỘ TRÌNH KIỂM THỬ: PHASE 10 (DYNAMIC TRACK)
 
-Khi mở conversation mới, tiếp tục triển khai các task còn lại của **Phase 9.3: Game Components Revamp** theo thứ tự:
+Trong nhánh `backend-testing-and-fix`, quy trình kiểm thử và sửa lỗi diễn ra như sau:
+1. **Chạy thử nghiệm:** Thực hiện chơi thử trên website (người dùng thật hoặc phối hợp headless bots).
+2. **Ghi nhận lỗi:** Ngay khi phát hiện bug/lỗi logic/sai lệch trạng thái, ghi nhận task mới vào Phase 10 của `task.md`.
+3. **Phân tích & Khắc phục:** Điều tra nguyên nhân gốc rễ, sửa code backend/frontend tương ứng, bảo toàn tính toàn vẹn (invariants) và viết test nếu cần.
+4. **Xác nhận:** Đánh dấu hoàn thành trên `task.md` và commit.
+
 
 | Task ID | Component | Mô tả công việc cần làm |
 | :--- | :--- | :--- |
