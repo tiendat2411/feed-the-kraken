@@ -454,6 +454,35 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       }, /Người chơi này đã được miễn nhiễm/);
     });
 
+    test('resolveCultConversion: Cho phép thu nạp người chơi đang ở trạng thái OFF_DUTY', () => {
+      const { room, p2, p4 } = setupTestRoom();
+      p2.status = 'OFF_DUTY'; // Đang nghỉ phép
+      p2.factionRole = 'PIRATE';
+      p2.isConvertible = true;
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'CONVERSION', cultLeaderId: p4.id };
+
+      const result = ExecutionService.resolveCultConversion(room, p4.sessionToken, p2.id);
+
+      assert.equal(result.success, true);
+      assert.equal(result.convertedPlayerId, p2.id);
+      assert.equal(p2.factionRole, 'CULTIST');
+      assert.equal(p2.originalFactionRole, 'PIRATE');
+      assert.equal(p2.isConvertible, false);
+      assert.equal(p2.status, 'OFF_DUTY'); // Vẫn giữ nguyên trạng thái OFF_DUTY
+    });
+
+    test('resolveCultConversion: Throw lỗi khi thu nạp người chơi đã bị loại (ELIMINATED)', () => {
+      const { room, p2, p4 } = setupTestRoom();
+      p2.status = 'ELIMINATED'; // Đã bị loại khỏi tàu
+      room.gamePhase = 'CULT_UPRISING_BLIND';
+      room.pendingCultRitual = { type: 'CONVERSION', cultLeaderId: p4.id };
+
+      assert.throws(() => {
+        ExecutionService.resolveCultConversion(room, p4.sessionToken, p2.id);
+      }, /Không thể thu nạp người chơi đã bị loại/);
+    });
+
     test('resolveCultConversion: Cho phép kết thúc êm đẹp khi không có mục tiêu hợp lệ (targetPlayerId = null)', () => {
       const { room, p4 } = setupTestRoom();
       room.gamePhase = 'CULT_UPRISING_BLIND';

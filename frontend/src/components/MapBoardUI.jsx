@@ -113,8 +113,8 @@ const MapBoardUI = ({
   // Eligible targets for Captain Map Action & Card Target
   const eligibleCrew = players.filter(p => p.id !== me?.id && p.status !== 'ELIMINATED');
 
-  // Eligible targets for Cult Conversion (isConvertible == true, status == ACTIVE, not Cult Leader)
-  const convertibleCrew = players.filter(p => p.id !== me?.id && p.status === 'ACTIVE' && p.isConvertible !== false);
+  // Eligible targets for Cult Conversion (isConvertible == true, status != ELIMINATED, not Cult Leader)
+  const convertibleCrew = players.filter(p => p.id !== me?.id && p.status !== 'ELIMINATED' && p.isConvertible !== false);
 
   const getActionIcon = (actionType) => {
     switch (actionType) {

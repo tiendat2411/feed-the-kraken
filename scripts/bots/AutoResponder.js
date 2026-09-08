@@ -301,7 +301,7 @@ export class AutoResponder {
    */
   static async handleCultConversion(bot, payload) {
     const players = bot.currentRoomState?.players || [];
-    const candidates = players.filter(p => p.id !== bot.id && p.status === 'ACTIVE' && p.isConvertible !== false);
+    const candidates = players.filter(p => p.id !== bot.id && p.status !== 'ELIMINATED' && p.isConvertible !== false);
     if (!candidates.length) return;
 
     const target = candidates[Math.floor(Math.random() * candidates.length)];

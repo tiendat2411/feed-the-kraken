@@ -930,8 +930,8 @@ export class ExecutionService {
       throw new Error('Người chơi mục tiêu không tồn tại');
     }
 
-    if (targetPlayer.status !== 'ACTIVE') {
-      throw new Error('Chỉ có thể thu nạp người chơi đang ở trạng thái ACTIVE');
+    if (targetPlayer.status === 'ELIMINATED') {
+      throw new Error('Không thể thu nạp người chơi đã bị loại khỏi cuộc chơi');
     }
 
     if (!targetPlayer.isConvertible) {
