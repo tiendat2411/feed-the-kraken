@@ -204,6 +204,7 @@
 - [x] T070 [FIX/BUG] Sửa logic nạp súng Tuyến tiếp tế (Supply Line): Bổ sung súng lên 3 cho toàn bộ người chơi chưa bị loại (`player.status !== 'ELIMINATED'`), bao gồm cả người chơi đang ở trạng thái nghỉ phép `OFF_DUTY`.
 - [x] T071 [FIX/BUG] Sửa logic thu nạp Tà giáo (Cult Conversion): Cho phép thu nạp người chơi ở trạng thái `OFF_DUTY` trên cả Frontend (`MapBoardUI.jsx`), Backend (`ExecutionService.js`) và Bot (`AutoResponder.js`), chỉ loại trừ người bị `ELIMINATED`.
 - [x] T072 [AUDIT/FIX] Rà soát toàn diện vòng đời trạng thái `status`: Chuẩn hóa phân định `ACTIVE`, `OFF_DUTY` và `ELIMINATED` trên toàn bộ Backend, Frontend và Bots. `OFF_DUTY` chỉ đóng vai trò chặn bổ nhiệm ban điều hướng thông thường; tất cả quyền hạn khác (bỏ phiếu nổi loạn, nhận súng, chịu hiệu ứng bản đồ/thẻ bài, thu nạp tà giáo) đều hoạt động bình thường.
+- [x] T074 [FIX/BUG] Hoàn thiện logic ELIMINATED trong Cult Uprising & Bảo mật Vai trò ẩn: Dù Cult Leader đã chết (`status === 'ELIMINATED'`), Thuyền trưởng vẫn bốc và công khai thẻ bài Nghi thức Tà giáo bình thường. Khi vào Đêm mù (`CULT_UPRISING_BLIND`), Cult Leader đã chết hiển thị màn hình linh hồn không có quyền thao tác và không gây ra hiệu ứng game nào; hệ thống tự động chạy delay giả lập 20 giây (fake deliberation delay) rồi mới chuyển sang `ROUND_END` nhằm ngăn chặn người chơi khác đoán biết Cult Leader đã bị loại.
 
 
 

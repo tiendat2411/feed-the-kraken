@@ -899,7 +899,7 @@ export function setupSocket(server) {
     });
 
     // CONFIRM CULT NIGHT / BEGIN BLIND PHASE (UC-015 Step 2: Night Descends)
-    socket.on('start_cult_night', async (callback) => {
+    const handleCultNightInitiation = async (socket, callback) => {
       try {
         const found = RoomManager.getRoomByToken(socket.sessionToken);
         if (!found) throw new Error('Bạn chưa tham gia phòng nào');
@@ -918,32 +918,26 @@ export function setupSocket(server) {
               inspectionData: room.pendingCultRitual.inspectionData
             });
           }
-        }
 
-        broadcastRoomState(io, room);
-
-        if (typeof callback === 'function') callback({ success: true, result });
-      } catch (err) {
-        if (typeof callback === 'function') callback({ success: false, error: err.message });
-      }
-    });
-
-    socket.on('confirm_cult_night', async (callback) => {
-      try {
-        const found = RoomManager.getRoomByToken(socket.sessionToken);
-        if (!found) throw new Error('Bạn chưa tham gia phòng nào');
-
-        const { room } = found;
-        const result = ExecutionService.startCultNight(room, socket.sessionToken);
-        await RoomManager.saveSnapshot(room.id);
-
-        if (result.nextPhase === 'CULT_UPRISING_BLIND') {
-          io.to(room.id).emit('CULT_UPRISING_STARTED', {});
-
-          if (room.pendingCultRitual?.inspectionData && room.pendingCultRitual?.cultLeaderId) {
-            emitPrivate(io, room.id, room.pendingCultRitual.cultLeaderId, 'CULT_CABIN_SEARCH_DATA', {
-              inspectionData: room.pendingCultRitual.inspectionData
-            });
+          // Xử lý fake delay 20 giây nếu Cult Leader đã bị loại (bảo mật ẩn danh)
+          if (result.isFakeNight) {
+            clearTimeout(room._fakeCultNightTimeout);
+            room._fakeCultNightTimeout = setTimeout(async () => {
+              try {
+                const currentRoom = RoomManager.getRoomInstance(room.id);
+                if (!currentRoom || currentRoom.gamePhase !== 'CULT_UPRISING_BLIND') return;
+                const resolveResult = ExecutionService.resolveCultNightFake(currentRoom);
+                if (!resolveResult) return;
+                await RoomManager.saveSnapshot(currentRoom.id);
+                io.to(currentRoom.id).emit('CULT_UPRISING_ENDED', {
+                  publicMessage: resolveResult.publicMessage
+                });
+                broadcastRoomState(io, currentRoom);
+                console.log(`[Cult Night] Room ${currentRoom.id} fake deliberation delay (20s) ended. Phase advanced to ROUND_END.`);
+              } catch (e) {
+                console.error('Error auto-resolving fake cult night:', e);
+              }
+            }, 20000); // 20s fake delay
           }
         }
 
@@ -953,6 +947,14 @@ export function setupSocket(server) {
       } catch (err) {
         if (typeof callback === 'function') callback({ success: false, error: err.message });
       }
+    };
+
+    socket.on('start_cult_night', async (callback) => {
+      await handleCultNightInitiation(socket, callback);
+    });
+
+    socket.on('confirm_cult_night', async (callback) => {
+      await handleCultNightInitiation(socket, callback);
     });
 
     // RESOLVE CULT GUNS STASH (UC-015 AC-2)

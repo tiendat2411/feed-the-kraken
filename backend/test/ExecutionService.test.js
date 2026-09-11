@@ -519,6 +519,37 @@ describe('BR-004: ExecutionService Flow & Invariants (UC-012, UC-013, UC-014, UC
       assert.equal(result.nextPhase, 'ROUND_END');
       assert.equal(room.gamePhase, 'ROUND_END');
     });
+
+    test('Cult Leader bị ELIMINATED: startCultUprising kích hoạt isFakeNight và resolveCultNightFake tự động chuyển ROUND_END', () => {
+      const { room, p1, p4 } = setupTestRoom();
+      p4.factionRole = 'CULT_LEADER';
+      p4.status = 'ELIMINATED'; // Cult Leader đã chết
+      room.gamePhase = 'CULT_UPRISING';
+      room.mapBoard.cultRitualDeck = ['CULT_CABIN_SEARCH'];
+
+      // Step 1: startCultUprising - vẫn công khai thẻ bài nhưng đánh dấu isFakeNight = true
+      const uprisingResult = ExecutionService.startCultUprising(room);
+      assert.equal(uprisingResult.isFakeNight, true);
+      assert.equal(uprisingResult.cultLeaderId, null);
+      assert.equal(uprisingResult.inspectionData, null);
+      assert.equal(room.pendingCultRitual.isFakeNight, true);
+      assert.equal(room.gamePhase, 'CULT_UPRISING');
+
+      // Step 2: Thuyền trưởng bấm bắt đầu màn đêm
+      const nightResult = ExecutionService.startCultNight(room, p1.sessionToken);
+      assert.equal(nightResult.isFakeNight, true);
+      assert.equal(nightResult.nextPhase, 'CULT_UPRISING_BLIND');
+      assert.equal(room.gamePhase, 'CULT_UPRISING_BLIND');
+
+      // Step 3: Server tự động giải quyết màn đêm sau delay giả lập
+      const resolveResult = ExecutionService.resolveCultNightFake(room);
+      assert.ok(resolveResult);
+      assert.equal(resolveResult.success, true);
+      assert.equal(resolveResult.nextPhase, 'ROUND_END');
+      assert.equal(room.gamePhase, 'ROUND_END');
+      assert.equal(room.pendingCultRitual, null);
+      assert.equal(room.revealedCultRitual, null);
+    });
   });
 
   describe('UC-013: Supply Line Gun Refill (AC-2)', () => {

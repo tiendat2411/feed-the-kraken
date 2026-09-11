@@ -43,8 +43,9 @@ const MapBoardUI = ({
 
   const players = room?.players || [];
   const me = players.find(p => p.id === currentUserId || p.sessionToken === currentUserId);
-  const isCaptain = me?.id === room?.captainId;
-  const isCultLeader = myRole === 'CULT_LEADER' || me?.factionRole === 'CULT_LEADER';
+  const isCaptain = me?.id === room?.captainId && me?.status !== 'ELIMINATED';
+  const isEliminated = me?.status === 'ELIMINATED';
+  const isCultLeader = (myRole === 'CULT_LEADER' || me?.factionRole === 'CULT_LEADER') && !isEliminated;
 
   const mapConfig = room?.mapType === 'LONG_JOURNEY' ? longJourneyConfig : quickJourneyConfig;
   const shipPositionId = room?.mapBoard?.shipPosition || 'START';
@@ -890,8 +891,19 @@ const MapBoardUI = ({
       {/* ========================================================================= */}
       {gamePhase === 'CULT_UPRISING_BLIND' && !isModalMinimized && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black select-none animate-fadeIn">
-          {/* MÀN ĐÊM DÀNH CHO NGƯỜI CHƠI THƯỜNG (AC-1 Anti-Sniffing) */}
-          {!isCultLeader ? (
+          {/* MÀN ĐÊM DÀNH CHO NGƯỜI ĐÃ BỊ LOẠI (ELIMINATED / SPECTATOR) */}
+          {isEliminated ? (
+            <div className="text-center space-y-6 max-w-lg p-8">
+              <div className="text-6xl animate-pulse">☠️</div>
+              <h2 className="text-3xl font-display font-black tracking-widest text-parchment-dim">
+                YOU HAVE FALLEN TO THE DEEP
+              </h2>
+              <p className="text-sm font-heading text-parchment-dim leading-relaxed">
+                Your spirit drifts in the cold abyss. Eliminated sailors cannot partake in nor influence the dark rites of the night.
+              </p>
+            </div>
+          ) : !isCultLeader ? (
+            /* MÀN ĐÊM DÀNH CHO NGƯỜI CHƠI THƯỜNG (AC-1 Anti-Sniffing) */
             <div className="text-center space-y-6 max-w-lg p-8">
               <div className="text-6xl animate-pulse">🌙</div>
               <h2 className="text-3xl font-display font-black tracking-widest text-parchment-dim">

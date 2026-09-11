@@ -682,24 +682,11 @@ export class ExecutionService {
 
     // Tìm Giáo chủ (Cult Leader)
     const cultLeader = room.getPlayers().find(p => p.factionRole === 'CULT_LEADER' && p.status !== 'ELIMINATED');
-    if (!cultLeader) {
-      room.gamePhase = 'ROUND_END';
-      room.pendingCultRitual = null;
-      room.revealedCultRitual = null;
-      room.touch();
-
-      return {
-        ritualCard,
-        isLeaderEliminated: true,
-        nextPhase: 'ROUND_END',
-        publicMessage: `Cult Ritual card [${ritualCard}] was drawn, but the Cult Leader is eliminated! Ritual ends.`,
-        room
-      };
-    }
+    const isFakeNight = !cultLeader;
 
     // Chuẩn bị dữ liệu riêng tư nếu là CULT_CABIN_SEARCH
     let inspectionData = null;
-    if (ritualCard === 'CULT_CABIN_SEARCH') {
+    if (ritualCard === 'CULT_CABIN_SEARCH' && cultLeader) {
       const capt = room.getPlayer(room.captainId);
       const lt = room.getPlayer(room.lieutenantId);
       const nav = room.getPlayer(room.navigatorId);
@@ -733,7 +720,8 @@ export class ExecutionService {
 
     room.pendingCultRitual = {
       type: ritualCard,
-      cultLeaderId: cultLeader.id,
+      cultLeaderId: cultLeader?.id || null,
+      isFakeNight,
       inspectionData
     };
 
@@ -745,7 +733,8 @@ export class ExecutionService {
       ritualCard,
       ritualName: room.revealedCultRitual.name,
       ritualDescription: room.revealedCultRitual.description,
-      cultLeaderId: cultLeader.id,
+      cultLeaderId: cultLeader?.id || null,
+      isFakeNight,
       inspectionData,
       nextPhase: 'CULT_UPRISING',
       publicMessage: `Cult Ritual card [${room.revealedCultRitual.name}] was drawn! Prepare for the night ritual...`,
@@ -773,18 +762,42 @@ export class ExecutionService {
       throw new Error('Chỉ có Thuyền trưởng mới có quyền kích hoạt Màn đêm');
     }
 
-    if (!room.pendingCultRitual) {
-      room.gamePhase = 'ROUND_END';
-      room.revealedCultRitual = null;
-    } else {
-      room.gamePhase = 'CULT_UPRISING_BLIND';
-    }
+    const isFakeNight = Boolean(room.pendingCultRitual?.isFakeNight);
 
+    room.gamePhase = 'CULT_UPRISING_BLIND';
     room.touch();
 
     return {
-      nextPhase: room.gamePhase,
+      nextPhase: 'CULT_UPRISING_BLIND',
+      isFakeNight,
       publicMessage: 'Night descends... All crew members must close their eyes in fear.',
+      room
+    };
+  }
+
+  /**
+   * Tự động kết thúc Màn đêm giả lập khi Giáo chủ đã bị loại (Fake Deliberation Delay - 20s)
+   * @param {Object} room 
+   * @returns {Object|null}
+   */
+  static resolveCultNightFake(room) {
+    if (!room) {
+      throw new Error('Phòng không tồn tại');
+    }
+
+    if (room.gamePhase !== 'CULT_UPRISING_BLIND') {
+      return null;
+    }
+
+    room.pendingCultRitual = null;
+    room.revealedCultRitual = null;
+    room.gamePhase = 'ROUND_END';
+    room.touch();
+
+    return {
+      success: true,
+      nextPhase: 'ROUND_END',
+      publicMessage: 'Cult Ritual has concluded. Dawn arrives upon the ship!',
       room
     };
   }
@@ -810,7 +823,7 @@ export class ExecutionService {
     }
 
     const leader = room.getPlayerByToken(leaderToken);
-    if (!leader || room.pendingCultRitual.cultLeaderId !== leader.id) {
+    if (!leader || leader.status === 'ELIMINATED' || room.pendingCultRitual.cultLeaderId !== leader.id) {
       throw new Error('Chỉ có Giáo chủ mới có quyền thực thi quyền năng này');
     }
 
@@ -863,7 +876,7 @@ export class ExecutionService {
     }
 
     const leader = room.getPlayerByToken(leaderToken);
-    if (!leader || room.pendingCultRitual.cultLeaderId !== leader.id) {
+    if (!leader || leader.status === 'ELIMINATED' || room.pendingCultRitual.cultLeaderId !== leader.id) {
       throw new Error('Chỉ có Giáo chủ mới có quyền thực thi quyền năng này');
     }
 
@@ -901,7 +914,7 @@ export class ExecutionService {
     }
 
     const leader = room.getPlayerByToken(leaderToken);
-    if (!leader || room.pendingCultRitual.cultLeaderId !== leader.id) {
+    if (!leader || leader.status === 'ELIMINATED' || room.pendingCultRitual.cultLeaderId !== leader.id) {
       throw new Error('Chỉ có Giáo chủ mới có quyền thực thi quyền năng này');
     }
 
