@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSocket } from '../contexts/SocketContext';
 import Lobby from './Lobby';
@@ -11,15 +11,19 @@ import GameHeader from '../components/GameHeader';
 import CrewSeatingDrawer from '../components/game/CrewSeatingDrawer';
 import EventModalOverlay from '../components/game/EventModalOverlay';
 import DustParticles from '../components/ui/DustParticles';
-import lobbyCabinBg from '../assets/ui/backgrounds/lobby_cabin_bg.jpg';
+import krakenEyesGlowPng from '../assets/ui/sprites/kraken_eyes_glow.png';
+import emblemCultLeaderPng from '../assets/ui/sprites/emblem_cult_leader.png';
 import { getAvatarSrc } from '../constants/avatars';
+import badgeCaptainHatPng from '../assets/ui/sprites/badge_captain_hat.png';
+import iconFlintlockPistolPng from '../assets/ui/sprites/icon_flintlock_pistol.png';
+import badgeNavigatorCompassPng from '../assets/ui/sprites/badge_navigator_compass.png';
 
 /**
- * Game Master Page Component (Task T061 - In-Game Command Layout Architecture)
+ * Game Master Page Component (Feature 007 - In-Game Command Layout Architecture)
  * - 100% English display language & Eldritch Parchment aesthetic.
- * - Persistent Dual-Pane Layout:
- *   - Left 60%: Persistent Sea Chart (MapBoardUI).
- *   - Right 40%: Dynamic Action Desk (Navigation / Mutiny / Execution).
+ * - Persistent Full Sea Chart (~100% width MapBoardUI).
+ * - Floating Action Trigger Latch (compact brass tab fixed at right edge).
+ * - Full-Width Sliding Action Desk (opens to full canvas for Phase operations).
  * - Minimizable Center Event Modal Overlay.
  * - Collapsible Bottom Crew Dock & Circular Seating Radar Drawer.
  */
@@ -36,8 +40,42 @@ const Game = () => {
   const [privateCards, setPrivateCards] = useState([]);
   const [conversionNotification, setConversionNotification] = useState(null);
 
-  // Mobile View Toggle: 'CHART' | 'ACTION'
-  const [mobileTab, setMobileTab] = useState('CHART');
+  // Full-Width Action Desk Drawer State
+  const [isActionDeskOpen, setIsActionDeskOpen] = useState(false);
+  const prevPhaseRef = useRef(room?.gamePhase);
+
+  // Auto-slide open Action Desk when entering an interactive phase
+  useEffect(() => {
+    if (room?.gamePhase && room.gamePhase !== prevPhaseRef.current) {
+      prevPhaseRef.current = room.gamePhase;
+      const interactivePhases = [
+        'DAY_1_CREW_SELECTION',
+        'APPOINT_TEAM',
+        'LOYALTY_CHECK',
+        'MUTINY_VOTE',
+        'MUTINY_REVEALED',
+        'MUTINY_TIE_BREAKER',
+        'NAVIGATION',
+        'CAPTAIN_DRAW',
+        'LIEUTENANT_PASS',
+        'NAVIGATOR_CHOOSE'
+      ];
+      if (interactivePhases.includes(room.gamePhase)) {
+        setIsActionDeskOpen(true);
+      }
+    }
+  }, [room?.gamePhase]);
+
+  const getActionDeskSprite = () => {
+    const phase = room?.gamePhase || '';
+    if (phase.includes('APPOINT') || phase.includes('CREW_SELECTION')) {
+      return badgeCaptainHatPng;
+    }
+    if (phase.includes('MUTINY') || phase === 'LOYALTY_CHECK') {
+      return iconFlintlockPistolPng;
+    }
+    return badgeNavigatorCompassPng;
+  };
 
   const fetchRoomState = () => {
     if (!socket || !roomId) return;
@@ -404,7 +442,8 @@ const Game = () => {
     <div
       className="relative min-h-screen w-full flex flex-col select-none bg-[#0A0A08] bg-cover bg-center overflow-x-hidden"
       style={{
-        backgroundImage: `url(${lobbyCabinBg})`,
+        backgroundImage: `url(${gameTabletopDeskBg})`,
+        backgroundAttachment: 'fixed',
       }}
     >
       {/* ── Atmospheric Overlays ── */}
@@ -418,102 +457,157 @@ const Game = () => {
         onDissolveRoom={handleDissolveRoom}
       />
 
-      {/* ── Mobile Quick Tab Switch (< 1024px) ── */}
-      <div className="flex lg:hidden items-center justify-center gap-3 px-4 pt-2 z-20">
+      {/* ── Floating Action Trigger Scroll (Zone 3 Entry Rolled Parchment) ── */}
+      <aside className="fixed right-0 top-1/2 -translate-y-1/2 z-50 select-none pointer-events-auto">
         <button
           type="button"
-          onClick={() => setMobileTab('CHART')}
-          className={`font-display text-xs sm:text-sm px-4 py-1.5 rounded transition ${
-            mobileTab === 'CHART'
-              ? 'bg-gold text-[#140F0A] font-black shadow-lg'
-              : 'bg-black/60 text-parchment-dim border border-gold/30'
-          }`}
+          id="btn-trigger-action-desk"
+          onClick={() => setIsActionDeskOpen(!isActionDeskOpen)}
+          className="group relative flex items-center bg-[#1A1510]/95 hover:bg-[#2A2118] border-l-2 border-y-2 border-gold/80 rounded-l-2xl p-2 sm:p-2.5 shadow-[-8px_4px_30px_rgba(0,0,0,0.95)] cursor-pointer transition-all duration-300 hover:-translate-x-1 focus:outline-none"
+          title={isActionDeskOpen ? "Collapse Action Desk" : "Open Action Desk"}
         >
-          🗺️ SEA CHART
-        </button>
+          {/* Rolled Parchment Scroll with Red Wax Seal */}
+          <div className="relative w-14 sm:w-20 md:w-24 aspect-[912/543] flex items-center justify-center filter drop-shadow-[0_6px_16px_rgba(0,0,0,0.9)] group-hover:drop-shadow-[0_0_24px_rgba(232,166,62,0.95)] transition-all">
+            <img
+              src={scrollActionDeskTriggerPng}
+              alt="Action Desk Scroll Trigger"
+              className="w-full h-full object-contain pointer-events-none"
+            />
+            {/* Active Phase Badge Floating on Scroll Center */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-1">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center -translate-y-0.5">
+                <img
+                  src={getActionDeskSprite()}
+                  alt="Phase Action"
+                  className="w-full h-full object-contain filter drop-shadow group-hover:scale-110 transition-transform"
+                />
+              </div>
+              <span className="font-display font-black text-[8px] sm:text-[9px] text-amber-200 uppercase tracking-widest text-shadow drop-shadow text-center leading-tight">
+                ACTION
+              </span>
+            </div>
+          </div>
 
-        <button
-          type="button"
-          onClick={() => setMobileTab('ACTION')}
-          className={`relative font-display text-xs sm:text-sm px-4 py-1.5 rounded transition ${
-            mobileTab === 'ACTION'
-              ? 'bg-gold text-[#140F0A] font-black shadow-lg'
-              : 'bg-black/60 text-parchment-dim border border-gold/30'
-          }`}
-        >
-          ⚔️ ACTION DESK
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500" />
-        </button>
-      </div>
+          {/* Vertical Action Desk Text Label & Direction Arrow */}
+          <div className="flex flex-col items-center gap-1.5 ml-1.5 pr-1">
+            <span className="font-display text-xs sm:text-sm text-gold group-hover:text-parchment-bright uppercase tracking-widest [writing-mode:vertical-lr] rotate-180 font-bold transition-colors">
+              ACTION DESK
+            </span>
+            <span className="text-xs text-gold/90 font-bold group-hover:-translate-x-0.5 transition-transform">
+              {isActionDeskOpen ? '▶' : '◀'}
+            </span>
+          </div>
 
-      {/* ── Main Command Playing Stage (Dual-Pane Grid) ── */}
-      <main className="relative z-20 flex-1 w-full max-w-7xl mx-auto p-2 sm:p-4 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
-          {/* ── LEFT PANE (60% Desktop / 7 Cols): Persistent Sea Chart ── */}
-          <section
-            className={`lg:col-span-7 flex flex-col ${
-              mobileTab === 'CHART' ? 'block' : 'hidden lg:flex'
-            }`}
+          {/* Attention / Flame Pulse Indicator */}
+          {!isActionDeskOpen && (
+            <div className="absolute -top-1.5 -left-1.5 flex items-center justify-center">
+              <span className="w-3 h-3 rounded-full bg-amber-400 animate-ping absolute opacity-80" />
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-gold" />
+            </div>
+          )}
+        </button>
+      </aside>
+
+      {/* ── Main Command Playing Stage (Zone 2: Persistent Full Sea Chart & Under-Drawer) ── */}
+      <main className="relative z-10 flex-1 w-full max-w-[1600px] mx-auto p-2 sm:p-4 pb-16">
+        <div className="w-full">
+          <MapBoardUI
+            room={room}
+            currentUserId={effectiveUserId}
+            myRole={myRole || room.myRole}
+            onExecuteMapAction={handleExecuteMapAction}
+            onConfirmMapAction={handleConfirmMapAction}
+            onDesignateCardTarget={handleDesignateCardTarget}
+            onResolveTelescope={handleResolveTelescope}
+            onAcknowledgeMermaid={handleAcknowledgeMermaid}
+            onStartCultUprising={handleStartCultUprising}
+            onConfirmCultNight={handleConfirmCultNight}
+            onResolveCultGuns={handleResolveCultGuns}
+            onResolveCultCabinSearch={handleResolveCultCabinSearch}
+            onResolveCultConversion={handleResolveCultConversion}
+            onAdvanceNextRound={handleAdvanceNextRound}
+          />
+        </div>
+
+        {/* ── Captain's Desk Under-Drawer (Non-Sticky Table Lip Drawer) ── */}
+        <CrewSeatingDrawer
+          room={room}
+          currentUserId={effectiveUserId}
+          onKickPlayer={handleKickPlayer}
+        />
+      </main>
+
+      {/* ── Full-Width Sliding Action Desk (Zone 3) ── */}
+      <div
+        className={`fixed inset-0 top-[70px] z-[45] bg-[#0A0A08]/96 backdrop-blur-md overflow-y-auto transition-transform duration-500 ease-in-out pb-20 ${
+          isActionDeskOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none'
+        }`}
+      >
+        {/* Top Control Bar */}
+        <div className="sticky top-0 z-20 w-full bg-hull-dark/95 border-b border-gold/40 px-4 py-2.5 flex items-center justify-between shadow-2xl">
+          <button
+            type="button"
+            onClick={() => setIsActionDeskOpen(false)}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded bg-hull hover:bg-hull-light border border-gold/40 text-parchment hover:text-parchment-bright font-display text-sm tracking-wider transition-all shadow cursor-pointer group"
           >
-            <div className="w-full">
-              <MapBoardUI
-                room={room}
-                currentUserId={effectiveUserId}
-                myRole={myRole || room.myRole}
-                onExecuteMapAction={handleExecuteMapAction}
-                onConfirmMapAction={handleConfirmMapAction}
-                onDesignateCardTarget={handleDesignateCardTarget}
-                onResolveTelescope={handleResolveTelescope}
-                onAcknowledgeMermaid={handleAcknowledgeMermaid}
-                onStartCultUprising={handleStartCultUprising}
-                onConfirmCultNight={handleConfirmCultNight}
-                onResolveCultGuns={handleResolveCultGuns}
-                onResolveCultCabinSearch={handleResolveCultCabinSearch}
-                onResolveCultConversion={handleResolveCultConversion}
-                onAdvanceNextRound={handleAdvanceNextRound}
+            <span className="text-gold font-bold group-hover:-translate-x-0.5 transition-transform">◀</span>
+            <span>PEEK SEA CHART</span>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 flex items-center justify-center">
+              <img
+                src={getActionDeskSprite()}
+                alt="Active Phase"
+                className="w-full h-full object-contain filter drop-shadow"
               />
             </div>
-          </section>
-
-          {/* ── RIGHT PANE (40% Desktop / 5 Cols): Dynamic Action Desk ── */}
-          <section
-            className={`lg:col-span-5 flex flex-col ${
-              mobileTab === 'ACTION' ? 'block' : 'hidden lg:flex'
-            }`}
-          >
-            <div className="w-full">
-              {isNavigationPhase ? (
-                /* Phase: Navigation & Card Steer */
-                <NavigationPhase
-                  room={room}
-                  currentUserId={effectiveUserId}
-                  myRole={myRole || room.myRole}
-                  privateCards={privateCards}
-                  onStartNavigation={handleStartNavigation}
-                  onCaptainSelectCard={handleCaptainSelectCard}
-                  onLieutenantSelectCard={handleLieutenantSelectCard}
-                  onNavigatorSelectCard={handleNavigatorSelectCard}
-                  onNavigatorJumpOverboard={handleNavigatorJumpOverboard}
-                  onAppointEmergencyNavigator={handleAppointEmergencyNavigator}
-                />
-              ) : (
-                /* Default / Day Phase: Mutiny & Appointment */
-                <MutinyBoard 
-                  room={room}
-                  currentUserId={effectiveUserId}
-                  myRole={myRole || room.myRole}
-                  onAppointTeam={handleAppointTeam}
-                  onSubmitVote={handleSubmitVote}
-                  onConfirmOutcome={handleConfirmOutcome}
-                  onEliminateTieCandidate={handleEliminateTieCandidate}
-                  onCutTongue={handleCutTongue}
-                />
-              )}
+            <div className="font-display text-base sm:text-xl text-gold font-bold tracking-widest uppercase text-shadow-sm">
+              {room?.gamePhase ? room.gamePhase.replace(/_/g, ' ') : 'ACTION DESK'}
             </div>
-          </section>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsActionDeskOpen(false)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-hull hover:bg-hull-light border border-gold/40 text-parchment-dim hover:text-parchment font-display text-xs sm:text-sm tracking-wider transition-all shadow cursor-pointer"
+            title="Minimize to Sea Chart"
+          >
+            <span>✕ CLOSE</span>
+          </button>
         </div>
-      </main>
+
+        {/* Desk Content - Full Width Spacious Canvas */}
+        <div className="w-full max-w-6xl mx-auto p-4 sm:p-6">
+          {isNavigationPhase ? (
+            /* Phase: Navigation & Card Steer */
+            <NavigationPhase
+              room={room}
+              currentUserId={effectiveUserId}
+              myRole={myRole || room.myRole}
+              privateCards={privateCards}
+              onStartNavigation={handleStartNavigation}
+              onCaptainSelectCard={handleCaptainSelectCard}
+              onLieutenantSelectCard={handleLieutenantSelectCard}
+              onNavigatorSelectCard={handleNavigatorSelectCard}
+              onNavigatorJumpOverboard={handleNavigatorJumpOverboard}
+              onAppointEmergencyNavigator={handleAppointEmergencyNavigator}
+            />
+          ) : (
+            /* Default / Day Phase: Mutiny & Appointment */
+            <MutinyBoard 
+              room={room}
+              currentUserId={effectiveUserId}
+              myRole={myRole || room.myRole}
+              onAppointTeam={handleAppointTeam}
+              onSubmitVote={handleSubmitVote}
+              onConfirmOutcome={handleConfirmOutcome}
+              onEliminateTieCandidate={handleEliminateTieCandidate}
+              onCutTongue={handleCutTongue}
+            />
+          )}
+        </div>
+      </div>
 
       {/* ── Secret Cult Conversion Modal for Converted Victim (AC-3 UC-015) ── */}
       {conversionNotification && (
@@ -521,7 +615,13 @@ const Game = () => {
           <div className="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#120A16] border-2 border-purple-500 shadow-[0_0_80px_rgba(168,85,247,0.6)] text-center space-y-5 text-parchment-bright">
             {/* Header */}
             <div className="flex flex-col items-center gap-2">
-              <div className="text-5xl animate-bounce">👁️ 🐙 👁️</div>
+              <div className="w-20 h-20 flex items-center justify-center filter drop-shadow-[0_0_25px_rgba(168,85,247,0.9)] animate-pulse">
+                <img
+                  src={krakenEyesGlowPng}
+                  alt="Kraken Eyes"
+                  className="w-full h-full object-contain"
+                />
+              </div>
               <h2 className="text-2xl sm:text-3xl font-display font-black text-purple-300 tracking-wider">
                 YOU HAVE BEEN CONVERTED!
               </h2>
@@ -542,7 +642,11 @@ const Game = () => {
                   alt={conversionNotification.cult_leader_name}
                   className="w-full h-full object-cover rounded-full pointer-events-none"
                 />
-                <span className="absolute -top-1 -right-1 text-lg">👑</span>
+                <img
+                  src={emblemCultLeaderPng}
+                  alt="Cult Leader Badge"
+                  className="absolute -top-2 -right-2 w-7 h-7 object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.9)]"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-heading text-[11px] text-purple-300 uppercase tracking-widest font-black">
@@ -567,13 +671,6 @@ const Game = () => {
           </div>
         </div>
       )}
-
-      {/* ── Fixed Bottom Crew Dock with Sliding Seating Radar Drawer ── */}
-      <CrewSeatingDrawer
-        room={room}
-        currentUserId={effectiveUserId}
-        onKickPlayer={handleKickPlayer}
-      />
     </div>
   );
 };

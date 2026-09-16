@@ -1,4 +1,4 @@
-# UC-022: Thẻ Bài Tarot Cổ, Bảng Nổi Loạn Gỗ Mục & Khay Lái Tàu Da Dê
+# UC-022: Thẻ Bài Tarot Cổ, Giao Diện Bỏ Phiếu Nổi Loạn & Khay Lái Tàu
 
 ## Metadata
 - **ID:** UC-022
@@ -19,18 +19,18 @@ Người chơi trong phòng chơi trạng thái `PLAYING`.
 
 ## Main Flow
 1. **Thẻ Vai trò Tarot Cổ (Role Card) & Màn Che Bóng Đêm (Night Overlay):**
-   - Phase `ROLE_REVEAL`: Hiển thị thẻ kiểu tarot cổ — mặt sau da dê tối ố + hoa văn xúc tu Kraken vàng + viền vàng gỉ. Click kích hoạt lật 3D 600ms (`cubic-bezier(0.4, 0, 0.2, 1)`), ánh lửa hắt lên khi lật. Mặt trước: biểu tượng phe, tên vai trò (font `Cinzel`, màu phe), điều kiện thắng trên nền giấy da dê cổ.
+   - Phase `ROLE_REVEAL`: Hiển thị thẻ phong cách tarot cổ — mặt sau da dê tối có hoa văn nhận diện, click kích hoạt lật 3D 600ms (`cubic-bezier(0.4, 0, 0.2, 1)`) với ánh sáng ấm hắt lên. Mặt trước: biểu tượng phe, tên vai trò (font `Cinzel`, màu phe), điều kiện thắng trên nền giấy da dê cổ.
    - Phase `PIRATES_GATHERING` / `CULT_UPRISING_BLIND`: Màn đen kịt phủ toàn bộ + đôi mắt Kraken tím eldritch-pulse chập chờn + đồng hồ đếm ngược vòng tròn ember.
-2. **Bảng Nổi Loạn Gỗ Mục (Mutiny Board):**
-   - Đồng tiền vàng cổ / flintlock pistol trên bàn gỗ mục texture phong hóa.
-   - Xác nhận cược → khóa vào rương gỗ cũ bản lề gỉ.
-   - Kết quả → rương mở + screen shake (`gunShake 0.4s ease-out`) + tổng súng xếp hạng + vương miện vàng đồng gỉ trao tay.
-3. **Khay Lái Tàu Da Dê (Navigation Cards Tray):**
-   - 3 thẻ bài cổ mực phai: Blue Sailor (`--sailor`), Red Pirate (`--pirate`), Yellow Cult (`--cult`) — tất cả kiểu bột màu cổ.
-   - Captain giữ 2 loại 1, Lieutenant giữ 1 loại 1, Navigator chọn đi/nhảy tàu. Bấm chọn → viền vàng + sáng firelight. Loại → mờ đi + trượt ra.
+2. **Giao Diện Bỏ Phiếu Nổi Loạn (Mutiny Board):**
+   - Người chơi bí mật chọn số lượng súng cược trên giao diện với phản hồi xúc giác trực quan.
+   - Xác nhận cược → thông tin được chốt bảo mật cho đến khi toàn bộ thuyền viên hoàn tất.
+   - Khi công bố kết quả → hiệu ứng rung màn hình kịch tính (`gunShake 0.4s ease-out`) + bảng xếp hạng tổng số súng cược và vinh danh Thuyền trưởng mới.
+3. **Khay Lái Tàu Điều Hướng (Navigation Cards Tray):**
+   - Hiển thị 3 lá bài điều hướng với sắc thái nhận diện 3 phe: Blue Sailor (`--sailor`), Red Pirate (`--pirate`), Yellow Cult (`--cult`).
+   - Captain chọn giữ 2 loại 1, Lieutenant giữ 1 loại 1, Navigator chọn hướng đi hoặc nhảy tàu. Thao tác chọn giữ và loại bỏ có phản hồi màu sắc và ánh sáng tương phản rõ ràng.
 
 ## Alternative Flows
-- **3a. Jump Overboard:** Nút nhảy tàu với biểu tượng đầu lâu/sóng biển, cảnh báo trước khi xác nhận.
+- **3a. Jump Overboard:** Nút nhảy tàu với biểu tượng và cảnh báo xác nhận rõ ràng.
 
 ## Exceptions
 - **E1. Rapid clicks / lag:** Nút vô hiệu hóa tức thì sau bấm, tránh duplicate emit.
@@ -45,13 +45,13 @@ Thao tác tương tác thẻ bài / bỏ phiếu hoàn tất mượt mà.
 ## Acceptance Criteria (Tầng 4)
 ### AC-1: Thẻ Bài Tarot 3D Flip & Màn Che Bóng Đêm
 - **Given** nhận thẻ vai trò bí mật,
-- **When** bấm vào thẻ (da dê tối + xúc tu Kraken vàng),
+- **When** bấm vào thẻ,
 - **Then** lật 3D 600ms mượt mà, hiển thị biểu tượng phe + tên vai trò (`Cinzel`, màu phe) + điều kiện thắng trên nền giấy da dê cổ; Night Phase → đen kịt + mắt Kraken tím + đếm ngược ember.
 
-### AC-2: Bỏ Phiếu Gỗ Mục & Rút Bài Mực Phai
+### AC-2: Bỏ Phiếu Kịch Tính & Lái Tàu Trực Quan
 - **Given** tham gia Mutiny / Navigation,
 - **When** chọn súng hoặc chọn bài,
-- **Then** Mutiny: rương gỗ gỉ khóa cược + screen shake khi công bố. Navigation: 3 thẻ mực phai 3 màu phe, viền vàng khi chọn giữ.
+- **Then** Mutiny: cược bảo mật + rung màn hình khi công bố kết quả phân định thứ bậc. Navigation: 3 thẻ bài nhận diện rõ ràng 3 phe, trạng thái chọn/loại trực quan.
 
 ## Dependencies
 - **Upstream UC:** UC-021

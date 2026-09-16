@@ -18,19 +18,19 @@ Người chơi truy cập vào trang web hoặc đang tham gia trong một phòn
 Frontend đã tải thành công CSS, Google Fonts (`Pirata One`, `Cinzel`, `Outfit`) và kết nối Socket.
 
 ## Main Flow
-1. Hệ thống nạp Design Tokens "Eldritch Parchment": bảng màu nâu ấm + xanh rêu verdigris, font gothic 3 tầng, texture gỗ mục/da dê cổ, vignette tối viền toàn cục.
-2. Toàn bộ body nền đại dương đen kịt (`--abyss`), mọi panel có texture gỗ phong hóa (`.panel-wood`), mọi card có chất liệu da dê cổ (`.card-parchment`).
-3. Khi người chơi ở trong Game View, render thanh HUD Header gỗ sẫm phong hóa cố định tại đỉnh:
-   - Mã phòng khắc vào gỗ (font `Cinzel`, kèm nút copy).
-   - Round counter / Phase hiện tại.
-   - Cult Track tím ẩn hiện (eldritch-pulse khi có tiến triển).
-   - Huy hiệu vai trò cá nhân (nút bật xem Thẻ vai trò).
-   - Nút mở bản đồ + Cài đặt / Rời phòng.
-4. Main Stage tự động căn giữa, hiển thị component phase hiện tại.
-5. Crew Dock hiển thị thẻ gỗ mục từng thuyền viên: Tên, Avatar, Chức danh (Captain/Lieutenant/Navigator/Off-duty), Số súng, Trạng thái kết nối (chấm verdigris thay xanh neon).
+1. Hệ thống nạp Design Tokens "Eldritch Parchment": bảng màu nâu ấm + xanh rêu verdigris, font gothic 3 tầng, bề mặt phong hóa cổ xưa, vignette tối viền toàn cục.
+2. Toàn bộ nền trang mang sắc độ đại dương/khoang tàu trầm mặc (`--abyss`), các panel và container thể hiện chất liệu gỗ/giấy da phong hóa, loại bỏ hoàn toàn phong cách bóng bẩy hiện đại (glassmorphism, neon).
+3. Khi người chơi ở trong Game View, render thanh HUD Header cố định tại đỉnh:
+   - Thông tin phòng (Room Code kèm thao tác sao chép).
+   - Vòng chơi và Phase hiện tại (font `Cinzel`).
+   - Tiến trình Cult Track (hiệu ứng tím mờ ảo).
+   - Phím tắt kiểm tra Thẻ vai trò cá nhân.
+   - Nút bật/tắt âm thanh, nút Dissolve / Leave room.
+4. Không gian bàn chơi trung tâm hiển thị các phân vùng theo kiến trúc Command Layout.
+5. Danh sách thuyền viên (Crew Roster) và vị trí ngồi (Seating Radar) được tổ chức khoa học, dễ tiếp cận qua thao tác trượt mở hộc ngăn kéo gầm bàn.
 
 ## Alternative Flows
-- **3a. Mobile/Tablet View:** HUD co gọn, Crew Dock chuyển thanh cuộn ngang hoặc Drawer trượt.
+- **3a. Mobile/Tablet View:** HUD co giãn linh hoạt, các icon chức năng tự động tinh gọn phù hợp kích thước màn hình.
 
 ## Exceptions
 - **E1. Font loading latency:** Sử dụng fallback `Georgia`/`serif` cho Display/Heading, `sans-serif` cho Body. Chuyển đổi mượt khi font tải xong (FOUT prevention).
@@ -50,12 +50,12 @@ Giao diện nhất quán phong cách "Eldritch Parchment", sắc nét, đầy đ
 ### AC-1: Typography & Theme Tokens "Eldritch Parchment"
 - **Given** người chơi mở bất kỳ trang nào,
 - **When** trang hiển thị,
-- **Then** tiêu đề dùng `Pirata One`/`Cinzel` gothic, nội dung dùng `Outfit`, nền `--abyss` + vignette, panel có texture gỗ mục phong hóa, KHÔNG glassmorphism, KHÔNG neon.
+- **Then** tiêu đề dùng `Pirata One`/`Cinzel` gothic, nội dung dùng `Outfit`, nền `--abyss` + vignette, panel thể hiện chất liệu phong hóa, KHÔNG glassmorphism, KHÔNG neon.
 
-### AC-2: HUD Gỗ Phong Hóa Cố Định
+### AC-2: HUD Chỉ Huy Cố Định
 - **Given** ván game đang chạy bất kỳ phase,
-- **When** người chơi cuộn trang/thao tác,
-- **Then** thanh HUD gỗ sẫm cố định, hiển thị Round, Phase (font `Cinzel`), Cult Track tím, nút Role — tất cả trên nền gỗ mục có texture.
+- **When** người chơi cuộn trang hoặc thao tác trên bàn,
+- **Then** thanh HUD luôn cố định ở đỉnh, hiển thị rõ ràng Room Code, Phase (font `Cinzel`), Cult Track và các nút điều hướng cơ bản.
 
 ## Dependencies
 - **Upstream UC:** N/A

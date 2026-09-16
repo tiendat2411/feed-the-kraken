@@ -1,4 +1,4 @@
-# UC-023: Hải Đồ Da Dê Cổ, Sảnh Gỗ Phong Hóa & Vinh Danh Kết Thúc
+# UC-023: Hải Đồ Da Dê Cổ, Sảnh Chờ Hải Tặc & Vinh Danh Chiến Thắng
 
 ## Metadata
 - **ID:** UC-023
@@ -19,35 +19,29 @@ Người chơi xem MapBoard, ở sảnh Lobby, hoặc khi ván đấu kết thú
 
 ## Main Flow
 1. **Hải Đồ Da Dê Cổ (Vintage MapBoard):**
-   - Nền giấy da dê ố vàng (`--parchment-dim`) với vệt ố nâu, mép rách/cháy, viền rêu xanh mờ ở góc (`--moss-dim`).
-   - La bàn cổ (Compass Rose SVG) ở góc.
-   - 3 vùng đích: Sailor Cove (xanh rêu `--verdigris`), Crimson Cove (đỏ lửa `--pirate`), Kraken Sanctuary (tím `--cult`).
-   - Đường vẽ mực lông vũ, nét run rẩy không hoàn hảo.
-   - Con tàu buồm gỗ tối dập dềnh (`shipBob 3s ease-in-out infinite`).
-   - Bấm ô → popover chú thích sự kiện (nền `--hull`, viền `--gold-dim`, font `Outfit`).
-2. **Sảnh Gỗ Phong Hóa (Thematic Lobby):**
-   - Nền sàn gỗ ván thuyền phong hóa (`--hull-dark` + texture wood-grain).
-   - Thẻ gỗ mục đóng đinh gỉ cho mỗi người chơi — avatar, tên, crown host vàng đồng gỉ, chấm verdigris online.
-   - Sổ da thuộc captain's journal bên phải — Room code, Map selection (cuộn giấy hải đồ Quick/Long), avatar grid.
-   - START VOYAGE = nút bánh lái tàu gỗ tối, phát sáng firelight khi hover.
+   - Bản đồ hàng hải cổ điển trên nền chất liệu giấy da dê phong hóa, lộ trình các hải trình rõ ràng.
+   - 3 vùng cập bến phân biệt rõ nét theo nhận diện 3 phe: Sailor Cove (`--verdigris`), Crimson Cove (`--pirate`), Kraken Sanctuary (`--cult`).
+   - Con tàu buồm di chuyển theo từng bước đi của ván cờ.
+   - Bấm ô bản đồ hiển thị popover chú thích sự kiện chi tiết và dễ hiểu.
+2. **Sảnh Chờ Tập Hợp (Thematic Lobby):**
+   - Danh sách thuyền viên: Thẻ người chơi hiển thị rõ ràng tên, avatar, trạng thái kết nối trực tuyến và huy hiệu Chủ phòng.
+   - Bảng cài đặt hành trình: Mã phòng trực quan kèm thao tác sao chép, bộ chọn hải đồ (Quick/Long Journey) và avatar thuyền viên.
+   - Nút bắt đầu hành trình (`START VOYAGE`): Nổi bật, trang trọng với hiệu ứng ánh sáng ấm.
 3. **Vinh Danh Kết Thúc (EndGame Ceremony):**
-   - Banner chiến thắng hoành tráng theo phe:
-     - Sailor Win: Cờ xanh tung bay, ánh bình minh ấm.
-     - Pirate Win: Jolly Roger cháy rực lửa đỏ, khói lan tỏa.
-     - Cult Win: Xúc tu Kraken trồi lên, nuốt chửng tàu, hào quang tím bùng nổ.
-   - Lật mở toàn bộ vai trò bí mật trên bàn gỗ mục — hiệu ứng card flip đồng loạt.
-   - Nút quay lại / rời phòng trên thanh gỗ dưới cùng.
+   - Banner chiến thắng hoành tráng vinh danh phe thắng cuộc (Sailor / Pirate / Cult).
+   - Lật mở đồng loạt toàn bộ vai trò bí mật của người chơi trên bàn với hiệu ứng card flip.
+   - Nút điều hướng quay lại phòng chờ hoặc rời phòng rõ ràng.
 
 ## Acceptance Criteria (Tầng 4)
-### AC-1: Hải Đồ Da Dê Cổ
+### AC-1: Hải Đồ Cổ & Trực Quan Sự Kiện
 - **Given** mở MapBoard,
 - **When** quan sát hải trình và bấm ô,
-- **Then** bản đồ da dê ố + rêu xanh mờ, 3 vùng đích màu đặc trưng, tàu buồm gỗ dập dềnh, popover giải thích rõ ràng.
+- **Then** bản đồ da dê cổ hiển thị rõ nét 3 vùng đích, con tàu di chuyển chính xác và popover giải thích sự kiện trực quan.
 
-### AC-2: Sảnh Gỗ & Vinh Danh Kết Thúc
+### AC-2: Sảnh Chờ & Vinh Danh Kết Thúc
 - **Given** ở Lobby hoặc EndGame,
 - **When** quan sát giao diện,
-- **Then** Lobby: thẻ gỗ mục đinh gỉ + sổ da thuộc + bánh lái phát sáng. EndGame: banner phe thắng hoành tráng + lật vai đồng loạt trên bàn gỗ.
+- **Then** Lobby: danh sách thuyền viên và bảng cài đặt hiển thị mạch lạc, nút xuất phát nổi bật. EndGame: banner vinh danh phe thắng hoành tráng + lật mở đồng loạt vai trò trên bàn chơi.
 
 ## Dependencies
 - **Upstream UC:** UC-021, UC-022

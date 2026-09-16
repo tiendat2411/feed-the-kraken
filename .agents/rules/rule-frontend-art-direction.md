@@ -30,17 +30,17 @@ Toàn bộ dự án sử dụng duy nhất font Gothic hải tặc **`'Pirata On
 - **Không bao giờ phẳng lì:** Mọi panel, card, input và modal phải có texture bề mặt (thớ gỗ mục `.panel-wood`, da dê cổ sần sùi `.card-parchment`, vệt ố `.aged-stain`, đinh sắt gỉ).
 - **Corner Radius:** Sử dụng góc sắc/thô (`rounded` 4px hoặc `rounded-sm` 2px). Nút bấm tối đa `rounded-md` (6px).
 
-### 2.5 Đồng Bộ Phong Cách Nghệ Thuật Asset Tuyệt Đối (Mandatory Asset Art Style Consistency)
+### 2.4 Đồng Bộ Phong Cách Nghệ Thuật Asset Tuyệt Đối (Mandatory Asset Art Style Consistency)
 - **Hệ Quy Chiếu Đồng Bộ 100%:** Mọi Asset đồ họa (hình nền, sprite, texture, khung viền, phiến gỗ, thẻ giấy da, avatar, icon, nút bấm) khi được khởi tạo hoặc cập nhật cho dự án **BẮT BUỘC PHẢI ĐỒNG BỘ 100% ART STYLE** với các asset đã được chuẩn hóa và đang có sẵn trong dự án:
   - **Nét vẽ (Inking Style):** Nét mực đen gothic đậm chất phác thảo tay, kỹ thuật đánh bóng gạch chéo tỉ mỉ (*hand-drawn dark ink crosshatching*), viền rách mép tự nhiên theo phong cách *Don't Starve Together*.
   - **Chất liệu & Bề mặt (Materials):** Gỗ sồi phong hóa màu nâu ấm chạm khắc tinh xảo (`crew_plate_wood.png`, `wood_panel_clean.png`), kim loại đồng cổ đúc viền bọc góc rêu xanh verdigris (`wood_header_bar.png`), và giấy da dê cổ ố vàng đóng đinh sắt (`parchment_sheet_clean.png`, `parchment_nailed_plate.png`).
   - **Quy tắc Kiểm tra Đối chiếu (Pre-Asset Audit):** Trước khi đưa bất kỳ asset mới nào vào mã nguồn, AI bắt buộc phải đối chiếu trực quan với các asset mẫu có sẵn (`crew_plate_wood.png`, `button_helm_gold.png`, `parchment_sheet_clean.png`, `icon_kick_skull.png`) để đảm bảo tính đồng nhất 100% về độ tương phản, ánh sáng, nét vẽ và bảng màu.
 
-### 2.6 Nghiêm Cấm Icon/Emoji Có Sẵn — Bắt Buộc 100% Custom Generated Graphic Assets (No Stock Icons / Unicode Emojis)
+### 2.5 Nghiêm Cấm Icon/Emoji Có Sẵn — Bắt Buộc 100% Custom Generated Graphic Assets (No Stock Icons / Unicode Emojis)
 - **Cấm Tuyệt Đối Stock Icons & Unicode Emojis:** Nghiêm cấm hoàn toàn việc sử dụng bất kỳ icon có sẵn nào trên giao diện (ví dụ các emoji Unicode hệ thống như 👑, 🔫, 🧭, ⚓, 💀, 🎖️, 👁️, 🐙, 📜, 🪙, hoặc bộ icon vector phẳng stock từ các thư viện mặc định). Các emoji và icon có sẵn này mang phong cách phẳng/CGI hiện đại của hệ điều hành, làm phá vỡ hoàn toàn bầu không khí u ám cổ kính và tính nhất quán thị giác của game.
 - **Bắt Buộc 100% Custom Generated Assets:** TẤT CẢ các biểu tượng chức vụ (Vương miện Thuyền trưởng, Huân chương Thuyền phó, La bàn Hoa tiêu), vũ khí (Súng lục flintlock), trạng thái (Nghỉ ca / Off-duty, Cắt lưỡi / Silenced, Online/Offline), ấn ký phe phái (Sailor, Pirate, Cult), rương gỗ, đồng tiền vàng... **BẮT BUỘC PHẢI ĐƯỢC GENERATE ĐỒ HỌA RIÊNG BIỆT 100%** theo chuẩn nghệ thuật *Eldritch Parchment* (nét mực phác thảo tay gothic hand-inked crosshatch, chất liệu đồng thau gỉ sét / gỗ sồi phong hóa / giấy da dê cổ, tách phông PNG trong suốt lưu trữ trong `frontend/src/assets/ui/sprites/`) hoặc SVG vẽ nét mực lông vũ run rẩy thủ công.
 
-### 2.7 Phân Tách Tuyệt Đối Giữa "Tham Khảo Art-Style" và "Bố Cục / Ý Tưởng" (Art-Style Reference vs Layout Isolation)
+### 2.6 Phân Tách Tuyệt Đối Giữa "Tham Khảo Art-Style" và "Bố Cục / Ý Tưởng" (Art-Style Reference vs Layout Isolation)
 - **Định nghĩa "Tham khảo Art-Style":** Khi User yêu cầu tham khảo phong cách nghệ thuật (Art-Style) từ một mockup cũ (kể cả mockup đó đã từng bị reject hoặc có lỗi về thiết kế), AI **CHỈ ĐƯỢC PHÉP KẾ THỪA VỀ PHONG CÁCH ĐỒ HỌA THUẦN TÚY**:
   - Bảng màu & Ánh sáng (Palette tone, tương phản giữa ánh nến firelight và vực thẳm abyss).
   - Nét vẽ & Kỹ thuật chất liệu (Inking style, nét gạch chéo hand-inked crosshatching, độ sần sùi của giấy da dê, thớ gỗ nứt, viền đồng thau oxy hóa).
@@ -52,17 +52,17 @@ Toàn bộ dự án sử dụng duy nhất font Gothic hải tặc **`'Pirata On
 
 ---
 
-## 3. Danh Sách Nghiêm Cấm Tuyệt Đối (Strict DON'Ts)
+## 3. Danh Sách Nghiêm Cấm Về Thẩm Mỹ (Strict Visual DON'Ts)
 
-1. ❌ **CẤM Tự ý tạo Mockup khi chưa hoàn thành Bước B1 (phân tích cấu trúc phân tầng layer, ma trận component/asset) và chưa được User phê duyệt (Cổng chặn 1 🎯).**
-2. ❌ **CẤM Tự ý code giao diện khi chưa có Mockup được User duyệt và chốt (Cổng chặn 2 🎯 ở Bước B2 Track B) hoặc Bản đề xuất Token (Bước A2 Track A).**
-3. ❌ **CẤM Khởi tạo hoặc sử dụng các Asset mới có Art Style bị lệch khỏi phong cách gothic hand-inked crosshatch của các asset hiện hữu trong dự án.**
-4. ❌ **CẤM Chỉ dùng CSS thuần (border, box-shadow) để giả lập chất liệu hữu cơ (mép giấy rách, vân gỗ nứt, ngọn nến) mà không qua Asset Generation.**
-5. ❌ **CẤM Sử dụng asset có viền/hộp nền đen hoặc trắng chưa tách phông (non-transparent assets)** — Bắt buộc phải qua bước tách phông thành file PNG trong suốt (`scripts/remove_background.py`) trước khi nạp vào giao diện.
-6. ❌ **CẤM Glassmorphism / Backdrop-blur bóng bẩy kiểu Apple / Linear.**
-7. ❌ **CẤM Màu Gradient Neon AI mặc định (tím xanh rực rỡ).**
-8. ❌ **CẤM Góc bo tròn lớn (`rounded-2xl`, `rounded-3xl`, `rounded-full` cho card/panel).**
-9. ❌ **CẤM Màu trắng tinh khiết (`#FFFFFF`)** — Màu sáng nhất cho phép là `--parchment-bright` (`#F0E6CC`).
-10. ❌ **CẤM Chấm trạng thái xanh lá cây neon** — Bắt buộc dùng `--verdigris` (`#4A7A6A`).
-11. ❌ **CẤM Animation nảy lò xo (bouncy/spring)** — Chuyển động phải có độ trễ và sức nặng.
-12. ❌ **CẤM Bề mặt đơn sắc phẳng lì không có texture/chiều sâu.**
+1. ❌ **CẤM Khởi tạo hoặc sử dụng các Asset mới có Art Style bị lệch khỏi phong cách gothic hand-inked crosshatch của các asset hiện hữu trong dự án.**
+2. ❌ **CẤM Chỉ dùng CSS thuần (border, box-shadow) để giả lập chất liệu hữu cơ (mép giấy rách, vân gỗ nứt, ngọn nến) mà không qua Asset Generation.**
+3. ❌ **CẤM Sử dụng asset có viền/hộp nền đen hoặc trắng chưa tách phông (non-transparent assets)** — Bắt buộc phải qua bước tách phông thành file PNG trong suốt (`scripts/remove_background.py`) trước khi nạp vào giao diện.
+4. ❌ **CẤM Glassmorphism / Backdrop-blur bóng bẩy kiểu Apple / Linear.**
+5. ❌ **CẤM Màu Gradient Neon AI mặc định (tím xanh rực rỡ).**
+6. ❌ **CẤM Góc bo tròn lớn (`rounded-2xl`, `rounded-3xl`, `rounded-full` cho card/panel).**
+7. ❌ **CẤM Màu trắng tinh khiết (`#FFFFFF`)** — Màu sáng nhất cho phép là `--parchment-bright` (`#F0E6CC`).
+8. ❌ **CẤM Chấm trạng thái xanh lá cây neon** — Bắt buộc dùng `--verdigris` (`#4A7A6A`).
+9. ❌ **CẤM Animation nảy lò xo (bouncy/spring)** — Chuyển động phải có độ trễ và sức nặng.
+10. ❌ **CẤM Bề mặt đơn sắc phẳng lì không có texture/chiều sâu.**
+11. ❌ **CẤM Cắt cúp lười biếng (lazy cropping) các props/sprites rời từ ảnh Mockup phẳng** — Mọi đạo cụ nổi (cuộn giấy trigger, súng, thẻ bài, tay nắm) bắt buộc phải được khởi tạo độc lập từ đầu trên phông nền đơn sắc trung tính để tách biên alpha sắc nét 100%, không dính răng cưa tạp chất nền.
+12. ❌ **CẤM Nướng chết (bake) các linh kiện động hoặc hình vẽ tượng trưng vào Canvas nền** — Bề mặt nền (bàn gỗ, sàn tàu) phải sạch bóng đạo cụ và để trống không gian cho các component động (`MapBoardUI`, `Action Desk Overlay`) render đè lên bằng code React.

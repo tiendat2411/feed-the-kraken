@@ -27,18 +27,18 @@ Người chơi khi truy cập vào bất kỳ màn hình nào sẽ cảm nhận 
 
 ---
 
-### User Story 2 - Modern Game Command Table Layout & Live HUD (Priority: P1)
+### User Story 2 - Modern Game Command Tabletop Environment & Live HUD (Priority: P1)
 
-Trong suốt trận đấu, người chơi được trải nghiệm bố cục bàn chơi "khoang thuyền trưởng": Thanh gỗ sẫm phong hóa cố định ở đầu màn hình (HUD Header) chứa Mã phòng khắc vào gỗ, Round counter, Cult Track tím ẩn hiện, nút xem Role bí mật; Khu vực sân khấu chính (Main Stage) tự động co giãn theo phase; Thanh thuyền viên (Crew Dock) hiển thị thẻ gỗ mục từng người chơi — chức danh, súng, trạng thái (chấm verdigris).
+Trong suốt trận đấu, người chơi trải nghiệm không gian chỉ huy trực quan với kiến trúc phân tầng rõ rệt: Bối cảnh không gian khoang buồng thuyền (`cabin_room_bg.jpg`) bao quát toàn trang tạo chiều sâu; Bàn làm việc Thuyền trưởng (`tabletop_captain_desk.png`) là một container độc lập đặt cân đối ở trung tâm (~80-85% viewport width) với góc nhìn thẳng góc 90° phẳng (Orthographic Flat Lay); Khu vực trung tâm bàn (Central Stage) chiếm diện tích chủ đạo (~70% - 80% mặt bàn), đóng vai trò trung tâm điều khiển xen kẽ tại chỗ giữa Hải đồ (`MapBoardUI.jsx`, mặc định) và khu vực thao tác (`Action Desk Overlay`, mở khi tương tác trigger hoặc đến lượt); Hộc ngăn kéo gầm bàn độc lập (`CrewSeatingDrawer` non-sticky under-drawer) nằm dưới mép đáy bàn làm việc, không cố định che khuất màn hình, trượt mở độc lập khi người chơi cuộn xuống mép bàn để hiển thị vị trí ngồi vòng tròn (Seating Radar) và danh sách thuyền viên (Crew Roster).
 
-**Why this priority**: Bố cục HUD là trung tâm điều khiển trong 100% thời gian ván đấu; layout gỗ cũ kỹ tạo immersion liên tục.
+**Why this priority**: Bố cục không gian bàn làm việc thực tế tạo immersion đỉnh cao cho ván đấu, giải phóng tầm nhìn thông thoáng cho hải đồ trung tâm và cho phép thao tác nhập vai như đang ở cabin chỉ huy.
 
-**Independent Test**: Trong ván game đang diễn ra, thay đổi kích thước từ Mobile (375px) đến Desktop 4K, xác nhận thanh HUD gỗ sẫm luôn cố định, Main Stage hiển thị đầy đủ, Crew Dock không bị tràn viền.
+**Independent Test**: Trong ván game đang diễn ra, thay đổi kích thước từ Mobile (375px) đến Desktop 4K, xác nhận thanh HUD luôn cố định ở đỉnh, bàn làm việc thu nhỏ cân đối giữa phòng theo góc nhìn 90° phẳng, hải đồ chiếm 70-80% diện tích bàn ở trung tâm, trigger tác chiến mở đè Action Desk tại chỗ, và cuộn xuống mép đáy bàn mới thấy ngăn kéo gầm bàn mở ra Seating Radar & Crew Roster mà không xung đột đồ họa.
 
 **Acceptance Scenarios**:
 
-1. **Given** ván game đang chạy ở bất kỳ phase nào, **When** người chơi nhìn vào đỉnh màn hình, **Then** thanh HUD gỗ mục phong hóa hiển thị rõ ràng: Phase hiện tại (font `Cinzel`), huy hiệu chức vụ, Cult Track tím, nút bản đồ/cài đặt — tất cả trên nền gỗ sẫm có texture.
-2. **Given** màn hình di động dọc hoặc thu nhỏ, **When** phase thay đổi, **Then** Crew Dock thu gọn thành thanh cuộn ngang hoặc drawer trượt, không che khuất nút hành động.
+1. **Given** ván game đang chạy ở bất kỳ phase nào, **When** người chơi nhìn vào màn hình in-game, **Then** nền khoang buồng thuyền bao quát toàn trang, bàn làm việc Thuyền trưởng hiển thị trực quan theo góc nhìn 90° phẳng với Central Stage trung tâm hiển thị Hải đồ hoặc khu vực thao tác trải đè linh hoạt.
+2. **Given** người chơi đang ở bàn làm việc phía trên, **When** chưa cuộn trang, **Then** đáy màn hình hoàn toàn thông thoáng không có thanh bar cố định che khuất; **When** cuộn xuống mép đáy bàn và kích hoạt ngăn kéo, **Then** hộc ngăn kéo độc lập trượt mở mượt mà hiển thị Seating Radar và Crew Roster mà không xung đột hay chồng đè đồ họa với mặt bàn.
 
 ---
 
@@ -59,7 +59,7 @@ Người chơi tương tác với Thẻ vai trò kiểu tarot cổ (da dê tối
 
 ### User Story 4 - Mutiny Bidding & Navigation Command Interface Revamp (Priority: P2)
 
-Nâng cấp Bảng Nổi loạn (Mutiny Board): đồng tiền vàng cổ / flintlock pistol trên bàn gỗ mục, rương gỗ cũ bản lề gỉ làm khay cược, kết quả công bố với screen shake + hiệu ứng kim loại cũ. Khay Lái tàu (Navigation Tray): 3 thẻ bài cổ mực phai (Blue Sailor, Red Pirate, Yellow Cult) trên bàn gỗ, chọn bài bằng viền vàng sáng lên.
+Người chơi tham gia cơ chế Bỏ phiếu Nổi loạn (Mutiny Bidding) và Lái tàu (Navigation) với phản hồi thị giác xúc giác rõ rệt: giao diện bỏ phiếu cược súng bí mật với hiệu ứng khóa cược an toàn và công bố kết quả kịch tính; khay rút bài điều hướng hiển thị rõ ràng 3 lá bài với nhận diện màu sắc phe phái trực quan, trạng thái chọn và loại bỏ dễ phân biệt.
 
 **Why this priority**: Hai cơ chế lặp đi lặp lại nhiều nhất — nâng cấp UI tạo ảnh hưởng 80% cảm xúc game.
 
@@ -67,15 +67,14 @@ Nâng cấp Bảng Nổi loạn (Mutiny Board): đồng tiền vàng cổ / flin
 
 **Acceptance Scenarios**:
 
-1. **Given** phase Bỏ phiếu Nổi loạn, **When** chọn súng và xác nhận, **Then** số súng khóa vào rương gỗ bản lề gỉ, hiệu ứng bí mật cho đến khi toàn bộ hoàn tất.
-2. **Given** kết quả bỏ phiếu công bố, **When** có Thuyền trưởng mới, **Then** vương miện vàng đồng gỉ trao tay + screen shake + tổng súng xếp hạng trực quan.
-3. **Given** rút bài điều hướng, **When** 3 lá bài xuất hiện, **Then** thẻ bài kiểu giấy da dê cổ với mực phai 3 màu phe, dễ phân biệt, viền vàng khi chọn giữ.
+1. **Given** phase Bỏ phiếu Nổi loạn, **When** chọn súng và xác nhận, **Then** số súng được chốt bảo mật cho đến khi hoàn tất, kết quả công bố với hiệu ứng rung màn hình và phân định thứ bậc rõ ràng.
+2. **Given** rút bài điều hướng, **When** các lá bài xuất hiện, **Then** các thẻ mang sắc thái nhận diện 3 phe trực quan (bột màu cổ phai), dễ dàng thao tác chọn giữ hoặc loại bỏ.
 
 ---
 
 ### User Story 5 - Interactive Ocean Chart & Dynamic Flagship Piece (Priority: P2)
 
-Bản đồ hải trình = hải đồ da dê cổ (giấy ố vàng, mép rách/cháy, vệt ố nâu, viền rêu xanh mờ ở góc), đường vẽ mực lông vũ nét run rẩy, biểu tượng sự kiện SVG, con tàu buồm gỗ tối dập dềnh, popover giải thích sự kiện. 3 điểm đích: Sailor Cove (xanh rêu), Crimson Cove (đỏ lửa), Kraken Sanctuary (tím).
+Bản đồ hải trình hiển thị mạng lưới lộ trình hàng hải cổ điển trên chất liệu giấy da dê cổ, nhận diện rõ ràng 3 vùng cập bến của 3 phe, vị trí con tàu di chuyển mượt mà giữa các ô sự kiện kèm bảng chú thích thông tin trực quan khi tương tác.
 
 **Why this priority**: Bản đồ phản ánh tiến độ + chiến thuật 3 phe; hải đồ cổ tạo immersion.
 
@@ -83,14 +82,14 @@ Bản đồ hải trình = hải đồ da dê cổ (giấy ố vàng, mép rách
 
 **Acceptance Scenarios**:
 
-1. **Given** mở MapBoard, **When** quan sát hải trình, **Then** 3 vùng đích có màu/hình đặc trưng, ô sự kiện có biểu tượng SVG, nền hải đồ da dê cổ có vệt ố và rêu xanh.
-2. **Given** tàu di chuyển, **When** tọa độ cập nhật, **Then** tàu buồm gỗ tối lướt mượt theo đường mực, ô đến phát sáng firelight.
+1. **Given** mở MapBoard, **When** quan sát hải trình, **Then** 3 vùng đích có màu sắc và nhận diện đặc trưng, ô sự kiện có biểu tượng rõ nét trên nền hải đồ phong hóa.
+2. **Given** tàu di chuyển, **When** tọa độ cập nhật, **Then** con tàu lướt mượt theo lộ trình đến ô đích, ô đến phát sáng kích hoạt sự kiện.
 
 ---
 
 ### User Story 6 - Cinematic Lobby, Landing Page & Victory Celebration (Priority: P3)
 
-Trang chủ = đại dương đen kịt + panel giấy da dê trên khung gỗ mục + title gothic vàng đồng + tentacle ẩn hiện + nến chập chờn + hạt bụi + inputs thanh gỗ khắc + buttons gỗ embossed. Sảnh chờ = sàn gỗ phong hóa + thẻ gỗ mục đóng đinh gỉ + sổ da thuộc captain's journal + chọn avatar + START VOYAGE kiểu bánh lái. End Game = banner phe thắng (cờ xanh bình minh / Jolly Roger lửa đỏ / Kraken trồi tím) + lật mở toàn bộ vai trò trên bàn gỗ mục.
+Giao diện trang chủ và sảnh chờ truyền tải không khí hàng hải cổ kính qua bố cục mạch lạc: bảng điều khiển trung tâm, danh sách thuyền viên trực quan, bảng cài đặt phòng và nút lệnh bắt đầu hành trình nổi bật. Khi kết thúc ván đấu, màn hình vinh danh thể hiện rõ phe chiến thắng và lật mở công khai vai trò của từng người chơi.
 
 **Why this priority**: First impression (Home) + Last impression (EndGame) = trải nghiệm trọn vẹn.
 
@@ -98,8 +97,8 @@ Trang chủ = đại dương đen kịt + panel giấy da dê trên khung gỗ m
 
 **Acceptance Scenarios**:
 
-1. **Given** vào sảnh Lobby, **When** đổi Avatar / đổi Map, **Then** giao diện cập nhật tức thì, thẻ gỗ phong hóa, cuộn giấy hải đồ preview.
-2. **Given** ván đấu kết thúc, **When** End Game xuất hiện, **Then** banner chiến thắng hoành tráng theo phe + lật mở đồng loạt toàn bộ vai trò với hiệu ứng card flip.
+1. **Given** vào sảnh Lobby, **When** đổi Avatar / đổi Map, **Then** giao diện cập nhật tức thì, danh sách thuyền viên và bảng cài đặt hiển thị mạch lạc, sắc nét.
+2. **Given** ván đấu kết thúc, **When** End Game xuất hiện, **Then** hiệu ứng chiến thắng vinh danh phe thắng hoành tráng + lật mở đồng loạt toàn bộ vai trò với hiệu ứng card flip.
 
 ---
 
@@ -117,17 +116,17 @@ Trang chủ = đại dương đen kịt + panel giấy da dê trên khung gỗ m
 
 - **FR-001**: Hệ thống MUST áp dụng bảng màu "Eldritch Parchment" (nâu ấm hẹp + xanh lá rêu verdigris + vàng đồng thau + 3 màu phe phái kiểu bột màu cổ) — KHÔNG glassmorphism, KHÔNG neon, KHÔNG gradient AI mặc định.
 - **FR-002**: Hệ thống MUST tích hợp font gothic 3 tầng từ Google Fonts: `Pirata One` (display), `Cinzel` (heading), `Outfit` (body) với fallback serif/sans-serif.
-- **FR-003**: Hệ thống MUST xây dựng Game Table HUD gỗ phong hóa cố định: thanh gỗ sẫm Header (Room Info, Round, Cult Track, Quick Access), Main Stage linh hoạt theo Phase, Crew Dock thẻ gỗ mục.
-- **FR-004**: Tất cả thẻ bài (Role Cards, Navigation Cards, Ritual Cards) MUST kiểu tarot/da dê cổ, có hoa văn mặt sau, hiệu ứng 3D flip 600ms, màu phe kiểu mực phai.
+- **FR-003**: Hệ thống MUST xây dựng Game Header cố định hiển thị thông tin phòng, phase hiện tại, Cult Track và các phím chức năng cốt lõi.
+- **FR-004**: Tất cả thẻ bài (Role Cards, Navigation Cards, Ritual Cards) MUST mang phong cách tarot/da dê cổ, có hoa văn mặt sau, hiệu ứng 3D flip 600ms, màu phe kiểu mực phai.
 - **FR-005**: Màn che bí mật MUST hiển thị lớp phủ đen kịt + đôi mắt Kraken tím eldritch-pulse + đồng hồ đếm ngược ember.
-- **FR-006**: Mutiny Board MUST hiển thị đồng tiền vàng cổ / flintlock trên bàn gỗ mục, rương cược gỗ bản lề gỉ, screen shake khi công bố.
-- **FR-007**: Navigation Tray MUST hiển thị khay bài gỗ mục, 3 thẻ bài mực phai, viền vàng khi chọn giữ.
-- **FR-008**: MapBoardUI MUST hiển thị hải đồ da dê cổ (giấy ố, mép rách, rêu xanh mờ), biểu tượng SVG sự kiện, tàu buồm gỗ dập dềnh, popover sự kiện.
+- **FR-006**: Mutiny Board MUST cung cấp giao diện cược số súng bí mật, khóa cược an toàn và công bố kết quả với hiệu ứng rung màn hình và phân định thứ bậc rõ ràng.
+- **FR-007**: Navigation Tray MUST hiển thị rõ ràng 3 lá bài điều hướng với nhận diện màu sắc 3 phe và cơ chế chọn/loại trực quan.
+- **FR-008**: MapBoardUI MUST hiển thị hải đồ hàng hải cổ điển, biểu tượng sự kiện rõ ràng, vị trí tàu nổi bật và popover giải thích sự kiện khi tương tác.
 - **FR-009**: Hệ thống MUST responsive hoàn toàn từ 375px Mobile đến Desktop 1920px+.
-- **FR-010**: End Game MUST vinh danh phe thắng (banner hoành tráng) + lật mở công khai toàn bộ vai trò trên bàn gỗ mục.
+- **FR-010**: End Game MUST vinh danh phe thắng hoành tráng + lật mở công khai toàn bộ vai trò trên nền bàn chơi.
 - **FR-011**: Các tương tác quan trọng MUST có micro-animation nặng nề chậm rãi (shake, firelight glow, ship bob, card flip) — KHÔNG bounce/spring.
-- **FR-012** (MỚI): Mọi bề mặt panel/card MUST có texture phong hóa (gỗ mục, giấy nứt, vệt ố, rêu xanh, đinh gỉ) — KHÔNG BAO GIỜ phẳng lì.
-- **FR-013** (MỚI): Vignette tối viền MUST áp dụng toàn cục trên mọi màn hình game.
+- **FR-012**: Mọi bề mặt panel/card MUST thể hiện chất liệu phong hóa cổ xưa (gỗ, da dê cổ, ánh sáng ấm) phù hợp ngôn ngữ "Eldritch Parchment" — tránh các bề mặt phẳng lì đơn điệu.
+- **FR-013**: Vignette tối viền MUST áp dụng toàn cục trên mọi màn hình game.
 
 ### Key Entities
 

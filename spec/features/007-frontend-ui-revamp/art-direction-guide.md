@@ -152,9 +152,9 @@ Body Text / Status / Buttons:
 [Lớp 5 - Glow]     Ánh lửa / Phát quang: box-shadow + radial gradient warm
 ```
 
-### 4.2 Panel / Card Style ("Tấm Gỗ Mục")
+### 4.2 Panel / Card Style ("Tấm Gỗ Phong Hóa")
 
-Mọi panel và card trong game phải cảm thấy như một tấm ván gỗ mục, bị nước biển ăn mòn, đóng đinh sắt gỉ lên vách tàu:
+Mọi panel và container chính trong game gợi cảm giác chất liệu gỗ tối màu phong hóa, viền nổi nhẹ với độ tương phản chiaroscuro:
 
 ```css
 .panel-wood {
@@ -163,25 +163,13 @@ Mọi panel và card trong game phải cảm thấy như một tấm ván gỗ m
   border-radius: 4px;                    /* Gỗ thô, cạnh gần vuông */
   box-shadow:
     inset 0 1px 0 rgba(212, 197, 160, 0.05),   /* Highlight mép trên nhẹ */
-    inset 0 -2px 4px rgba(0, 0, 0, 0.3),        /* Bóng trong đáy — cảm giác lõm cũ */
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),        /* Bóng trong đáy — cảm giác lõm */
     0 4px 16px rgba(0, 0, 0, 0.6);              /* Bóng đổ sâu phía dưới */
   position: relative;
 }
 
-.panel-wood::before {
-  /* Lớp noise texture mô phỏng thớ gỗ phong hóa */
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('/textures/wood-grain-weathered.png');
-  opacity: 0.08;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  border-radius: inherit;
-}
-
 .panel-wood::after {
-  /* Lớp vết ố, rêu nhẹ — cảm giác 200 năm dưới đáy biển */
+  /* Hiệu ứng phong hóa nhẹ bằng CSS gradient */
   content: '';
   position: absolute;
   inset: 0;
@@ -193,9 +181,9 @@ Mọi panel và card trong game phải cảm thấy như một tấm ván gỗ m
 }
 ```
 
-### 4.3 Parchment Card Style ("Giấy Da Dê Cổ")
+### 4.3 Parchment Card Style ("Chất Liệu Giấy Da Dê Cổ")
 
-Dùng cho thẻ bài vai trò, thẻ điều hướng, tooltip lore. **Phải có vết ố, vết cháy mép, và texture sần sùi:**
+Dùng cho thẻ bài, tài liệu, bảng thông tin nội dung:
 
 ```css
 .card-parchment {
@@ -208,25 +196,14 @@ Dùng cho thẻ bài vai trò, thẻ điều hướng, tooltip lore. **Phải c�
   border: 1px solid var(--gold-dim);
   border-radius: 6px;
   box-shadow:
-    inset 0 0 30px rgba(0, 0, 0, 0.3),          /* Viền trong tối — cảm giác lõm */
+    inset 0 0 30px rgba(0, 0, 0, 0.3),          /* Viền trong tối */
     inset 0 0 60px rgba(0, 0, 0, 0.15),          /* Vệt ố thời gian */
     0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-.card-parchment::before {
-  /* Lớp texture giấy cổ sần sùi */
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('/textures/parchment-cracked.png');
-  opacity: 0.07;
-  mix-blend-mode: soft-light;
-  pointer-events: none;
-  border-radius: inherit;
+  position: relative;
 }
 
 .card-parchment::after {
-  /* Viền vàng trang trí nhẹ — đã bị thời gian làm mờ */
+  /* Viền trang trí nhẹ */
   content: '';
   position: absolute;
   inset: 3px;
@@ -236,36 +213,17 @@ Dùng cho thẻ bài vai trò, thẻ điều hướng, tooltip lore. **Phải c�
 }
 ```
 
-### 4.4 Aging & Distress Effects (Hiệu Ứng Phong Hóa — v1.1)
+### 4.4 Aging & Distress Effects (Hiệu Ứng Phong Hóa)
 
-Áp dụng các hiệu ứng CSS thuần để tạo cảm giác đồ vật cũ kỹ, không cần asset hình ảnh nặng:
+Áp dụng các hiệu ứng CSS thuần để tạo cảm giác thời gian và dấu ấn hàng hải mà không cần phụ thuộc asset hình ảnh nặng:
 
 ```css
-/* Vệt ố thời gian — Dùng cho mọi panel và card */
+/* Vệt ố thời gian — Dùng điểm xuyết trên panel hoặc card */
 .aged-stain {
   background-image:
     radial-gradient(ellipse at 20% 80%, rgba(155, 142, 114, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 75% 30%, rgba(139, 117, 53, 0.05) 0%, transparent 40%),
     radial-gradient(ellipse at 50% 60%, rgba(74, 122, 106, 0.04) 0%, transparent 45%);
-}
-
-/* Mép cháy/rách — Dùng cho thẻ bài, thư từ, hải đồ */
-.burnt-edges {
-  mask-image: url('/textures/torn-edge-mask.svg');
-  mask-size: cover;
-  mask-repeat: no-repeat;
-}
-
-/* Đinh sắt gỉ — Decorative nail heads cho panel gỗ */
-.nail-head::before,
-.nail-head::after {
-  content: '';
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #5A4A3A 30%, #3D3228 70%);
-  box-shadow: inset 0 -1px 2px rgba(0,0,0,0.5), 0 1px 1px rgba(212,197,160,0.1);
 }
 
 /* Gỉ đồng xanh — Verdigris patina cho các chi tiết kim loại */
@@ -279,7 +237,7 @@ Dùng cho thẻ bài vai trò, thẻ điều hướng, tooltip lore. **Phải c�
 ### 4.5 Corner Radius Philosophy
 
 - ❌ **KHÔNG** dùng `rounded-2xl`, `rounded-3xl`, `rounded-full` cho panel/card.
-- ✅ `rounded` (4px) hoặc `rounded-sm` (2px) — Gỗ thô, cạnh gần vuông.
+- ✅ `rounded` (4px) hoặc `rounded-sm` (2px) — Cạnh vuông vức, cổ kính.
 - ✅ Ngoại lệ duy nhất: Nút bấm hành động có thể dùng `rounded-md` (6px).
 
 ---
@@ -388,81 +346,69 @@ Dùng cho indicator trạng thái "online", tooltip biển, và chi tiết phong
 ### 7.1 Icon Style
 
 - Dùng **Lucide React** với `strokeWidth={1.5}` — nét mảnh, thanh lịch.
-- SVG thủ công hoặc emoji Unicode cho lore: ⚓ 🏴‍☠️ 🐙 👑 ⚔️ 🗡️ 🔱 💀 🧭
+- Biểu tượng hàng hải và lore dùng SVG thủ công hoặc custom asset đồ họa — **TUYỆT ĐỐI KHÔNG dùng emoji Unicode** (tuân thủ Rule 7).
 
-### 7.2 Decorative Elements
+### 7.2 Decorative Motifs & Atmosphere (Tham Khảo Linh Hoạt)
 
-| Element | Mô tả | Nơi sử dụng |
-|---|---|---|
-| **Compass Rose** | La bàn hoa gió SVG cổ điển | Trang chủ, góc bản đồ |
-| **Rope Border** | Viền dây thừng xoắn | Divider giữa các section |
-| **Anchor Divider** | Mỏ neo nhỏ làm separator | Giữa các panel |
-| **Wax Seal** | Con dấu sáp tròn | Đánh dấu vai trò Captain |
-| **Tentacle Corners** | Xúc tu cuộn ở góc | Frame cho sự kiện Cult |
-| **Ink Splatter** | Vệt mực loang | Background accent nhẹ |
-| **Rust Spots** | Vết gỉ sắt (MỚI v1.1) | Đinh, bản lề, chi tiết kim loại |
-| **Moss Patches** | Vệt rêu xanh (MỚI v1.1) | Góc panel gỗ, mép bản đồ |
+Các chi tiết trang trí đóng vai trò bồi đắp bầu không khí hàng hải cổ kính, được sử dụng linh hoạt phù hợp với từng layout và thiết bị, không bắt buộc hay gò bó vị trí cố định:
+- Họa tiết la bàn hoa gió, hoa văn sóng biển hoặc xúc tu cách điệu.
+- Đường kẻ phân cách phong cách hàng hải (divider nhẹ, đường nét chạm khắc cổ).
+- Điểm xuyết phong hóa: dấu vết thời gian, vệt rêu mờ hoặc ánh kim loại đồng thau phong hóa.
 
 ---
 
-## 8. Application Per Screen (Áp Dụng Cho Từng Màn Hình)
+## 8. Application Per Screen (Định Hướng Không Gian Cho Từng Màn Hình)
 
 ### 8.1 Home (Trang Chủ)
 
-- **Nền:** Đại dương đen kịt (`--abyss`) với sóng ngầm di chuyển rất chậm.
-- **Trung tâm:** Panel giấy da dê cổ trên khung gỗ mục, viền vàng mờ đã ố, đinh sắt gỉ ở 4 góc.
-- **Title:** "Feed the Kraken" bằng `Pirata One`, phát sáng vàng đồng mềm, tentacle ẩn hiện phía sau chữ.
-- **Inputs:** Thanh gỗ khắc chìm, viền rêu nhẹ (`--verdigris`) khi focus.
-- **Buttons:** Nút gỗ khắc nổi (embossed wood), hover phát sáng firelight, vệt rêu mờ ở mép.
-- **Atmosphere:** Vignette nặng, hạt bụi bay nhẹ qua ánh nến.
+- **Không gian & Cảm xúc:** Đại dương đen kịt (`--abyss`), ánh sáng ấm chập chờn, chiều sâu tĩnh lặng đầy bí ẩn.
+- **Thành phần cốt lõi:** Bảng thao tác trung tâm (chất liệu giấy da dê cổ trên nền khung gỗ phong hóa), tiêu đề game gothic `Pirata One` phát sáng vàng đồng ấm áp, form nhập liệu và nút bấm hành động có độ tương phản cao và xúc giác rõ nét.
+- **Bầu không khí:** Vignette tối viền, hạt bụi bay nhẹ qua ánh sáng ấm.
 
 ### 8.2 Lobby (Sảnh Chờ)
 
-- **Nền:** Sàn gỗ ván thuyền (`--hull-dark`) với texture wood-grain phong hóa.
-- **Crew List:** Mỗi người chơi = tấm thẻ gỗ mục đóng đinh gỉ lên vách tàu, vệt rêu nhẹ ở góc.
-- **Host Crown:** Vương miện vàng đồng gỉ xanh (`--verdigris-patina`).
-- **Map Selection:** 2 cuộn giấy hải đồ cũ ố vàng.
-- **Start Button:** Nút lớn kiểu bánh lái tàu (ship wheel) bằng gỗ tối, phát sáng firelight khi hover.
-- **Online indicator:** Chấm xanh rêu (`--verdigris`) thay vì xanh lá neon.
+- **Không gian & Cảm xúc:** Buồng chỉ huy hoặc boong tàu tập hợp thuyền viên trước giờ xuất phát.
+- **Thành phần cốt lõi:**
+  - Danh sách thuyền viên (Crew Roster): Thẻ người chơi chất liệu gỗ phong hóa, phân định rõ trạng thái trực tuyến (ngọc verdigris) và vai trò Chủ phòng (Host).
+  - Bảng cài đặt hành trình (Voyage Settings): Mã phòng trực quan kèm thao tác sao chép, bộ chọn hải đồ (Quick/Long Journey) và avatar thuyền viên.
+  - Nút xuất phát (`START VOYAGE`): Nổi bật, trang trọng, chỉ kích hoạt khi đủ điều kiện nhân sự.
 
-### 8.3 Game HUD (Thanh Điều Khiển Trong Trận)
+### 8.3 In-Game Command Layout & HUD (Giao Diện Bàn Chỉ Huy Trong Trận)
 
-- **Top Bar:** Thanh gỗ sẫm phong hóa cố định, chứa: Mã phòng (khắc vào gỗ), Round counter, Cult Track (tím ẩn hiện), nút xem Role.
-- **Main Stage:** Vùng trung tâm hiển thị nội dung phase hiện tại.
-- **Crew Dock:** Thẻ gỗ mục của từng thuyền viên — chức danh, số súng, trạng thái (verdigris dot).
+- **Kiến trúc phân tầng cốt lõi (Xem chi tiết tại [ingame-command-layout-spec.md](./ingame-command-layout-spec.md)):**
+  1. **Nền không gian bao quát (Ambient Canvas):** Buồng thuyền trưởng (`cabin_room_bg.jpg`) bao quát toàn trang, mang lại chiều sâu không gian điện ảnh chiaroscuro.
+  2. **Bàn Thuyền Trưởng (Work Desk Container):** Container độc lập đặt cân đối ở trung tâm (~80-85% viewport), tuân thủ nghiêm ngặt **góc nhìn vuông góc 90° phẳng (Orthographic Flat Lay)**. Mép đáy bàn kết thúc phẳng, không vẽ mặt đứng ngăn kéo hay chân bàn để tránh xung đột xếp lớp.
+  3. **Central Stage (Khu vực trung tâm bàn):** Chiếm 70% - 80% diện tích mặt bàn, là trung tâm điều khiển xen kẽ tại chỗ:
+     - *Mặc định:* Hiển thị Hải đồ trung tâm (`MapBoardUI.jsx`).
+     - *Thao tác:* Trải đè Action Desk tại chỗ khi tương tác trigger hoặc tới lượt hành động.
+  4. **Action Desk Trigger:** Điểm kích hoạt thao tác trực quan bố trí trên mặt bàn.
+  5. **Tactile Under-Drawer (Hộc ngăn kéo gầm bàn độc lập):** Nằm dưới mép đáy bàn (non-sticky), trượt mở độc lập để hiển thị Seating Radar (vị trí ngồi la bàn) và Crew Roster (danh sách thủy thủ đoàn).
+  6. **HUD Header Cố Định:** Hiển thị thông tin phòng, vòng chơi, tiến trình Cult Track và các nút điều hướng cơ bản.
 
 ### 8.4 Role Reveal (Chia Vai Bí Mật)
 
-- **Thẻ bài:** Mặt sau = xúc tu Kraken vàng trên da dê tối ố, viền vàng gỉ. Mặt trước = phe + biểu tượng + mục tiêu.
-- **Hiệu ứng lật:** 3D flip 180° (600ms), ánh sáng lửa hắt lên khi lật.
-- **Night Overlay:** Màn đen kịt + đôi mắt Kraken tím chập chờn + đếm ngược vòng tròn ember.
+- **Thẻ bài vai trò:** Thẻ phong cách tarot cổ — mặt sau da dê tối có hoa văn nhận diện, mặt trước hiển thị phe phái, biểu tượng và mục tiêu chiến thắng. Hiệu ứng lật thẻ 3D trang trọng (600ms) kèm ánh sáng ấm.
+- **Màn che bóng đêm (Night Overlay):** Phông đen huyền bí kết hợp ánh mắt Kraken tím eldritch-pulse chập chờn và đếm ngược thời gian.
 
 ### 8.5 Mutiny Board (Bỏ Phiếu Nổi Loạn)
 
-- **Súng cược:** Đồng tiền vàng cổ hoặc flintlock pistol đặt trên bàn gỗ mục.
-- **Khay bỏ phiếu:** Rương gỗ cũ có bản lề gỉ.
-- **Kết quả:** Rương mở ra + screen shake nhẹ, súng đổ ra với hiệu ứng kim loại cũ.
+- Giao diện đặt cược súng bí mật với phản hồi trực quan khi chọn số súng.
+- Khi công bố kết quả: Hiệu ứng rung màn hình nhẹ, hiển thị rõ ràng thứ bậc số súng cược và vinh danh Thuyền trưởng mới.
 
-### 8.6 Navigation (Lái Tàu)
+### 8.6 Navigation (Điều Hướng Lái Tàu)
 
-- **Khay bài:** 3 lá bài cổ nằm úp trên bàn gỗ mục.
-- **3 màu bài:** Blue (`--sailor`), Red (`--pirate`), Yellow (`--cult`) — tất cả đều mờ đục kiểu mực cũ.
-- **Chọn bài:** Bấm chọn → viền vàng + sáng lên. Loại → mờ đi + trượt ra ngoài.
+- Hiển thị 3 lá bài điều hướng với nhận diện màu sắc đặc trưng của 3 phe (Sailor xanh biển bạc, Pirate đỏ sẫm, Cult tím thẫm).
+- Thao tác chọn giữ và loại bỏ bài trực quan, tương phản rõ rệt.
 
 ### 8.7 MapBoard (Bản Đồ Hải Trình)
 
-- **Nền:** Hải đồ da dê cổ — giấy ố vàng, vệt ố nâu, mép rách/cháy.
-- **Đường vẽ:** Mực lông vũ, nét run rẩy không hoàn hảo.
-- **Con tàu:** Tàu buồm nhỏ dập dềnh, gỗ tối ám khói.
-- **3 điểm đích:** Sailor Cove (bến cảng xanh rêu), Crimson Cove (hang đá đỏ lửa), Kraken Sanctuary (vực xoáy tím).
-- **Viền bản đồ:** Rêu xanh mờ nhẹ ở góc (`--moss-dim`).
+- Bản đồ hàng hải cổ điển trên nền giấy da dê phong hóa, đường nét lộ trình rõ ràng.
+- 3 vùng cập bến của 3 phe phân biệt rõ nét; con tàu di chuyển theo từng chặng; các ô sự kiện có biểu tượng sắc nét kèm popover giải thích.
 
-### 8.8 End Game (Kết Thúc)
+### 8.8 End Game (Vinh Danh Chiến Thắng)
 
-- **Sailor Win:** Banner hải quân, cờ xanh tung bay, ánh bình minh ấm.
-- **Pirate Win:** Jolly Roger cháy rực lửa đỏ, khói lan tỏa.
-- **Cult Win:** Xúc tu Kraken trồi lên, nuốt chửng tàu, hào quang tím bùng nổ.
-- **Role Reveal:** Tất cả thẻ vai trò lật mở đồng loạt trên bàn gỗ mục.
+- Banner chiến thắng hoành tráng theo phe thắng cuộc (Sailor / Pirate / Cult).
+- Lật mở đồng loạt vai trò thật sự của toàn bộ người chơi trên bàn, kèm các nút điều hướng trở về sảnh hoặc rời phòng.
 
 ---
 

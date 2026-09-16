@@ -19,8 +19,9 @@ Mọi commit phải tuân thủ nghiêm ngặt cú pháp chuyên nghiệp. Cấm
 
 **Cấu trúc bắt buộc:**
 ```text
-<type>(<scope>): <Mô Anh Việt, bằng chấm câu gọn hoặc không ngắn thường, tiếng tả viết>
+<type>(<scope>): <Mô tả ngắn gọn bằng tiếng Anh hoặc tiếng Việt, không chấm câu cuối>
 
 <Để trống 1 dòng>
 
-<Phần "Nó "Tại (Body): CHI Case Giải TIẾT Task Tham Use chiếu có có. hoạt hoặc lại mã như nào?". này?" nếu sao sự thay thân thích thế và đến đổi động>
+<Body: Giải thích chi tiết "Tại sao có sự thay đổi này?" và "Nó tác động thế nào?". Tham chiếu Task hoặc Use Case nếu có.>
+```

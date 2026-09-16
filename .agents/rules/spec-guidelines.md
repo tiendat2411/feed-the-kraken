@@ -17,161 +17,89 @@ Hệ thống tài liệu phải tuân thủ nghiêm ngặt hệ thống phân c�
 
 ---
 
-## 3. Khuôn Mẫu Bắt Buộc (Mandatory Templates)
+## 3. Khuôn Mẫu Chuẩn (Standard Templates)
 
-Khi AI hoặc Developer tạo mới file đặc tả, PHẢI sử dụng chính xác cấu trúc dưới đây.
+Khi tạo mới file đặc tả, PHẢI tuân thủ cấu trúc chuẩn sau:
 
-### 3.1. Template cho Business Requirement (Lưu dạng: `BR-XXX-Tên.md`)
+### 3.1 Template Business Requirement (`BR-XXX-Tên.md`)
 ```markdown
-# BR-XXX: <Tên business requirement>
+# BR-XXX: <Tên Business Requirement>
 
 ## Metadata
 - **ID:** BR-XXX
 - **Status:** draft | approved | in-progress | done
-- **Owner:** <PO/người nghiệp phụ trách vụ>
-- **Stakeholders:** <Danh sách>
-- **Target Quarter:** <Ví Q3-2026 dụ:>
+- **Owner:** <Người phụ trách nghiệp vụ>
+- **Target:** <Mục tiêu phát hành / Milestone>
 
-## Background
-<Vì context có doanh, feedback, kinh này: quy requirement sao định...>
+## Background & Goal
+- **Bối cảnh:** <Lý do nghiệp vụ, phản hồi người dùng hoặc quy định thúc đẩy yêu cầu này>
+- **Mục tiêu cốt lõi:** <Kết quả định lượng hoặc định tính cần đạt được>
 
-## Goal
-<Mục - Rõ chung chưa có cốt dùng không lõi metric nếu ràng, tiêu từ>
-
-## Success Metrics
-- <Metric 1>: <baseline> -> <target>
-- <Metric 2>: <baseline> -> <target>
-
-## In Scope
-<Những làm này phạm requirement thứ trong vi>
-
-## Out of Scope
-<Những KHÔNG cố làm thứ ý>
+## Scope & Constraints
+- **In Scope:** <Những phần nằm trong phạm vi thực hiện>
+- **Out of Scope:** <Những phần cố ý không làm hoặc để giai đoạn sau>
+- **Constraints:** <Ràng buộc kỹ thuật, thời gian, quy định>
 
 ## Related Use Cases
-- UC-XXX: <Tên>
-- UC-YYY: <Tên>
+- UC-XXX: <Tên Use Case 1>
+- UC-YYY: <Tên Use Case 2>
+```
 
-## Constraints
-- **Technical:** <Ràng buộc công hệ nghệ, thống>
-- **Regulatory:** <Quy bảo lý... mật, pháp định>
-- **Timeline:** <Deadline có nếu>
-
-## Open Questions
-- [ ] <Câu chưa câu có hỏi lời nghiệp phía trả từ vụ>
-
-## History
-- v1 (YYYY-MM-DD, <author>): initial
-
-
-### 3.2. Template cho Use Case (Lưu dạng: `UC-XXX-Tên.md`)
-# UC-XXX: <Tên case gọn nghiệp ngôn ngắn ngữ theo use vụ>
+### 3.2 Template Use Case (`UC-XXX-Tên.md`)
+```markdown
+# UC-XXX: <Tên Use Case>
 
 ## Metadata
 - **ID:** UC-XXX
-- **Bounded Context:** <vd: Auth, Room, Matchmaking...>
+- **Bounded Context:** <vd: Auth, Room, Matchmaking, GamePlay...>
 - **Liên quan tới BR:** BR-YYY
 - **Status:** draft | reviewed | implemented | deprecated
-- **Owner:** <Người chịu nhiệm trách>
-- **Last updated:** YYYY-MM-DD
 
-## Actor
-<Ai Admin, Người System, Webhook... chơi, khởi tạo:>
+## Context & Flow
+- **Actor:** <Người chơi, Host, System, Webhook...>
+- **Trigger:** <Hành động kích hoạt Use Case>
+- **Preconditions:** <Điều kiện tiên quyết>
+- **Main Flow:**
+  1. <Bước 1>
+  2. <Bước 2>
+  3. <Bước 3>
+- **Alternative / Exception Flows:**
+  - E1: <Lỗi hoặc ngoại lệ + cách xử lý>
+- **Postconditions:** <Trạng thái hệ thống sau khi hoàn thành>
 
-## Trigger
-<Hành Case Use hoạt kích nào này động>
-
-## Preconditions
-<Điều kiện bắt buộc phải có trước khi luồng chạy>
-
-## Main Flow
-1. <Bước 1>
-2. <Bước 2>
-3. <Bước 3>
-
-## Alternative Flows
-- **<N>a. <Tên biến thể>:** <Mô tả>
-
-## Exceptions
-- **E1. <Tên exception>:** <Mô + cách hệ lý thống tả xử>
-
-## Postconditions
-<Trạng Case Use chạy công của hệ khi sau thành thái thống>
-
-## State Synchronization (Đồng bộ trạng thái)
-<BẮT BUỘC VỚI GAME REALTIME: Liệt kê rõ các Event cần phát ra (emit/broadcast) cho những ai khi luồng này thành công>
-- **Emit Event:** `<Tên Event, vd: PLAYER_JOINED>`
-- **To:** `<Ai nhận? vd: Toàn bộ người trong Room, hoặc Chỉ người vừa join>`
-- **Payload:** `<Dữ liệu mang theo là gì?>`
-
-## Edge Cases & Network Resilience (Góc khuất & Xử lý rớt mạng)
-<BẮT BUỘC: Mô tả cách hệ thống xử lý khi các tình huống phi tiêu chuẩn xảy ra>
-- **Trường hợp F5 / Tải lại trang:** <Hệ thống nhận diện lại user này bằng cách nào? (vd: LocalStorage token)>
-- **Trường hợp mất kết nối mạng đột ngột (Socket disconnect):** <Có xóa user ngay không hay cho vào trạng thái 'Reconnecting' trong bao lâu?>
+## Realtime & Network Resilience (Bắt buộc cho Game Realtime)
+- **State Synchronization:** Emit event gì, gửi cho ai, mang payload gì?
+- **Disconnect / F5 Handling:** Cách hệ thống khôi phục session người chơi khi rớt mạng hoặc reload trang.
 
 ## Acceptance Criteria (Tầng 4)
-### AC-1: <Tên gọn ngắn>
-- **Given:** <bối cảnh>
-- **When:** <hành động xảy ra>
-- **Then:** <kết quả mong đợi 1>
-- **And:** <kết quả mong đợi bổ sung>
+### AC-1: <Tên tiêu chí>
+- **Given:** <Bối cảnh ban đầu>
+- **When:** <Hành động xảy ra>
+- **Then:** <Kết quả mong đợi>
+```
 
-### AC-2: <Tên gọn ngắn>
-...
-
-## Dependencies
-- **Upstream UC:** <UC phải trước xong>
-- **Downstream UC:** <UC UC này phụ thuộc vào>
-- **External Systems:** <Hệ bên có ngoài nếu thống>
-
-## Notes
-<Context bổ do kiến lý nghiệp quyết sung: trúc, vụ định>
-
-## History
-- v1 (YYYY-MM-DD, <author>): initial
-
-
-### 3.3. Template cho Entity Model (Lưu dạng: `ENT-XXX-Tên.md`)
-# ENT-XXX: <Tên Thực Thể (Entity Name)>
+### 3.3 Template Entity Model (`ENT-XXX-Tên.md`)
+```markdown
+# ENT-XXX: <Tên Thực Thể>
 
 ## Metadata
 - **ID:** ENT-XXX
-- **Bounded Context:** <vd: GamePlay, Matchmaking, Identity...>
+- **Bounded Context:** <vd: GamePlay, Matchmaking...>
 - **Status:** draft | approved | in-progress | done
-- **Owner:** <Người chịu trách nhiệm>
-- **Last updated:** YYYY-MM-DD
 
-## 1. Description (Mô tả)
-<Mô tả ngắn gọn thực thể này là gì trong bối cảnh của hệ thống/trò chơi. Vai trò của nó là gì?>
+## 1. Description & Attributes
+<Mô tả ngắn gọn vai trò của thực thể>
 
-## 2. Attributes (Thuộc tính dữ liệu)
-Danh sách các trường dữ liệu cốt lõi cấu thành nên thực thể này.
-
-| Tên trường (Field) | Kiểu dữ liệu (Type) | Bắt buộc (Req) | Ràng buộc/Mặc định (Validation/Default) | Mô tả (Description) |
+| Field | Type | Required | Default / Validation | Description |
 | :--- | :--- | :---: | :--- | :--- |
-| `id` | UUID | Y | Tự động generate | Định danh duy nhất |
-| `status` | Enum | Y | Default: `LOBBY` | Trạng thái hiện tại |
-| `...` | ... | ... | ... | ... |
+| `id` | UUID/String | Y | Auto-generated | Định danh duy nhất |
+| `status` | Enum | Y | Default state | Trạng thái vòng đời |
 
-## 3. State Lifecycle (Vòng đời trạng thái)
-<Mô tả máy trạng thái (State Machine) của thực thể nếu có. Rất quan trọng đối với logic game. Có thể dùng danh sách hoặc Mermaid.js diagram>
+## 2. State Lifecycle & Invariants
+- **Vòng đời trạng thái:** `STATE_A` ➔ `STATE_B` (Trigger / Điều kiện).
+- **Ràng buộc bất biến (Invariants):** Các quy tắc nghiệp vụ LUÔN LUÔN ĐÚNG, nếu vi phạm sẽ throw exception ngay lập tức (vd: Một người chơi không thể thuộc 2 phe cùng lúc).
 
-- **Trạng thái [A] -> Trạng thái [B]:** <Điều kiện hoặc Hành động kích hoạt (Trigger)>
-  - *Ví dụ: `LOBBY` -> `PLAYING`: Khi host bấm start game và đủ số lượng người chơi.*
-- **Trạng thái [B] -> Trạng thái [C]:** ...
-
-## 4. Invariants (Ràng buộc bất biến / Domain Rules)
-<Các quy tắc logic LUÔN LUÔN ĐÚNG đối với thực thể này, bất kể hoàn cảnh nào. Hệ thống sẽ quăng lỗi (throw exception) nếu vi phạm.>
-- *Ví dụ 1: Một `Player` không thể cùng lúc thuộc hai `Faction` khác nhau.*
-- *Ví dụ 2: `CabinBoy` (Cậu bé chạy việc) không bao giờ được chọn làm `Navigator` (Hoa tiêu).*
-
-## 5. Relationships (Quan hệ với các Entity khác)
-- **1-1 với [ENT-YYY]:** <Mô tả quan hệ>
-- **1-N với [ENT-ZZZ]:** <Mô tả quan hệ, ví dụ: 1 Room có nhiều Players>
-
-## 6. Related Use Cases
-- Sử dụng trong: [UC-XXX], [UC-YYY]
-- Thay đổi bởi: [UC-ZZZ]
-
-## History
-- v1 (YYYY-MM-DD, <author>): initial
+## 3. Relationships & Related Use Cases
+- Quan hệ với các Entity khác (1-1, 1-N).
+- Danh sách Use Cases đọc hoặc sửa đổi Entity này.
+```
