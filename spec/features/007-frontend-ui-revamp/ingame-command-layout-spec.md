@@ -4,7 +4,7 @@
 - **Tài liệu:** In-Game Command Layout Architecture & Core Interaction Specification
 - **Feature ID:** Feature 007 - Frontend UI Revamp (Task T063)
 - **Status:** approved
-- **Version:** v1.5
+- **Version:** v1.6
 - **Last Updated:** 2026-09-16
 - **Phạm vi áp dụng:** `frontend/src/pages/Game.jsx`, `MapBoardUI.jsx`, `MutinyBoard.jsx`, `NavigationPhase.jsx`, `GameHeader.jsx`, `CrewSeatingDrawer.jsx`
 
@@ -27,7 +27,7 @@
 3. **Khu Vực Trung Tâm Đa Tầng (Central Stage — In-Place Alternate Hub):**
    - Chiếm 70% đến 80% diện tích mặt bàn, là trung tâm điều khiển xen kẽ tại chỗ:
      - *Trạng thái Mặc định (Sea Chart View):* Hiển thị Hải đồ trung tâm (`MapBoardUI.jsx`).
-     - *Trạng thái Thao Tác (Action Desk View):* Trải đè hồ sơ hành động (Bổ nhiệm, Bạo loạn, Rút bài) tại chỗ kèm nút `[◀ PEEK SEA CHART]` và `[✕ CLOSE DESK]`.
+     - *Trạng thái Thao Tác (Action Desk View):* Trải đè hồ sơ hành động (Bổ nhiệm, Bạo loạn, Rút bài) trực tiếp tại chỗ. Thao tác Mở và Đóng Action Desk được điều khiển duy nhất thông qua Action Desk Trigger (`scroll_action_desk_trigger.png`); **tuyệt đối không thêm các tab hay nút [◀ PEEK SEA CHART] và [✕ CLOSE DESK]** bên trong để tránh gây rối giao diện và giữ bề mặt thao tác sạch sẽ, tinh gọn.
      - Lòng trong khung trung tâm của asset bàn phải để trống/sạch sẽ hoàn toàn để React JSX render linh hoạt.
 4. **Hộc Ngăn Kéo Gầm Bàn Độc Lập (Non-Sticky Tactile Under-Drawer):**
    - Nằm độc lập dưới mép đáy bàn làm việc, không cố định che đáy màn hình (chỉ thấy khi cuộn xuống mép bàn).
@@ -35,7 +35,7 @@
      - **Tab A (Circular Seating Radar):** Bàn tròn vị trí ngồi la bàn (neo YOU ở vị trí 6 giờ).
      - **Tab B (Crew Roster):** Danh sách thẻ thủy thủ đoàn.
 5. **Tính Tự Do Mỹ Thuật (Artistic Freedom for Atmosphere):**
-   - Các đạo cụ trang trí trên viền mặt bàn mang phong cách hải tặc cổ điển (như la bàn, ấn ký, tiền cổ, nẹp đồng, v.v.) được bố trí linh hoạt theo góc nhìn 90° phẳng, không gò bó hay bắt buộc cố định vị trí cụ thể, miễn đảm bảo thẩm mỹ "Eldritch Parchment" nhất quán.
+   - Các chi tiết phong hóa trên viền mặt bàn mang phong cách hải tặc cổ điển được bố trí hài hòa theo góc nhìn 90° phẳng, đảm bảo tính đồng bộ và thẩm mỹ "Eldritch Parchment" nhất quán.
 
 ---
 
@@ -43,7 +43,7 @@
 
 ```text
 +=========================================================================================================+
-| [ZONE 1: STICKY HUD HEADER] ROOM | PHASE | VOYAGE MODE | SOUND | DISSOLVE | LEAVE                       |
+| [EXISTING HUD HEADER - Đã xây dựng sẵn] ROOM | PHASE | VOYAGE MODE | SOUND | DISSOLVE | LEAVE           |
 +=========================================================================================================+
 |                                                                                                         |
 |  <<< ZONE 0: MAIN AMBIENT BACKGROUND (cabin_room_bg.jpg - Khoang buồng thuyền hải tặc) >>>               |
@@ -52,17 +52,17 @@
 |       |  ⚓ CAPTAIN'S WORK DESK CONTAINER (tabletop_captain_desk.png - Orthographic 90° Flat Lay)|       |
 |       |  (Container độc lập thu nhỏ ~80-85% width, đặt cân đối giữa buồng cabin)                |       |
 |       |                                                                                         |       |
-|       |       +---------------------------------------------------------+                 [⚔️]  |       |
+|       |       +---------------------------------------------------------+                 [📜]  |       |
 |       |       | 🗺️ / ⚔️ ZONE 2: CENTRAL STAGE (70% - 80% DIỆN TÍCH BÀN)  |               [ACTION |       |
 |       |       |    (RENDER XEN KẼ TẠI CHỖ GIỮA HẢI ĐỒ VÀ ACTION DESK)    |                DESK   |       |
 |       |       |                                                         |               TRIGGER]|       |
 |       |       |  [TRẠNG THÁI 1: CENTRAL SEA CHART - MapBoardUI.jsx]     |            <── [ZONE 3]       |
-|       |       |  - Tấm hải đồ cổ da dê trải rộng ở trung tâm            |                       |       |
-|       |       |                                                         |                       |       |
-|       |       |  <<< KHI KÍCH HOẠT TRIGGER: TRẢI ACTION DESK ĐÈ TẠI CHỖ <<<                     |       |
+|       |       |  - Tấm hải đồ cổ da dê trải rộng ở trung tâm            |  (NHẤP ĐỂ MỞ / ĐÓNG   |       |
+|       |       |                                                         |   ACTION DESK TẠI CHỖ)|       |
+|       |       |  <<< NHẤP TRIGGER: TRẢI ACTION DESK ĐÈ TẠI CHỖ <<<      |                       |       |
 |       |       |  [TRẠNG THÁI 2: SLIDING ACTION DESK OVERLAY]            |                       |       |
-|       |       |  - [◀ PEEK SEA CHART]  |  [✕ CLOSE DESK]                |                       |       |
 |       |       |  - Hồ sơ thao tác: Appointment / Mutiny / Navigation    |                       |       |
+|       |       |  (Nhấp lại Trigger ở mép bàn để đóng về Hải đồ)         |                       |       |
 |       |       +---------------------------------------------------------+                       |       |
 |       |                                                                                         |       |
 |       +-----------------------------------------------------------------------------------------+       |
@@ -92,15 +92,16 @@
 
 ### 3.1 Zone 1: Thanh Tiêu Đề Cố Định (`GameHeader.jsx`)
 - `sticky top-0 z-40`, hiển thị thông tin phòng, phase hiện tại, chế độ voyage, nút âm thanh và nút rời/giải tán phòng.
+- *(Lưu ý: Thành phần này đã được xây dựng hoàn thiện từ các task trước, giữ nguyên trạng, không thuộc phạm vi khởi tạo asset của Task T063).*
 
 ### 3.2 Zone 2: Central Stage (70% - 80% Diện Tích Mặt Bàn)
 - **Vị trí:** Nằm chính giữa mặt bàn Thuyền trưởng, tạo viền bàn gỗ tự nhiên xung quanh.
 - **Cơ chế:** Xen kẽ tại chỗ (In-Place Alternate Hub):
   - *Mặc định:* Render `MapBoardUI.jsx` (được revamp ở Task T067).
-  - *Khi hành động:* Action Desk trượt ra trải đè trực tiếp lên chính khung này (chi tiết phase thuộc Task T064 - T066). Có nút `[◀ PEEK SEA CHART]` để tạm soi hải đồ bên dưới.
+  - *Khi hành động:* Action Desk trượt ra trải đè trực tiếp lên chính khung này (chi tiết phase thuộc Task T064 - T066). Thao tác đóng mở được điều phối duy nhất thông qua Action Desk Trigger, không thêm nút phụ gây rối.
 
 ### 3.3 Zone 3: Điểm Kích Hoạt Thao Tác (Action Desk Trigger)
-- Bố trí trên mặt bàn làm việc, có hiệu ứng ánh sáng ấm nhấp nháy khi đến lượt hành động, nhấp vào để mở/đóng Action Desk tại Central Stage.
+- Bố trí trên mặt bàn làm việc (`scroll_action_desk_trigger.png`), có hiệu ứng ánh sáng ấm nhấp nháy khi đến lượt hành động, nhấp vào để **Mở** hoặc **Đóng** Action Desk tại Central Stage.
 
 ### 3.4 Zone 4: Modal Sự Kiện Trung Tâm Thu Nhỏ Được (Minimizable Event Modal)
 - Nổi lên khi có sự kiện bản đồ hoặc nghi thức tà giáo. Cho phép người chơi nhấn `[─ Minimize]` để thu nhỏ thành huy hiệu nổi ở góc màn hình soi lại bản đồ và ghế ngồi trước khi ra quyết định.
@@ -144,3 +145,4 @@
 - **v1.1 - v1.3 (2026-09-07 - 2026-09-08):** Bàn làm việc Thuyền trưởng, Central Stage xen kẽ, ngăn kéo non-sticky.
 - **v1.4 (2026-09-14):** Tách nền khoang buồng thuyền và Bàn Thuyền trưởng container thu nhỏ.
 - **v1.5 (2026-09-16):** Tinh gọn đặc tả: Loại bỏ hoàn toàn mô tả vi mô gò bó vị trí đạo cụ trang trí; chuẩn hóa triệt để góc nhìn vuông góc 90° phẳng (Orthographic Flat Lay); làm rõ cơ chế tách bạch tuyệt đối giữa mép phẳng mặt bàn và hộc ngăn kéo gầm bàn để tránh rập khuôn và xung đột khi ghép layer.
+- **v1.6 (2026-09-16):** Tinh chỉnh tương tác và phân định phạm vi: Loại bỏ nút tab [PEEK SEA CHART] và [CLOSE DESK] trong Action Desk (giao toàn quyền toggle mở/đóng cho trigger scroll_action_desk_trigger); phân định rõ GameHeader là component dùng chung đã có sẵn từ trước, không thuộc phạm vi khởi tạo của Task T063.

@@ -130,23 +130,30 @@ body {
   z-index: 50;
 }
 
-/* ── Custom Scrollbar (Weathered Wood) ── */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* ── Global Scrollbar Hidden (Preserve Smooth Scrolling) ── */
+html,
+body,
+#root,
+* {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE & Edge */
 }
 
-::-webkit-scrollbar-track {
-  background: var(--abyss);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--hull-light);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--parchment-dim);
+*::-webkit-scrollbar,
+::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+div::-webkit-scrollbar,
+section::-webkit-scrollbar,
+main::-webkit-scrollbar,
+*::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+  opacity: 0 !important;
 }
 
 /* ── Accessibility ── */

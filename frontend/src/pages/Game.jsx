@@ -11,6 +11,9 @@ import GameHeader from '../components/GameHeader';
 import CrewSeatingDrawer from '../components/game/CrewSeatingDrawer';
 import EventModalOverlay from '../components/game/EventModalOverlay';
 import DustParticles from '../components/ui/DustParticles';
+import cabinRoomBg from '../assets/ui/backgrounds/cabin_room_bg.jpg';
+import tabletopCaptainDeskPng from '../assets/ui/backgrounds/tabletop_captain_desk.png';
+import scrollActionDeskTriggerPng from '../assets/ui/sprites/scroll_action_desk_trigger.png';
 import krakenEyesGlowPng from '../assets/ui/sprites/kraken_eyes_glow.png';
 import emblemCultLeaderPng from '../assets/ui/sprites/emblem_cult_leader.png';
 import { getAvatarSrc } from '../constants/avatars';
@@ -440,16 +443,15 @@ const Game = () => {
 
   return (
     <div
-      className="relative min-h-screen w-full flex flex-col select-none bg-[#0A0A08] bg-cover bg-center overflow-x-hidden"
+      className="relative min-h-screen w-full flex flex-col select-none bg-[#07090C] bg-cover bg-top bg-no-repeat overflow-x-hidden"
       style={{
-        backgroundImage: `url(${gameTabletopDeskBg})`,
-        backgroundAttachment: 'fixed',
+        backgroundImage: `url(${cabinRoomBg})`,
       }}
     >
-      {/* ── Atmospheric Overlays ── */}
-      <DustParticles count={12} />
+      {/* ── Atmospheric Particle Overlays ── */}
+      <DustParticles count={14} />
 
-      {/* ── Fixed Top HUD Header ── */}
+      {/* ── Fixed Top HUD Header (Z-50) ── */}
       <GameHeader
         room={room}
         currentUserId={effectiveUserId}
@@ -457,157 +459,138 @@ const Game = () => {
         onDissolveRoom={handleDissolveRoom}
       />
 
-      {/* ── Floating Action Trigger Scroll (Zone 3 Entry Rolled Parchment) ── */}
-      <aside className="fixed right-0 top-1/2 -translate-y-1/2 z-50 select-none pointer-events-auto">
-        <button
-          type="button"
-          id="btn-trigger-action-desk"
-          onClick={() => setIsActionDeskOpen(!isActionDeskOpen)}
-          className="group relative flex items-center bg-[#1A1510]/95 hover:bg-[#2A2118] border-l-2 border-y-2 border-gold/80 rounded-l-2xl p-2 sm:p-2.5 shadow-[-8px_4px_30px_rgba(0,0,0,0.95)] cursor-pointer transition-all duration-300 hover:-translate-x-1 focus:outline-none"
-          title={isActionDeskOpen ? "Collapse Action Desk" : "Open Action Desk"}
-        >
-          {/* Rolled Parchment Scroll with Red Wax Seal */}
-          <div className="relative w-14 sm:w-20 md:w-24 aspect-[912/543] flex items-center justify-center filter drop-shadow-[0_6px_16px_rgba(0,0,0,0.9)] group-hover:drop-shadow-[0_0_24px_rgba(232,166,62,0.95)] transition-all">
-            <img
-              src={scrollActionDeskTriggerPng}
-              alt="Action Desk Scroll Trigger"
-              className="w-full h-full object-contain pointer-events-none"
-            />
-            {/* Active Phase Badge Floating on Scroll Center */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-1">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center -translate-y-0.5">
+      {/* ── Main Command Deck Canvas: Captain's Tabletop & Under-Drawer ── */}
+      <main className="relative z-10 flex-1 w-full max-w-[1600px] mx-auto px-2 sm:px-4 pt-28 sm:pt-36 md:pt-[16vw] lg:pt-[19vw] xl:pt-[21vw] pb-12 flex flex-col items-center">
+        
+        {/* ── Zone 2: Independent Captain's Tabletop Container (90° Orthographic Flat Lay, ~70% Scale) ── */}
+        <div className="relative w-[92%] sm:w-[82%] md:w-[72%] max-w-[1160px] aspect-[1920/1069] flex items-center justify-center filter drop-shadow-[0_25px_60px_rgba(0,0,0,0.98)] select-none">
+          {/* Tabletop Surface Asset (with Flintlock Pistol, Dagger, Rum Mug, Gold Coins, Fine Brass Rim) */}
+          <img
+            src={tabletopCaptainDeskPng}
+            alt="Captain's Tabletop Desk"
+            className="absolute inset-0 w-full h-full object-fill pointer-events-none z-0 select-none"
+            aria-hidden="true"
+          />
+
+          {/* ── Zone 3: Action Desk Trigger Scroll (Mounted on Lower-Right Flank, below Rum Mug) ── */}
+          <div className="absolute right-[3.6%] top-[44%] z-30 pointer-events-auto select-none">
+            <button
+              type="button"
+              id="btn-trigger-action-desk"
+              onClick={() => setIsActionDeskOpen(!isActionDeskOpen)}
+              className="group relative flex flex-col items-center cursor-pointer transition-transform duration-300 transform hover:scale-105 active:scale-95 focus:outline-none"
+              title={isActionDeskOpen ? "Return to Sea Chart" : "Open Action Desk"}
+            >
+              {/* Clean Rolled Parchment Scroll with Red Wax Skull & Anchor Seal */}
+              <div className="relative w-9 sm:w-11 md:w-13 aspect-[284/850] flex flex-col items-center justify-center filter drop-shadow-[0_8px_20px_rgba(0,0,0,0.95)] hover:drop-shadow-[0_0_20px_rgba(232,166,62,0.9)] opacity-100 transition-all">
                 <img
-                  src={getActionDeskSprite()}
-                  alt="Phase Action"
-                  className="w-full h-full object-contain filter drop-shadow group-hover:scale-110 transition-transform"
+                  src={scrollActionDeskTriggerPng}
+                  alt="Action Desk Scroll Trigger"
+                  className="w-full h-full object-contain pointer-events-none"
                 />
               </div>
-              <span className="font-display font-black text-[8px] sm:text-[9px] text-amber-200 uppercase tracking-widest text-shadow drop-shadow text-center leading-tight">
-                ACTION
-              </span>
-            </div>
+            </button>
           </div>
 
-          {/* Vertical Action Desk Text Label & Direction Arrow */}
-          <div className="flex flex-col items-center gap-1.5 ml-1.5 pr-1">
-            <span className="font-display text-xs sm:text-sm text-gold group-hover:text-parchment-bright uppercase tracking-widest [writing-mode:vertical-lr] rotate-180 font-bold transition-colors">
-              ACTION DESK
-            </span>
-            <span className="text-xs text-gold/90 font-bold group-hover:-translate-x-0.5 transition-transform">
-              {isActionDeskOpen ? '▶' : '◀'}
-            </span>
-          </div>
-
-          {/* Attention / Flame Pulse Indicator */}
-          {!isActionDeskOpen && (
-            <div className="absolute -top-1.5 -left-1.5 flex items-center justify-center">
-              <span className="w-3 h-3 rounded-full bg-amber-400 animate-ping absolute opacity-80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-gold" />
+          {/* ── Zone 2: Central Stage (In-Desk Brass Frame Interior: Exactly bounded by engraved brass rim) ── */}
+          <div className="absolute left-[11.9%] right-[11.9%] top-[18.4%] bottom-[16.2%] z-10 overflow-hidden shadow-inner bg-[#070A0F]/80">
+            {/* 1. Default State: Persistent Full Sea Chart (MapBoardUI) */}
+            <div
+              className={`w-full h-full overflow-y-auto transition-opacity duration-300 ${
+                isActionDeskOpen ? 'hidden' : 'block animate-fadeIn'
+              }`}
+            >
+              <MapBoardUI
+                room={room}
+                currentUserId={effectiveUserId}
+                myRole={myRole || room.myRole}
+                onExecuteMapAction={handleExecuteMapAction}
+                onConfirmMapAction={handleConfirmMapAction}
+                onDesignateCardTarget={handleDesignateCardTarget}
+                onResolveTelescope={handleResolveTelescope}
+                onAcknowledgeMermaid={handleAcknowledgeMermaid}
+                onStartCultUprising={handleStartCultUprising}
+                onConfirmCultNight={handleConfirmCultNight}
+                onResolveCultGuns={handleResolveCultGuns}
+                onResolveCultCabinSearch={handleResolveCultCabinSearch}
+                onResolveCultConversion={handleResolveCultConversion}
+                onAdvanceNextRound={handleAdvanceNextRound}
+              />
             </div>
-          )}
-        </button>
-      </aside>
 
-      {/* ── Main Command Playing Stage (Zone 2: Persistent Full Sea Chart & Under-Drawer) ── */}
-      <main className="relative z-10 flex-1 w-full max-w-[1600px] mx-auto p-2 sm:p-4 pb-16">
-        <div className="w-full">
-          <MapBoardUI
-            room={room}
-            currentUserId={effectiveUserId}
-            myRole={myRole || room.myRole}
-            onExecuteMapAction={handleExecuteMapAction}
-            onConfirmMapAction={handleConfirmMapAction}
-            onDesignateCardTarget={handleDesignateCardTarget}
-            onResolveTelescope={handleResolveTelescope}
-            onAcknowledgeMermaid={handleAcknowledgeMermaid}
-            onStartCultUprising={handleStartCultUprising}
-            onConfirmCultNight={handleConfirmCultNight}
-            onResolveCultGuns={handleResolveCultGuns}
-            onResolveCultCabinSearch={handleResolveCultCabinSearch}
-            onResolveCultConversion={handleResolveCultConversion}
-            onAdvanceNextRound={handleAdvanceNextRound}
-          />
+            {/* 2. Action State: In-Place Sliding Action Desk (Mutiny / Navigation) */}
+            <div
+              className={`w-full h-full overflow-y-auto p-3 sm:p-5 bg-[#0C0907]/96 transition-all duration-300 ${
+                isActionDeskOpen ? 'block animate-fadeIn' : 'hidden'
+              }`}
+            >
+              {/* In-Desk Action Header */}
+              <div className="sticky top-0 z-20 w-full bg-[#16100A]/95 border-b border-gold/40 px-3 py-2 mb-3 flex items-center justify-between rounded-lg shadow-md">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+                    <img
+                      src={getActionDeskSprite()}
+                      alt="Active Phase"
+                      className="w-full h-full object-contain filter drop-shadow"
+                    />
+                  </div>
+                  <h2 className="font-display font-black text-sm sm:text-lg text-gold tracking-widest uppercase text-shadow-sm">
+                    {room?.gamePhase ? room.gamePhase.replace(/_/g, ' ') : 'ACTION DESK'}
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  id="btn-return-to-sea-chart"
+                  onClick={() => setIsActionDeskOpen(false)}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#20170F] hover:bg-[#2F2115] border border-gold/50 text-gold hover:text-parchment-bright font-display text-xs sm:text-sm tracking-wider transition-all shadow cursor-pointer"
+                >
+                  <span>◀</span>
+                  <span>PEEK SEA CHART</span>
+                </button>
+              </div>
+
+              {/* Action Content Canvas */}
+              <div className="w-full max-w-5xl mx-auto pb-6">
+                {isNavigationPhase ? (
+                  /* Phase: Navigation & Card Steer */
+                  <NavigationPhase
+                    room={room}
+                    currentUserId={effectiveUserId}
+                    myRole={myRole || room.myRole}
+                    privateCards={privateCards}
+                    onStartNavigation={handleStartNavigation}
+                    onCaptainSelectCard={handleCaptainSelectCard}
+                    onLieutenantSelectCard={handleLieutenantSelectCard}
+                    onNavigatorSelectCard={handleNavigatorSelectCard}
+                    onNavigatorJumpOverboard={handleNavigatorJumpOverboard}
+                    onAppointEmergencyNavigator={handleAppointEmergencyNavigator}
+                  />
+                ) : (
+                  /* Default / Day Phase: Mutiny & Appointment */
+                  <MutinyBoard 
+                    room={room}
+                    currentUserId={effectiveUserId}
+                    myRole={myRole || room.myRole}
+                    onAppointTeam={handleAppointTeam}
+                    onSubmitVote={handleSubmitVote}
+                    onConfirmOutcome={handleConfirmOutcome}
+                    onEliminateTieCandidate={handleEliminateTieCandidate}
+                    onCutTongue={handleCutTongue}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* ── Captain's Desk Under-Drawer (Non-Sticky Table Lip Drawer) ── */}
+        {/* ── Zone 5: Non-Sticky Captain's Under-Drawer (Below Desk Flat Bottom Edge) ── */}
         <CrewSeatingDrawer
           room={room}
           currentUserId={effectiveUserId}
           onKickPlayer={handleKickPlayer}
         />
       </main>
-
-      {/* ── Full-Width Sliding Action Desk (Zone 3) ── */}
-      <div
-        className={`fixed inset-0 top-[70px] z-[45] bg-[#0A0A08]/96 backdrop-blur-md overflow-y-auto transition-transform duration-500 ease-in-out pb-20 ${
-          isActionDeskOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none'
-        }`}
-      >
-        {/* Top Control Bar */}
-        <div className="sticky top-0 z-20 w-full bg-hull-dark/95 border-b border-gold/40 px-4 py-2.5 flex items-center justify-between shadow-2xl">
-          <button
-            type="button"
-            onClick={() => setIsActionDeskOpen(false)}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded bg-hull hover:bg-hull-light border border-gold/40 text-parchment hover:text-parchment-bright font-display text-sm tracking-wider transition-all shadow cursor-pointer group"
-          >
-            <span className="text-gold font-bold group-hover:-translate-x-0.5 transition-transform">◀</span>
-            <span>PEEK SEA CHART</span>
-          </button>
-
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 flex items-center justify-center">
-              <img
-                src={getActionDeskSprite()}
-                alt="Active Phase"
-                className="w-full h-full object-contain filter drop-shadow"
-              />
-            </div>
-            <div className="font-display text-base sm:text-xl text-gold font-bold tracking-widest uppercase text-shadow-sm">
-              {room?.gamePhase ? room.gamePhase.replace(/_/g, ' ') : 'ACTION DESK'}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsActionDeskOpen(false)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-hull hover:bg-hull-light border border-gold/40 text-parchment-dim hover:text-parchment font-display text-xs sm:text-sm tracking-wider transition-all shadow cursor-pointer"
-            title="Minimize to Sea Chart"
-          >
-            <span>✕ CLOSE</span>
-          </button>
-        </div>
-
-        {/* Desk Content - Full Width Spacious Canvas */}
-        <div className="w-full max-w-6xl mx-auto p-4 sm:p-6">
-          {isNavigationPhase ? (
-            /* Phase: Navigation & Card Steer */
-            <NavigationPhase
-              room={room}
-              currentUserId={effectiveUserId}
-              myRole={myRole || room.myRole}
-              privateCards={privateCards}
-              onStartNavigation={handleStartNavigation}
-              onCaptainSelectCard={handleCaptainSelectCard}
-              onLieutenantSelectCard={handleLieutenantSelectCard}
-              onNavigatorSelectCard={handleNavigatorSelectCard}
-              onNavigatorJumpOverboard={handleNavigatorJumpOverboard}
-              onAppointEmergencyNavigator={handleAppointEmergencyNavigator}
-            />
-          ) : (
-            /* Default / Day Phase: Mutiny & Appointment */
-            <MutinyBoard 
-              room={room}
-              currentUserId={effectiveUserId}
-              myRole={myRole || room.myRole}
-              onAppointTeam={handleAppointTeam}
-              onSubmitVote={handleSubmitVote}
-              onConfirmOutcome={handleConfirmOutcome}
-              onEliminateTieCandidate={handleEliminateTieCandidate}
-              onCutTongue={handleCutTongue}
-            />
-          )}
-        </div>
-      </div>
 
       {/* ── Secret Cult Conversion Modal for Converted Victim (AC-3 UC-015) ── */}
       {conversionNotification && (
