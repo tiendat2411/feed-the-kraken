@@ -17,6 +17,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { SoundEngine } from '../utils/soundEffects';
+import CrewAppointment from './CrewAppointment';
 
 const MutinyBoard = ({
   room,
@@ -179,119 +180,12 @@ const MutinyBoard = ({
 
         {/* PHASE 1: APPOINT NAVIGATION TEAM */}
         {(gamePhase === 'DAY_1_CREW_SELECTION' || gamePhase === 'APPOINT_TEAM') && (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 space-y-6">
-            <div className="text-center space-y-2">
-              <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-bold rounded-full uppercase tracking-wider">
-                Phase 1: Navigation Team Appointment
-              </span>
-              <h3 className="text-3xl font-extrabold">
-                {isCaptain ? 'Select Lieutenant and Navigator' : 'Captain is deliberating appointments...'}
-              </h3>
-              <p className="text-slate-400 text-sm max-w-xl mx-auto">
-                {isCaptain 
-                  ? 'Select 1 Lieutenant (draws 2 cards) and 1 Navigator (steers 1 card). You cannot appoint yourself.'
-                  : 'Debate, persuade the Captain for office, or ready your guns for Mutiny!'}
-              </p>
-            </div>
-
-            {isCaptain && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {players.map((p) => {
-                    const isMePlayer = p.id === me.id;
-                    const isOffDuty = p.status === 'OFF_DUTY';
-                    const isEliminated = p.status === 'ELIMINATED';
-                    const disabled = isMePlayer || isOffDuty || isEliminated;
-
-                    const isSelectedLt = selectedLt === p.id;
-                    const isSelectedNav = selectedNav === p.id;
-
-                    return (
-                      <div 
-                        key={p.id}
-                        className={`p-4 rounded-2xl border transition relative flex flex-col justify-between gap-3 ${
-                          disabled ? 'bg-slate-900/20 border-white/5 opacity-40 cursor-not-allowed' :
-                          isSelectedLt ? 'bg-indigo-950/60 border-indigo-500 ring-2 ring-indigo-500/50' :
-                          isSelectedNav ? 'bg-cyan-950/60 border-cyan-500 ring-2 ring-cyan-500/50' :
-                          'bg-slate-900/60 border-white/10 hover:border-white/20'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-2xl">
-                            {p.avatar}
-                          </div>
-                          <div className="overflow-hidden">
-                            <div className="font-bold truncate flex items-center gap-1.5">
-                              {p.nickname || p.name}
-                              {isMePlayer && <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded">YOU</span>}
-                            </div>
-                            <div className="text-xs text-slate-400">
-                              {isOffDuty ? 'Off-duty' : isEliminated ? 'Eliminated' : `🔫 ${p.gunCount ?? 3} guns`}
-                            </div>
-                          </div>
-                        </div>
-
-                        {!disabled && (
-                          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
-                            <button
-                              onClick={() => {
-                                if (isSelectedLt) {
-                                  setSelectedLt(null);
-                                } else {
-                                  setSelectedLt(p.id);
-                                  if (isSelectedNav) setSelectedNav(null);
-                                }
-                              }}
-                              className={`py-1.5 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 ${
-                                isSelectedLt 
-                                  ? 'bg-indigo-600 text-white shadow-md' 
-                                  : 'bg-indigo-950/40 text-indigo-300 hover:bg-indigo-900/60 border border-indigo-500/30'
-                              }`}
-                            >
-                              <Award size={13} /> Lieutenant
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                if (isSelectedNav) {
-                                  setSelectedNav(null);
-                                } else {
-                                  setSelectedNav(p.id);
-                                  if (isSelectedLt) setSelectedLt(null);
-                                }
-                              }}
-                              className={`py-1.5 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 ${
-                                isSelectedNav 
-                                  ? 'bg-cyan-600 text-white shadow-md' 
-                                  : 'bg-cyan-950/40 text-cyan-300 hover:bg-cyan-900/60 border border-cyan-500/30'
-                              }`}
-                            >
-                              <Compass size={13} /> Navigator
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex justify-center pt-4">
-                  <button
-                    onClick={handleAppointSubmit}
-                    disabled={!selectedLt || !selectedNav}
-                    className={`px-8 py-4 rounded-2xl font-black text-lg flex items-center gap-3 transition shadow-xl ${
-                      selectedLt && selectedNav 
-                        ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-slate-950 shadow-yellow-500/20 hover:scale-105 cursor-pointer' 
-                        : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5'
-                    }`}
-                  >
-                    <CheckCircle2 size={22} />
-                    CONFIRM NAVIGATION TEAM
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          <CrewAppointment
+            room={room}
+            currentUserId={currentUserId}
+            myRole={myRole}
+            onAppointTeam={onAppointTeam}
+          />
         )}
 
         {/* PHASE 2: LOYALTY CHECK / MUTINY VOTE */}

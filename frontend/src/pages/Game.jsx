@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSocket } from '../contexts/SocketContext';
 import Lobby from './Lobby';
 import RoleReveal from '../components/RoleReveal';
+import CrewAppointment from '../components/CrewAppointment';
 import MutinyBoard from '../components/MutinyBoard';
 import NavigationPhase from '../components/NavigationPhase';
 import MapBoardUI from '../components/MapBoardUI';
@@ -421,6 +422,11 @@ const Game = () => {
 
   // ── 3. Active Playing Phases: Dual-Pane Command Layout (60% Map + 40% Action Desk) ──
 
+  const isAppointmentPhase = [
+    'DAY_1_CREW_SELECTION',
+    'APPOINT_TEAM'
+  ].includes(room.gamePhase);
+
   const isNavigationPhase = [
     'NAVIGATION',
     'NAVIGATION_CAPTAIN_DRAW',
@@ -493,7 +499,15 @@ const Game = () => {
           </div>
 
           {/* ── Zone 2: Central Stage (In-Desk Brass Frame Interior: Exactly bounded by engraved brass rim) ── */}
-          <div className="absolute left-[11.9%] right-[11.9%] top-[18.4%] bottom-[16.2%] z-10 overflow-hidden shadow-inner bg-[#070A0F]/80">
+          <div
+            className="absolute z-10 overflow-hidden"
+            style={{
+              left: '11.82%',
+              right: '11.82%',
+              top: '18.15%',
+              bottom: '16.37%'
+            }}
+          >
             {/* 1. Default State: Persistent Full Sea Chart (MapBoardUI) */}
             <div
               className={`w-full h-full overflow-y-auto transition-opacity duration-300 ${
@@ -518,42 +532,15 @@ const Game = () => {
               />
             </div>
 
-            {/* 2. Action State: In-Place Sliding Action Desk (Mutiny / Navigation) */}
+            {/* 2. Action State: In-Place Sliding Action Desk (Mutiny / Navigation / Appointment) */}
             <div
-              className={`w-full h-full overflow-y-auto p-3 sm:p-5 bg-[#0C0907]/96 transition-all duration-300 ${
+              className={`w-full h-full transition-all duration-300 ${
                 isActionDeskOpen ? 'block animate-fadeIn' : 'hidden'
               }`}
             >
-              {/* In-Desk Action Header */}
-              <div className="sticky top-0 z-20 w-full bg-[#16100A]/95 border-b border-gold/40 px-3 py-2 mb-3 flex items-center justify-between rounded-lg shadow-md">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
-                    <img
-                      src={getActionDeskSprite()}
-                      alt="Active Phase"
-                      className="w-full h-full object-contain filter drop-shadow"
-                    />
-                  </div>
-                  <h2 className="font-display font-black text-sm sm:text-lg text-gold tracking-widest uppercase text-shadow-sm">
-                    {room?.gamePhase ? room.gamePhase.replace(/_/g, ' ') : 'ACTION DESK'}
-                  </h2>
-                </div>
-
-                <button
-                  type="button"
-                  id="btn-return-to-sea-chart"
-                  onClick={() => setIsActionDeskOpen(false)}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#20170F] hover:bg-[#2F2115] border border-gold/50 text-gold hover:text-parchment-bright font-display text-xs sm:text-sm tracking-wider transition-all shadow cursor-pointer"
-                >
-                  <span>◀</span>
-                  <span>PEEK SEA CHART</span>
-                </button>
-              </div>
-
-              {/* Action Content Canvas */}
-              <div className="w-full max-w-5xl mx-auto pb-6">
-                {isNavigationPhase ? (
-                  /* Phase: Navigation & Card Steer */
+              {isNavigationPhase ? (
+                /* Phase: Navigation & Card Steer */
+                <div className="w-full h-full overflow-y-auto p-2 sm:p-4 bg-[#0C0907]/90">
                   <NavigationPhase
                     room={room}
                     currentUserId={effectiveUserId}
@@ -566,8 +553,18 @@ const Game = () => {
                     onNavigatorJumpOverboard={handleNavigatorJumpOverboard}
                     onAppointEmergencyNavigator={handleAppointEmergencyNavigator}
                   />
-                ) : (
-                  /* Default / Day Phase: Mutiny & Appointment */
+                </div>
+              ) : isAppointmentPhase ? (
+                /* Phase: Crew Appointment (Task T064) - 1:1 In-Frame Tray */
+                <CrewAppointment
+                  room={room}
+                  currentUserId={effectiveUserId}
+                  myRole={myRole || room.myRole}
+                  onAppointTeam={handleAppointTeam}
+                />
+              ) : (
+                /* Phase: Mutiny & Voting */
+                <div className="w-full h-full overflow-y-auto p-2 sm:p-4 bg-[#0C0907]/90">
                   <MutinyBoard 
                     room={room}
                     currentUserId={effectiveUserId}
@@ -578,8 +575,8 @@ const Game = () => {
                     onEliminateTieCandidate={handleEliminateTieCandidate}
                     onCutTongue={handleCutTongue}
                   />
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

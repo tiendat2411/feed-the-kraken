@@ -481,4 +481,35 @@ export default {
 
 ---
 
-> **Version:** 1.1 | **Approved:** 2026-08-27 | **Changes:** Thêm gam xanh lá rêu (Verdigris/Moss), tăng cường hiệu ứng phong hóa/cũ kỹ (aging/weathering/distress), loại bỏ glassmorphism, thêm hạt bụi, đinh gỉ, rêu xanh, vết ố.
+## 11. The Golden Benchmark Standard: Tactile Command Architecture (Bộ Chuẩn Vàng Kiến Trúc & Asset)
+
+> Được đúc kết và chuẩn hóa chính thức từ thành công của Task T063 & T064. Toàn bộ các màn hình/phase tiếp theo (T065 - T068) lấy các asset và quy tắc này làm thước đo chuẩn mực (Ground Truth Anchor).
+
+### 11.1 Thư Viện Asset Mẫu Chuẩn Vàng (Golden Reference Library)
+1. **Sân Khấu Bàn Làm Việc (`backgrounds/tabletop_captain_desk.png`):**
+   - Khoang trung tâm kích thước chuẩn **1466 × 700 px** (Tỷ lệ vàng **2.094 : 1**). Mọi khay thao tác trung tâm phải khớp 1:1 với kích thước này để tránh co giãn.
+2. **Khay Thao Tác Chuyên Dụng (`frames/tray_captain_command.png`):**
+   - Gờ viền kim loại đồng xanh verdigris kết hợp gỗ mun **siêu mỏng (< 25px)** để tối ưu diện tích tương tác lòng khay da thuộc xanh rêu khâu chỉ đôi.
+3. **Bục Trưng Bày Đạo Cụ (`frames/dais_officers_cradle.png`):**
+   - 3 khoang lót nhung sâu thẳm: Nhung đen Thuyền trưởng, Nhung lam Lieutenant, Nhung ngọc Navigator.
+4. **Phiến Thẻ Thủy Thủ (`frames/tablet_crew_plank.png`):**
+   - Gỗ sồi phong hóa, cửa sổ porthole lọng lỗ tròn xuyên thấu viền đinh tán, bảng tên gỗ mun chìm và 2 ổ cắm chốt tròn.
+5. **Nút Chốt Đồng Tròn Công Thái Học (`buttons/btn_peg_lt.png`, `buttons/btn_peg_nav.png`):**
+   - Khối đồng thau đúc viền đinh tán, tráng men lam/ngọc lục bảo, dập nổi mỏ neo/bánh lái, khớp hình học 1:1 vào ổ cắm trên thẻ.
+6. **Thanh Lệnh Hành Động Dẹt (`buttons/btn_ratify_command.png`):**
+   - Dạng thanh ray ngang dẹt tỉ lệ **6.2 : 1**, chữ Pirata One khắc nổi kèm triện sáp đỏ đúc sọ người, không chiếm dụng chiều dọc của khay.
+7. **Đạo Cụ Bảo Vật (`sprites/token_admiralty_key.png`, `sprites/token_brass_helm.png`):**
+   - Vàng đồng thau xỉn, đồng đúc ăn mòn patina, lọng rỗng xuyên thấu 100% Alpha.
+8. **Xiềng Xích Vô Hiệu Hóa (`sprites/stigma_iron_chain.png`):**
+   - Xích sắt rỉ chéo đan chữ X, ổ khóa đồng rỉ vảy kèm thẻ đồng "OFF-DUTY".
+
+### 11.2 Các Quy Tắc Công Thái Học & Thẩm Mỹ Cốt Lõi
+- **Quy tắc Ổ cắm & Chốt (Socket & Peg Principle):** Khi thẻ nhân vật có lỗ chốt tròn, chốt cắm vào phải là nút coin tròn đồng dạng, không nhồi nhét đạo cụ dài/lớn.
+- **Phân tách Đạo cụ Trưng bày vs Đạo cụ Kích hoạt:** Đạo cụ lớn nằm trên bục Dais/giá đỡ; chốt ấn cầm tay (Pegs) cắm vào thẻ.
+- **Tối ưu hóa Gờ Viền & Chiều Cao:** Gờ khay mỏng (< 25px), nút bấm thanh ray ngang dẹt (< 55px chiều cao) để bảo toàn diện tích tối đa cho các thẻ bài tương tác.
+- **Vòng Lặp Ghép Thử 1:1 (Pre-Composite Loop):** Bắt buộc chạy script Python ghép thử nghiệm asset vào bối cảnh thật trước khi xuất trình cho User nghiệm thu.
+
+---
+
+> **Version:** 1.2 | **Approved:** 2026-09-25 | **Changes:** Cập nhật Bộ chuẩn vàng Golden Benchmark Standards từ Task T063 & T064, chuẩn hóa tỷ lệ khay 1466 × 700 px (2.094:1), gờ viền siêu mỏng, nút chốt tròn công thái học, thanh lệnh ngang dẹt và vòng lặp ghép thử nghiệm 1:1.
+

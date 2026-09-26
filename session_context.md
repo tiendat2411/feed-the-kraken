@@ -2,90 +2,95 @@
 
 > **Tài liệu lưu trữ ngữ cảnh chuyển giao phiên làm việc (Session Handoff Context)**  
 > **Dự án:** Feed The Kraken (Real-time Multiplayer Hidden Role Game)  
-> **Ngày cập nhật:** 2026-09-14  
-> **Nhánh hiện tại:** `backend-testing-and-fix` & `ui-revamp` (Hợp nhất song song 2 luồng)  
-> **Trạng thái:** Vận hành đồng thời **Phase 9.3 (UI Revamp Track B)** và **Phase 10 (Backend Testing & Fixes)**.  
-> ⚠️ **LƯU Ý ĐẶC BIỆT:** **Task T063 CHƯA HOÀN THÀNH** — Sẽ được thực hiện lại từ đầu trong conversation mới theo bộ quy chuẩn đã thiết lập.
+> **Ngày cập nhật:** 2026-09-20  
+> **Nhánh hiện tại:** `ui-revamp-rebase`  
+> **Trạng thái:** **Task T063 ĐÃ HOÀN THÀNH VÀ PUSH GITHUB (Commit `245ac30`)** ✅. Sẵn sàng triển khai **Task T064 (Crew Appointment Phase)**.
 
 ---
 
-## 1. 📋 TỔNG HỢP CÔNG VIỆC ĐÃ HOÀN THÀNH
+## 1. 📋 TỔNG HỢP CÔNG VIỆC ĐÃ HOÀN THÀNH TRONG PHIÊN NÀY
 
-### A. Giao diện & Kiến trúc Command In-Game (Phase 9.1, 9.2 & T062)
-1. **Design System "Eldritch Parchment" & Typography:**
-   - Đồng bộ 100% theme hàng hải huyền bí: gỗ sồi phong hóa, kim loại đồng thau xước, viền đinh rỉ sét, ngọc trạng thái verdigris/ruby.
-   - Typography tuân thủ 100% font Gothic hàng hải `Pirata One` (tiêu đề) và `Cinzel` (nhãn/text phụ).
-   - Ngôn ngữ hiển thị trên UI Frontend đạt **100% Tiếng Anh hàng hải (`en-US`)** (Rule 7), tuyệt đối không dùng stock emoji.
-2. **Trang Chủ (`Home.jsx` - Task T058):**
-   - Background đại dương huyền bí kết hợp Vignette + DustParticles bay nhẹ.
-   - Khung gỗ trung tâm `PanelWood` chứa `CardParchment`, các nút bấm `ButtonWood` đổ bóng 3D.
-3. **Trang Phòng Chờ (`Lobby.jsx` - Task T059):**
-   - Bố cục 12 cột cân xứng: 7 cột danh sách thủy thủ (`CrewPlate.jsx`) + 5 cột Sổ hải đồ (`CardParchment.jsx`) + Bộ chọn Avatar cướp biển + Nút Bánh lái `START VOYAGE`.
-   - Bảng Room Code bằng đồng khắc gỉ với tính năng bấm sao chép mã phòng.
-4. **Kiến Trúc In-Game Command Layout Ban Đầu (`Game.jsx`, `GameHeader.jsx`, `CrewSeatingDrawer.jsx` - Task T061):**
-   - **Dual-Pane Layout:** 60% Bản đồ hải trình bên trái + 40% Bàn điều khiển thao tác bên phải.
-   - **Thanh Header gỗ sồi (`GameHeader.jsx`):** Căn giữa Map Board HUD, tích hợp ngọc online/offline, nút âm thanh hàng hải, nút Dissolve/Leave room.
-   - **HUD Tracker Badges:** Huy hiệu theo dõi trực quan số lượng bài thời gian thực trên Map: `Deck: X 🎴`, `Discard: X 🗑️`, `Logbook: X/2 📖`, `Rituals: X 🔮`, `Supply Line: Crossed/Not Crossed 📦`.
-   - **Khắc Vết Roi Máu Tra Khảo Flogging (`CrewPlate.jsx`):**
-     - Tích hợp 3 sprite vết chém đẫm máu được căn chính giữa phiến gỗ sồi: `NOT A SAILOR` (`flog_not_sailor.png`), `NOT A PIRATE` (`flog_not_pirate.png`), `NOT A CULTIST` (`flog_not_cultist.png`).
-     - Tăng **+30% kích thước** các icon chức vụ & trạng thái bên góc phải thẻ gỗ.
-     - **Loại bỏ icon Room Host** khỏi thẻ người chơi trong game để tránh nhầm lẫn với Thuyền trưởng.
-5. **Thẻ Bài Vai Trò Bí Mật (`RoleReveal.jsx` - Task T062):**
-   - Thẻ Tarot cổ 3D Flip 180° mượt mà (600ms), mặt sau da thuộc nứt nẻ + xúc tu la bàn đồng cổ, mặt trước giấy da dê + biểu tượng phe phái mực phai.
-   - Night overlay: phông đen huyền bí + ánh mắt Kraken tím eldritch-pulse + đếm ngược ember vòng tròn.
+### A. Hoàn Thành Toàn Diện Task T063: Captain's Tabletop Environment & Under-Drawer
+1. **Bộ 6 Asset Nguyên Tử Chuẩn Thẩm Mỹ "Eldritch Parchment" (Góc nhìn vuông góc 90° Flat Lay):**
+   - `frontend/src/assets/ui/backgrounds/cabin_room_bg.jpg`: Không gian khoang buồng thuyền trưởng chiều sâu điện ảnh nhìn ra biển đêm mù sương, vòm gỗ sồi, 2 đèn bão treo tường, rương kho báu ngập vàng, thùng rượu rum và cuộn dây thừng.
+   - `frontend/src/assets/ui/backgrounds/tabletop_captain_desk.png`: Bàn gỗ làm việc Thuyền trưởng góc nhìn 90° phẳng, súng lục flintlock, dao găm, cốc bia gỗ, đĩa tiền vàng, nẹp kim loại đinh tán và khung đồng chạm hoa văn bao quanh Central Stage trung tâm.
+   - `frontend/src/assets/ui/sprites/scroll_action_desk_trigger.png`: Cuộn giấy da hải trình niêm phong sáp đỏ tinh xảo gắn bên cánh phải bàn để kích hoạt mở/đóng Action Desk.
+   - `frontend/src/assets/ui/frames/drawer_empty_shell.png`: Hộc ngăn kéo 2 khoang bằng gỗ sồi dày dặn, liền khối tay nắm mỏ neo đồng cổ, trượt mượt mà dưới gầm bàn.
+   - `frontend/src/assets/ui/frames/drawer_radar_base.png`: Mâm đĩa la bàn hoa tiêu đồng cổ 16 cánh và các vạch khắc độ hàng hải cho Chamber 1 (Seating Radar).
+   - `frontend/src/assets/ui/frames/card_crew_dossier.png`: Thẻ bài da dê nẹp đồng nứt nẻ cho Chamber 2 (Crew Dossier Cards).
+
+2. **Kiến Trúc Phân Tầng Bàn Chỉ Huy & Central Stage (`Game.jsx`):**
+   - **Central Stage tại chỗ (In-Place Alternate Hub):** Khung đồng chạm hoa văn trung tâm bàn luân chuyển mượt mà giữa Hải đồ toàn cảnh (`MapBoardUI.jsx`) và Bàn thao tác (`NavigationPhase.jsx` / `MutinyBoard.jsx`), loại bỏ hoàn toàn modal che kín màn hình kiểu cũ.
+   - **Action Desk Trigger Scroll:** Tinh chỉnh cuộn giấy da bên cánh phải bàn: loại bỏ hiệu ứng nhấp nháy liên tục, bỏ chấm vàng ping, bỏ icon mũ thuyền trưởng thừa và bỏ chữ "ACT", luôn hiển thị rõ nét và trang nhã.
+   - **Tỉ lệ kích thước:** Bàn tabletop thu nhỏ vừa vặn còn ~70% viewport (`w-[72%] max-w-[1160px]`), hộc ngăn kéo bằng ~75% chiều rộng bàn (`w-[55%] max-w-[880px]`), thẻ hồ sơ dossier thu nhỏ còn ~80% (`max-w-[340px]`).
+   - **Dời bàn xuống thấp làm lộ cảnh nền:** Sử dụng padding đỉnh thích ứng responsive theo tỷ lệ màn hình (`pt-28 sm:pt-36 md:pt-[16vw] lg:pt-[19vw] xl:pt-[21vw]`), giúp giải phóng toàn bộ vòm kính caro, cảnh biển đêm và 2 đèn bão treo tường trong `cabin_room_bg.jpg` phía trên mặt bàn.
+
+3. **Căn Chỉnh Đồng Tâm Tuyệt Đối Vòng Tròn Avatar Người Chơi (`CrewSeatingDrawer.jsx`):**
+   - **Nguyên nhân lỗi cũ:** Trước đây cụm ghế người chơi dùng `flex flex-col` với `-translate-y-1/2` áp dụng lên toàn bộ cột (gồm avatar, mũ captain, nhãn NEXT, tên, súng), khiến avatar người chơi không có mũ bị tên phía dưới kéo lệch tâm lên trên ~14px; thông số tâm cũ `centerX = 49.0`, `centerY = 48.0` và bán kính `33.0%` bị kéo lệch lên góc trên và đè lên viền đồng.
+   - **Giải pháp tách rời hình học (Decoupling):** Đặt khung tròn avatar porthole làm mỏ neo hình học duy nhất tại `(x, y)` với `-translate-x-1/2 -translate-y-1/2`. Mũ Thuyền trưởng và nhãn NEXT đặt `absolute` mép trên, tên và súng đặt `absolute` mép dưới.
+   - **Tọa độ chuẩn:** Căn tâm chuẩn xác `centerX = 50.0`, `centerY = 50.0` và bán kính tối ưu `radiusPercent = 30.0%`, đảm bảo vòng tròn avatar đồng tâm 100% với mặt số la bàn và cách đều viền đồng ở mọi góc quay cho 5-11 người chơi.
+
+4. **Triệt Tiêu Toàn Cục Thanh Cuộn Dọc (Scrollbar Suppression - `index.css`):**
+   - Triệt tiêu hoàn toàn các thanh trượt màu nâu thô ráp trên toàn bộ các trình duyệt (Chrome, Safari, Firefox, Edge) qua các thuộc tính CSS toàn cục:
+     ```css
+     html, body, #root, * {
+       scrollbar-width: none !important;
+       -ms-overflow-style: none !important;
+     }
+     *::-webkit-scrollbar, ::-webkit-scrollbar, ... {
+       display: none !important;
+       width: 0 !important;
+       height: 0 !important;
+       background: transparent !important;
+       opacity: 0 !important;
+     }
+     ```
+   - Loại bỏ hoàn toàn các class thừa `.custom-scrollbar` trong [Game.jsx](file:///d:/PersonaPropjects/Feed%20The%20Kurumeo/feed-the-kraken/frontend/src/pages/Game.jsx) và [CrewSeatingDrawer.jsx](file:///d:/PersonaPropjects/Feed%20The%20Kurumeo/feed-the-kraken/frontend/src/components/game/CrewSeatingDrawer.jsx).
+   - Bảo toàn 100% trải nghiệm cuộn tự nhiên và mượt mà bằng con lăn chuột, bàn rê cảm ứng và vuốt màn hình.
+
+5. **Quy Chuẩn Ngôn Ngữ, Thẩm Mỹ & Git:**
+   - 100% giao diện hiển thị tiếng Anh chuẩn hàng hải (`en-US`), đồng bộ font `Pirata One`.
+   - Tuyệt đối không dùng Unicode emoji (sử dụng 100% sprite đồ họa của dự án).
+   - Đã kiểm tra biên dịch `npm run build` thành công: 0 errors, 0 warnings.
+   - Đã commit và push an toàn lên nhánh `ui-revamp-rebase` trên GitHub (Commit: `245ac30`).
 
 ---
 
-### B. Sửa Lỗi Logic Game, Đồng Bộ Realtime & Vận Hành (Phase 10)
-1. **Lỗi Đồng Bộ Thẻ Bài Hoa Tiêu (Navigator Stale Cards Bug - UC-009, UC-010):**
-   - *Nguyên nhân:* State `privateCards` cũ của lượt Thuyền phó chiếm quyền ưu tiên hơn `room.myNavigationCards`.
-   - *Khắc phục:* `NavigationPhase.jsx` ưu tiên đọc dữ liệu `room.myNavigationCards` từ server; `Game.jsx` đăng ký listener `NAVIGATOR_CARDS_SECRET` và `NAVIGATION_CARD_EXECUTED`; Backend phát song song sự kiện tới socket riêng của Hoa tiêu.
-2. **Sự Kiện Thu Nạp Tà Giáo Khi Hết Mục Tiêu (Cult Conversion Fallback - UC-015 AC-3):**
-   - Khi không còn người chơi hợp lệ để thu nạp (`convertibleCrew.length === 0`), Cult Leader nhận thông báo và nút `END RITUAL & BRING DAWN ➔`, gửi `targetPlayerId = null` để kết thúc đêm êm đẹp mà không bị kẹt state game.
-3. **Hiển Thị Kết Quả Soi Phòng Cabin Search (UC-013 AC-1):**
-   - Thuyền trưởng nhận modal thông báo riêng phe phái của người bị soi (Cultist hiển thị xúc tu bí mật `CULTIST_TENTACLE`).
-4. **Thông Báo Công Khai Khi Bốc Thẻ Cult Uprising (UC-015):**
-   - Cả phòng nhận thông báo về loại nghi thức trước khi bắt đầu giai đoạn nhắm mắt ban đêm.
-5. **Thông Báo Người Bị Thu Nạp & Nhận Mặt Cult Leader (UC-015):**
-   - Người chơi bị thu nạp nhận thông báo riêng và nhìn thấy ID của Cult Leader.
-6. **Bổ Sung Súng Khi Vượt Tuyến Tiếp Tế (`T070 [FIX/BUG]`):**
-   - Bổ sung đạn súng lên tối đa 3 cho toàn bộ người chơi chưa bị loại (`player.status !== 'ELIMINATED'`), bao gồm cả người chơi đang ở trạng thái nghỉ phép `OFF_DUTY`.
-7. **Thu Nạp Tà Giáo Cho Người Nghỉ Phép (`T071 [FIX/BUG]`):**
-   - Cho phép Cult Leader thu nạp người chơi ở trạng thái `OFF_DUTY` trên cả Frontend (`MapBoardUI.jsx`), Backend (`ExecutionService.js`) và Bots (`AutoResponder.js`), chỉ loại trừ người bị `ELIMINATED`.
-8. **Chuẩn Hóa Vòng Đời Trạng Thái Người Chơi (`T072 [AUDIT/FIX]`):**
-   - Rà soát và phân định rạch ròi 3 trạng thái `ACTIVE`, `OFF_DUTY`, `ELIMINATED` trên toàn hệ thống. `OFF_DUTY` chỉ đóng vai trò chặn bổ nhiệm ban điều hướng thông thường; tất cả quyền hạn khác đều hoạt động bình thường.
-
----
-
-## 2. 🗂️ CÁC TÀI LIỆU & ASSET ĐÃ THIẾT LẬP
+## 2. 🗂️ CÁC ASSET & TÀI LIỆU CỐT LÕI HIỆN TẠI
 
 ### Asset Đồ Họa Đã Sẵn Sàng:
+- `frontend/src/assets/ui/backgrounds/cabin_room_bg.jpg`: Cảnh nền khoang buồng thuyền trưởng (1792x2400).
+- `frontend/src/assets/ui/backgrounds/tabletop_captain_desk.png`: Bàn Thuyền trưởng Flat Lay 90° (1920x1069).
+- `frontend/src/assets/ui/sprites/scroll_action_desk_trigger.png`: Cuộn giấy da kích hoạt Action Desk (284x850).
+- `frontend/src/assets/ui/frames/drawer_empty_shell.png`: Hộc ngăn kéo rỗng 2 khoang (1800x1024).
+- `frontend/src/assets/ui/frames/drawer_radar_base.png`: Mâm đĩa la bàn hoa tiêu (1024x1024).
+- `frontend/src/assets/ui/frames/card_crew_dossier.png`: Thẻ hồ sơ thủy thủ da dê nẹp đồng (1200x900).
 - `frontend/src/assets/ui/sprites/badge_captain_hat.png`: Mũ Thuyền trưởng da thuộc cướp biển.
-- `frontend/src/assets/ui/sprites/flog_not_sailor.png`: Vết chém quất roi máu "NOT A SAILOR".
-- `frontend/src/assets/ui/sprites/flog_not_pirate.png`: Vết chém quất roi máu "NOT A PIRATE".
-- `frontend/src/assets/ui/sprites/flog_not_cultist.png`: Vết chém quất roi máu "NOT A CULTIST".
-- `frontend/src/assets/ui/frames/input_wood_slot_clean.png`: Khung rãnh gỗ đục tinh xảo cho tab Radar / Roster.
+- `frontend/src/assets/ui/sprites/badge_lieutenant_medal.png`: Huy hiệu Phó thuyền trưởng.
+- `frontend/src/assets/ui/sprites/badge_navigator_compass.png`: Huy hiệu Hoa tiêu la bàn.
+- `frontend/src/assets/ui/sprites/gem_emerald_online.png` / `gem_ruby_offline.png`: Ngọc trạng thái mạng.
+- `frontend/src/assets/ui/sprites/icon_flintlock_pistol.png`: Biểu tượng súng ngắn flintlock.
+- `frontend/src/assets/ui/sprites/flog_not_sailor.png` / `flog_not_pirate.png` / `flog_not_cultist.png`: Vết chém quất roi máu tra khảo.
 
-### Tài Liệu & Hệ Thống Rules Đã Chuẩn Hóa:
-- `spec/features/007-frontend-ui-revamp/ingame-command-layout-spec.md` (v1.3): Đặc tả chi tiết bố cục Bàn làm việc Thuyền trưởng, Central Stage xen kẽ tại chỗ (In-Place Alternate Hub) giữa `MapBoardUI.jsx` và `Action Desk Overlay`, cuộn giấy da trigger góc phải và Hộc ngăn kéo gầm bàn 2 tab.
-- [`.agents/rules/rule-ui-sop-track-b.md`](file:///d:/PersonaPropjects/Feed%20The%20Kurumeo/feed-the-kraken/.agents/rules/rule-ui-sop-track-b.md): Quy trình chuẩn 7 bước Track B, đã được tinh gọn xuống **7.515 bytes** (nằm an toàn dưới giới hạn 12.000 bytes) với đầy đủ 3 điểm dừng kiểm duyệt bắt buộc.
-- [`.agents/rules/root-rule.md`](file:///d:/PersonaPropjects/Feed%20The%20Kurumeo/feed-the-kraken/.agents/rules/root-rule.md): Hiến pháp điều phối, quy định bắt buộc tuân thủ SOP Track B, 3 điểm dừng kiểm duyệt và chuẩn hiển thị 100% tiếng Anh.
+### Tài Liệu & Hệ Thống Rules Đã Cập Nhật:
+- `task.md`: Đã đánh dấu hoàn thành `[x] T063`.
+- `.agents/rules/root-rule.md`: Đã bổ sung Quy tắc 8 (Track B SOP 3 điểm dừng) và Quy tắc 9 (Quy trình tuần tự atomic asset loop).
+- `.agents/rules/rule-ui-sop-t063-tabletop.md`: Quy trình chế tác tuần tự chuyên biệt từng asset nguyên tử.
+- `spec/features/007-frontend-ui-revamp/ingame-command-layout-spec.md` (v1.4): Đặc tả chi tiết bố cục Bàn làm việc Thuyền trưởng, Central Stage xen kẽ tại chỗ và Hộc ngăn kéo gầm bàn.
 
 ---
 
-## 3. 🎯 LỘ TRÌNH THỰC HIỆN SONG SONG: PHASE 9.3 & PHASE 10
+## 3. 🎯 LỘ TRÌNH TIẾP THEO (NEXT TASKS ROADMAP)
 
-Dự án vận hành đồng thời 2 luồng công việc:
-- **Track 1 (Frontend UI Revamp - Phase 9.3):** Hoàn thiện các component giao diện T063 - T069 theo phong cách "Eldritch Parchment" và quy trình Track B 7 bước SOP.
-- **Track 2 (Backend Logic, Real-Time Sync & Ops - Phase 10 Dynamic Track):** Kiểm thử thực tế backend, game logic và vận hành website bằng người chơi thật / headless bots. Xử lý bugfix trực tiếp theo dạng backlog động ngay khi phát hiện.
+Dự án tiếp tục bám sát lộ trình Phase 9.3 (Frontend UI Revamp) và Phase 10 (Backend Testing & Fixes):
 
-### A. Danh Sách Nhiệm Vụ Giao Diện Phase 9.3 (Track 1 - UI Revamp)
+### Danh Sách Nhiệm Vụ Giao Diện Phase 9.3 (Track 1 - UI Revamp)
 
 | Task ID | Component / Màn hình | Trạng thái & Mô tả công việc |
 | :--- | :--- | :--- |
 | **T062** | `RoleReveal.jsx` | *(Đã hoàn thành ✅)* Thẻ Tarot cổ 3D Flip 180°, mặt sau da thuộc nứt + xúc tu la bàn đồng cổ, mặt trước giấy da dê + biểu tượng phe mực phai, Night overlay mắt Kraken tím eldritch-pulse. |
-| **T063** | `Game.jsx`, `CrewSeatingDrawer.jsx` | **(CHƯA HOÀN THÀNH 🔄 - LÀM LẠI Ở CONVERSATION MỚI)** Khởi tạo không gian nền khoang buồng thuyền hải tặc (`cabin_room_bg.jpg`) phủ toàn màn hình; Bàn gỗ làm việc Thuyền trưởng (`tabletop_captain_desk.png`) đặt giữa khoang buồng cabin với kích thước thu nhỏ vừa vặn (~80-85% viewport) tạo chiều sâu không gian chân thực; Central Stage 70-80% diện tích mặt bàn render xen kẽ tại chỗ giữa `MapBoardUI` và `Action Desk`, Cuộn giấy da góc phải trượt đè tại chỗ, Hộc ngăn kéo gầm bàn độc lập Full Under-Drawer với 2 Tab: Tab 1 Seating Radar đĩa mâm la bàn động (5-11 người) & Tab 2 Khay thẻ hồ sơ thủy thủ đoàn Crew Dossier, 100% Tiếng Anh, cấm stock emoji. |
-| **T064** | `CrewAppointment` (`MutinyBoard.jsx`) | *(Chờ thực hiện)* Bàn chỉ định nhân sự Thuyền trưởng chọn Lieutenant & Navigator, thẻ chân dung thủy thủ nền gỗ mục/da dê, huy hiệu bổ nhiệm đồng cổ & la bàn, trạng thái Off-duty xiềng xích phong ấn, nút xác nhận `CONFIRM NAVIGATION TEAM`. |
+| **T063** | `Game.jsx`, `CrewSeatingDrawer.jsx` | *(Đã hoàn thành ✅ - Commit `245ac30`)* Không gian nền khoang buồng thuyền (`cabin_room_bg.jpg`), Bàn Thuyền trưởng Flat Lay 90° (`tabletop_captain_desk.png`), Central Stage xen kẽ tại chỗ MapBoard/Action Desk, Hộc ngăn kéo gầm bàn (`drawer_empty_shell.png`), Seating Radar đồng tâm 100%, triệt tiêu thanh cuộn dọc. |
+| **T064** | `CrewAppointment` (`MutinyBoard.jsx`) | **(NHIỆM VỤ TIẾP THEO 🎯)** Giao diện Thuyền trưởng chỉ định Phó thuyền trưởng (Lieutenant) và Hoa tiêu (Navigator) phong cách Eldritch Parchment: thẻ thủy thủ trực quan (avatar, số lượng súng, trạng thái Off-duty), huy hiệu bổ nhiệm đồng cổ & la bàn, nút xác nhận đội ngũ điều hướng. |
 | **T065** | `MutinyBoard.jsx` | *(Chờ thực hiện)* Bàn gỗ cược súng nổi loạn, đồng tiền vàng / flintlock SVG, rương gỗ bản lề gỉ, screen shake `gunShake` khi công bố, xếp hạng súng + trao Mũ Thuyền trưởng. |
 | **T066** | `NavigationPhase.jsx` | *(Chờ thực hiện)* Bàn điều hướng hải trình, 3 thẻ bài da dê cổ mực phai (Blue Sailor, Red Pirate, Yellow Cult), hiệu ứng chọn viền vàng + firelight glow, loại thẻ trượt mờ. |
 | **T067** | `MapBoardUI.jsx` | *(Chờ thực hiện)* Hoàn thiện toàn diện Hải đồ cổ da dê (gradient parchment-dim, vệt ố, mép rêu moss-dim), đường mực lông vũ SVG nét run, ô sự kiện SVG + popover, tàu buồm gỗ tối `shipBob`. |
@@ -94,53 +99,24 @@ Dự án vận hành đồng thời 2 luồng công việc:
 
 ---
 
-### B. Quy Trình Kiểm Thử Backend & Vận Hành Thực Tế (Track 2 - Phase 10 Dynamic Track)
+## 4. 📌 CÁC NGUYÊN TẮC & LƯU Ý QUAN TRỌNG KHI BẮT ĐẦU TASK T064
 
-1. **Chạy thử nghiệm:** Thực hiện chơi thử trên website (người dùng thật hoặc phối hợp headless bots).
-2. **Ghi nhận lỗi:** Ngay khi phát hiện bug/lỗi logic/sai lệch trạng thái, ghi nhận task mới vào Phase 10 của `task.md`.
-3. **Phân tích & Khắc phục:** Điều tra nguyên nhân gốc rễ, sửa code backend/frontend tương ứng, bảo toàn tính toàn vẹn (invariants) và viết test nếu cần.
-4. **Xác nhận:** Đánh dấu hoàn thành trên `task.md` và commit.
+Khi bắt tay vào thực hiện **Task T064** (Crew Appointment Phase), AI **BẮT BUỘC PHẢI TUÂN THỦ CÁC QUY TẮC SAU**:
 
-**Các lỗi đã khắc phục trong Phase 10:**
-- `T070 [FIX/BUG]`: Bổ sung súng lên 3 cho người chơi `OFF_DUTY` khi vượt Tuyến tiếp tế (Supply Line).
-- `T071 [FIX/BUG]`: Cho phép thu nạp Tà giáo (Cult Conversion) đối với người chơi `OFF_DUTY`.
-- `T072 [AUDIT/FIX]`: Chuẩn hóa phân định vòng đời `ACTIVE`, `OFF_DUTY`, `ELIMINATED` toàn diện.
+1. **Tuân thủ SOP Track B & 3 Điểm Dừng Phê Duyệt:**
+   - **Sau Bước B1 (Cổng chặn 1 🎯):** Phân tích phân tầng Z-Index & Ma trận Asset ➔ **DỪNG LẠI CHỜ USER DUYỆT KẾ HOẠCH**.
+   - **Sau Bước B2 (Cổng chặn 2 🎯):** Sinh Mockup trực quan phối cảnh ➔ **DỪNG LẠI CHỜ USER DUYỆT THIẾT KẾ**.
+   - **Sau Bước B3 (Kiểm duyệt Asset 🎯):** Khởi tạo độc lập từng asset nguyên tử (Clean Canvas sạch bóng prop, Standalone Props/Sprites trên nền trung tính) & tách nền PNG trong suốt 100% Alpha. **DỪNG LẠI XUẤT TRÌNH BỘ ASSET CHO USER ĐÁNH GIÁ**. Tuyệt đối không tự ý viết code JSX (Bước B5) khi chưa hoàn tất kiểm duyệt asset.
 
----
+2. **Quy Chuẩn Góc Nhìn Vuông Góc 90° (Flat Lay Orthographic):**
+   - Mọi asset tạo mới cho Task T064 bắt buộc phải có góc nhìn 90° từ trên xuống, không dùng góc nghiêng phối cảnh 3D để tránh làm méo hình học khi render trên Central Stage của bàn Thuyền trưởng.
 
-## 4. 📌 TỔNG HỢP QUY TẮC & THIẾT LẬP BẮT BUỘC KHI LÀM LẠI TASK T063
+3. **Tích Hợp Vào Central Stage Hiện Có:**
+   - Component bổ nhiệm nhân sự `CrewAppointment` phải được render bên trong **Central Stage** (vùng khung đồng chạm hoa văn của bàn Thuyền trưởng đã hoàn thiện ở T063), không được tạo thêm cửa sổ modal hay lớp phủ ngoài bàn làm phá vỡ kiến trúc bàn làm việc.
 
-Khi khởi động conversation mới để làm lại **Task T063**, AI **BẮT BUỘC PHẢI ĐỌC VÀ TUÂN THỦ 100% CÁC THIẾT LẬP SAU**:
+4. **100% Tiếng Anh Hàng Hải (`en-US`):**
+   - Mọi nhãn nút, danh hiệu (`CAPTAIN`, `LIEUTENANT`, `NAVIGATOR`, `OFF-DUTY`, `CONFIRM APPOINTMENT`...), thông báo trạng thái đều phải dùng 100% tiếng Anh, font `Pirata One`, không sót chuỗi tiếng Việt.
 
-### 1. Quy Trình Track B 7 Bước với 3 Điểm Dừng Kiểm Duyệt Bắt Buộc:
-- **Cổng chặn 1 🎯 (Sau Bước B1):** Phân tích cấu trúc phân tầng Z-Index & Ma trận Asset ➔ **DỪNG LẠI CHỜ USER DUYỆT**.
-- **Cổng chặn 2 🎯 (Sau Bước B2):** Sinh Mockup trực quan phối cảnh ➔ **DỪNG LẠI CHỜ USER DUYỆT**.
-- **Điểm dừng kiểm duyệt Asset 🎯 (Sau Bước B3):** Nghiệm thu bộ asset nguyên tử độc lập (100% Alpha, sạch bóng prop) ➔ **DỪNG LẠI XUẤT TRÌNH BỘ ASSET CHO USER DUYỆT**. Tuyệt đối không tự ý viết code JSX (Bước B5) khi chưa hoàn tất kiểm duyệt asset.
-
-### 2. Quy Chuẩn Góc Máy Chính Thức (Orthographic Top-Down):
-- Toàn bộ asset chính thức ở Bước B3 (mặt bàn gỗ, hộc ngăn kéo, đĩa mâm la bàn, thẻ bài hồ sơ) **BẮT BUỘC PHẢI CÓ GÓC NHÌN TỪ TRÊN XUỐNG VUÔNG GÓC 90 ĐỘ (`perpendicular 90° flat lay / bird's-eye view`)**.
-- Không sử dụng góc nghiêng phối cảnh 3D (perspective tilt) để tránh làm méo hình học khi xếp chồng các thẻ và avatar bằng React JSX/CSS.
-
-### 3. Đảm Bảo Đẳng Cấp Thẩm Mỹ "Eldritch Parchment" & Chiều Sâu Điện Ảnh:
-- Khi sinh ảnh góc nhìn vuông góc 90 độ, **TUYỆT ĐỐI KHÔNG ĐỂ NÉT VẼ BIẾN THÀNH HOẠT HÌNH 2D PHẲNG LÌ / CLIP-ART RẺ TIỀN**.
-- Bắt buộc duy trì ánh sáng điện ảnh chiaroscuro, quầng sáng nến vàng ấm lung linh (`firelight-glow`), bóng đổ mềm tự nhiên, thớ gỗ sồi phong hóa nứt nẻ và kim loại đồng thau xước gỉ patina.
-
-### 4. Kiến Trúc Phân Tầng Nền & Bàn Thuyền Trưởng (v1.4 Mới):
-- **Background chính toàn trang:** Nền khoang buồng thuyền hải tặc (`cabin_room_bg.jpg`) thể hiện vách gỗ sồi, đèn lồng dầu treo, dây thừng, cửa sổ tròn porthole.
-- **Mặt bàn Thuyền trưởng:** Container asset độc lập (`tabletop_captain_desk.png`), kích thước thu nhỏ vừa vặn (~80-85% viewport) đặt giữa buồng cabin, không kéo giãn tràn màn hình.
-
-### 5. Hai Phân Loại Asset Độc Lập — Nghiêm Cấm Cắt Cúp Lười Biếng (Strict Ban on Lazy Cropping):
-- **CẤM TUYỆT ĐỐI** hành vi dùng bounding box crop các chi tiết (súng, cuộn giấy, tay nắm, đĩa la bàn) trực tiếp từ tấm ảnh phẳng của mockup.
-- **Nhóm Clean Canvases:**
-  * `cabin_room_bg.jpg`: Nền khoang buồng thuyền hải tặc toàn cảnh bao quát.
-  * `tabletop_captain_desk.png`: Bàn gỗ sồi phong hóa độc lập, đặt cân đối giữa khoang buồng cabin, lòng trong khung trung tâm để trống/sạch sẽ hoàn toàn để render `MapBoardUI` và `Action Desk`.
-  * `drawer_empty_shell.png`: Hộc ngăn kéo rỗng dày dặn, liền khối tay nắm mỏ neo đồng cổ, ruột chia 2 khoang trống không dính thẻ bài/mâm đĩa.
-- **Nhóm Standalone Sprites (Tách phông 100% Alpha Channel):**
-  * `scroll_action_desk_trigger.png`: Cuộn giấy da tác chiến cuộn dọc buộc dây thừng niêm phong sáp đỏ.
-  * `drawer_radar_base.png`: Mâm đĩa la bàn hoa tiêu đồng cổ 16 cánh, lòng trong để trống sạch sẽ để React JSX tính góc chia độ `(360° / N * i)` cho 5-11 người chơi.
-  * `card_crew_dossier.png`: Thẻ bài da dê nẹp đồng nứt nẻ, ruột để trống cho React JSX render avatar, chức vụ, vũ khí và ấn ký trạng thái.
-
-### 6. Chuẩn Ngôn Ngữ & Kỹ Thuật:
-- Giao diện người dùng: **100% Tiếng Anh hàng hải (`en-US`)**, font Gothic `Pirata One` (tiêu đề) và `Cinzel` (nhãn phụ), nghiêm cấm stock emoji.
-- Code JSX: Bảo toàn 100% Game Logic, Socket.io event listeners và state quản lý phòng chơi.
-- Biên dịch: Chạy lệnh `npm run build` xác nhận 0 lỗi trước khi bàn giao.
+5. **Bảo Toàn Logic & Khả Năng Khôi Phục Kết Nối (State Invariants & Resilience):**
+   - Bảo toàn 100% luật game: Thuyền trưởng chỉ được chọn 1 Lieutenant và 1 Navigator; không được chọn người chơi đang ở trạng thái `OFF_DUTY` hoặc `ELIMINATED`; có thể thay đổi lựa chọn trước khi bấm xác nhận.
+   - Xử lý tốt các sự kiện WebSocket reconnect / F5 reload trang.
